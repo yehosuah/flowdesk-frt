@@ -12,26 +12,92 @@
       />
     </div>
 
-    <select
-      v-model="status"
-      @change="emitFilters"
-    >
-      <option value="">Todos los estados</option>
-      <option value="Pendiente">Pendiente</option>
-      <option value="En progreso">En progreso</option>
-      <option value="Completada">Completada</option>
-    </select>
+    <details ref="statusDropdown" class="filter-dropdown">
+      <summary class="filter-select">
+        {{ status || 'Todos los estados' }}
+      </summary>
 
-    <select
-      v-model="priority"
-      @change="emitFilters"
-    >
-      <option value="">Todas las prioridades</option>
-      <option value="Alta">Alta</option>
-      <option value="Media">Media</option>
-      <option value="Baja">Baja</option>
-    </select>
+      <div class="filter-options">
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': status === '' }"
+          @click="changeStatus('')"
+        >
+          Todos los estados
+        </button>
 
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': status === 'Pendiente' }"
+          @click="changeStatus('Pendiente')"
+        >
+          Pendiente
+        </button>
+
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': status === 'En progreso' }"
+          @click="changeStatus('En progreso')"
+        >
+          En progreso
+        </button>
+
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': status === 'Completada' }"
+          @click="changeStatus('Completada')"
+        >
+          Completada
+        </button>
+      </div>
+    </details>
+    <details ref="priorityDropdown" class="filter-dropdown">
+      <summary class="filter-select">
+        {{ priority || 'Todas las prioridades' }}
+      </summary>
+
+      <div class="filter-options">
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': priority === '' }"
+          @click="changePriority('')"
+        >
+          Todas las prioridades
+        </button>
+
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': priority === 'Alta' }"
+          @click="changePriority('Alta')"
+        >
+          Alta
+        </button>
+
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': priority === 'Media' }"
+          @click="changePriority('Media')"
+        >
+          Media
+        </button>
+
+        <button
+          type="button"
+          class="filter-option"
+          :class="{ 'filter-option--active': priority === 'Baja' }"
+          @click="changePriority('Baja')"
+        >
+          Baja
+        </button>
+      </div>
+    </details>   
     <button
       class="btn-clear"
       @click="clearFilters"
@@ -61,12 +127,35 @@ const search = ref('');
 const status = ref('');
 const priority = ref('');
 
+const statusDropdown = ref<HTMLDetailsElement | null>(null);
+const priorityDropdown = ref<HTMLDetailsElement | null>(null);
+
 function emitFilters() {
   emit('change', {
     search: search.value,
     status: status.value,
     priority: priority.value,
   });
+}
+
+function changeStatus(value: string) {
+  status.value = value;
+
+  if (statusDropdown.value) {
+    statusDropdown.value.open = false;
+  }
+
+  emitFilters();
+}
+
+function changePriority(value: string) {
+  priority.value = value;
+
+  if (priorityDropdown.value) {
+    priorityDropdown.value.open = false;
+  }
+
+  emitFilters();
 }
 
 function clearFilters() {
@@ -119,17 +208,90 @@ function clearFilters() {
   background: transparent;
 }
 
-select {
+.filter-dropdown {
+  position: relative;
   flex: 1;
+  min-width: 0;
+}
 
-  padding: 12px;
-  border-radius: 8px;
+.filter-dropdown summary {
+  list-style: none;
+}
+
+.filter-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-select {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 34px 12px 12px;
   border: 1px solid #dbe3ef;
-
+  border-radius: 8px;
+  background: white;
+  color: var(--color-text);
   font-size: .9rem;
   font-family: var(--font-sans);
+  cursor: pointer;
+  user-select: none;
+}
 
+.filter-select::after {
+  content: '⌄';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-55%);
+  color: #9aa7bd;
+}
+
+.filter-dropdown[open] .filter-select {
+  border-radius: 8px 8px 0 0;
+}
+
+.filter-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  box-sizing: border-box;
   background: white;
+  border: 1px solid #dbe3ef;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.filter-option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: white;
+  color: var(--color-text);
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.filter-option:last-child {
+  border-bottom: none;
+}
+
+.filter-option:hover {
+  background: #f8fafc;
+}
+
+.filter-option--active {
+  background: #eff6ff;
+  color: var(--color-structure-base);
+  font-weight: 600;
 }
 
 .btn-clear {
@@ -158,9 +320,14 @@ select {
   }
 
   .search-container,
-  select,
+  .filter-dropdown,
   .btn-clear {
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filter-options {
+    max-width: 100%;
   }
 }
 </style>
