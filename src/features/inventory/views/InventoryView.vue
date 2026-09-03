@@ -562,4 +562,87 @@ const productosStockBajo = computed(() =>
     width: 100%;
   }
 }
+
+@media (max-width: 768px) {
+  .inventario-page {
+    width: 100%;
+    min-width: 0;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .content-container {
+    width: 100%;
+    min-width: 0;
+    gap: 24px;
+  }
+
+  .table-section {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .inventory-table {
+    width: 100%;
+    min-width: 520px;
+  }
+
+  .inventory-table th,
+  .inventory-table td {
+    padding: 12px 14px;
+    white-space: nowrap;
+  }
+
+  .filtros-panel {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+    background: #fff;
+    border: 1.5px solid var(--color-structure-subtle);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .filtros-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 12px;
+  }
+
+  .filtros-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    text-align: center;
+  }
+
+  .filtros-footer {
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .filtros-list {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

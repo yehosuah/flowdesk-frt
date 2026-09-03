@@ -1043,4 +1043,226 @@ function limpiarFiltros() {
     width: 100%;
   }
 }
+
+@media (max-width: 768px) {
+  .movimiento-page {
+    width: 100%;
+    min-width: 0;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .content-container {
+    width: 100%;
+    min-width: 0;
+    gap: 24px;
+  }
+
+  .table-section {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .section-header {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .dropdown-container {
+    width: 100%;
+  }
+
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .dropdown-menu {
+    width: 100%;
+    right: auto;
+    left: 0;
+    box-sizing: border-box;
+  }
+
+  .table-container {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .table-container > div {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .movimiento-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    font-size: 0.72rem;
+  }
+
+  .movimiento-table th,
+  .movimiento-table td {
+    padding: 10px 6px;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .movimiento-table th:first-child,
+  .movimiento-table td:first-child {
+    padding-left: 10px;
+  }
+
+  .movimiento-table th:last-child,
+  .movimiento-table td:last-child {
+    padding-right: 12px;
+  }
+
+  .movimiento-table th {
+    font-size: 0.7rem;
+  }
+
+  .movimiento-table th:nth-child(1),
+  .movimiento-table td:nth-child(1) {
+    width: 22%;
+  }
+
+  .movimiento-table th:nth-child(2),
+  .movimiento-table td:nth-child(2) {
+    width: 23%;
+  }
+
+  .movimiento-table th:nth-child(3),
+  .movimiento-table td:nth-child(3) {
+    width: 18%;
+  }
+
+  .movimiento-table th:nth-child(4),
+  .movimiento-table td:nth-child(4) {
+    width: 17%;
+  }
+
+  .movimiento-table th:nth-child(5),
+  .movimiento-table td:nth-child(5) {
+    width: 20%;
+  }
+
+  .product-name,
+  .td-motivo {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .tipo-badge {
+    padding: 3px 6px;
+    font-size: 0.68rem;
+  }
+
+  .cantidad-num {
+    font-size: 0.72rem;
+  }
+  .pagination-footer {
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .pagination-info {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+    box-sizing: border-box;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+  }
+
+  .filtros-panel {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .filtros-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    text-align: center;
+  }
+
+  .fecha-inputs {
+    width: 100%;
+  }
+
+  .filtro-input,
+  .filtro-input-fecha {
+    box-sizing: border-box;
+  }
+
+  .filtros-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .filtros-list {
+    grid-template-columns: 1fr;
+  }
+
+  .page-numbers {
+    display: none;
+  }
+
+  .btn-page {
+    flex: 1;
+  }
+}
+
 </style>
