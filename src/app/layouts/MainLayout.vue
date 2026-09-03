@@ -253,104 +253,160 @@ async function cerrarSesion(): Promise<void> {
 <style scoped>
 .main-layout {
   display: flex;
+  width: 100%;
   min-height: 100vh;
   background: var(--color-bg-app);
 }
 
-/* Sidebar */
-
 .sidebar {
   width: 280px;
   flex-shrink: 0;
-  background: var(--color-structure-base);
-  display: flex;
-  flex-direction: column;
-  padding: 0 0 24px;
+
   position: sticky;
   top: 0;
+
+  display: flex;
+  flex-direction: column;
+
   height: 100vh;
+  box-sizing: border-box;
+
+  background: var(--color-structure-base);
+
+  overflow: hidden;
 }
 
 .sidebar__brand {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 12px;
+  flex-shrink: 0;
+
   display: flex;
+  align-items: center;
   justify-content: center;
+
+  height: 190px;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar__logo {
-  width: 180px;
+  display: block;
+
+  width: 150px;
   max-width: 100%;
   height: auto;
 }
 
 .sidebar__nav {
+  flex: 1;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
+
   gap: 2px;
-  padding: 0 10px;
-  flex: 1;
-  overflow-y: auto;
+
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
 }
 
 .sidebar__link {
   display: flex;
   align-items: center;
+
   gap: 10px;
-  padding: 10px 12px;
+
+  padding: 8px 12px;
+
   border-radius: 8px;
+
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+
+  font-size: 0.82rem;
   font-weight: 500;
+
+  line-height: 1.2;
+
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: #ffffff;
 }
 
 .sidebar__link--active {
   background: rgba(255, 255, 255, 0.13);
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .sidebar__icon {
   display: flex;
   align-items: center;
+  justify-content: center;
+
   flex-shrink: 0;
 }
 
+.sidebar__label {
+  min-width: 0;
+}
+
 .sidebar__logout {
+  flex-shrink: 0;
+
   display: flex;
   align-items: center;
+
   gap: 10px;
-  padding: 10px 22px;
-  background: none;
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 10px 22px 16px;
+
   border: none;
+
+  background: none;
+
   color: rgba(255, 255, 255, 0.45);
-  font-size: 0.875rem;
+
+  font-family: inherit;
+  font-size: 0.82rem;
+
+  text-align: left;
+
   cursor: pointer;
+
   transition: color 0.15s;
-  margin-top: auto;
 }
 
 .sidebar__logout:hover {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Contenido principal */
-
 .main-layout__content {
   flex: 1;
-  min-width: 0;
-  overflow-y: auto;
-}
 
-/* Controles móviles ocultos en escritorio */
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+
+  overflow: visible;
+}
 
 .mobile-menu-button {
   display: none;
@@ -360,11 +416,41 @@ async function cerrarSesion(): Promise<void> {
   display: none;
 }
 
-/* Responsive */
+@media (max-height: 850px) and (min-width: 1001px) {
+  .sidebar__brand {
+    height: 150px;
+    padding: 14px 18px;
+  }
 
-@media (max-width: 768px) {
+  .sidebar__logo {
+    width: 120px;
+  }
+
+  .sidebar__nav {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    gap: 1px;
+  }
+
+  .sidebar__link {
+    padding-top: 6px;
+    padding-bottom: 6px;
+
+    font-size: 0.76rem;
+  }
+
+  .sidebar__logout {
+    padding-top: 7px;
+    padding-bottom: 10px;
+
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 1000px) {
   .main-layout {
     display: block;
+
     width: 100%;
     min-height: 100vh;
   }
@@ -373,8 +459,12 @@ async function cerrarSesion(): Promise<void> {
     width: 100%;
     min-width: 0;
     min-height: 100vh;
+
     padding-top: 64px;
+
     box-sizing: border-box;
+
+    overflow: visible;
   }
 
   .mobile-menu-button {
@@ -383,19 +473,22 @@ async function cerrarSesion(): Promise<void> {
     justify-content: center;
 
     position: fixed;
+
     top: 16px;
     left: 16px;
+
     z-index: 1100;
 
     width: 44px;
     height: 44px;
+
     padding: 0;
 
     border: none;
     border-radius: 8px;
 
     background: var(--color-structure-base);
-    color: #fff;
+    color: #ffffff;
 
     font-size: 24px;
     line-height: 1;
@@ -405,30 +498,137 @@ async function cerrarSesion(): Promise<void> {
 
   .sidebar {
     position: fixed;
+
     top: 0;
     left: 0;
+
     z-index: 1200;
 
     width: 280px;
     max-width: 85vw;
-    height: 100vh;
+
+    height: 100dvh;
+
+    box-sizing: border-box;
 
     transform: translateX(-100%);
+
     transition: transform 0.25s ease;
 
     box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+
+    overflow: hidden;
   }
 
   .sidebar--open {
     transform: translateX(0);
   }
 
+  .sidebar__brand {
+    height: 120px;
+
+    padding: 14px 18px;
+  }
+
+  .sidebar__logo {
+    width: 110px;
+  }
+
+  .sidebar__nav {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 1px;
+
+    padding: 6px 8px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .sidebar__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar__link {
+    flex-shrink: 0;
+
+    padding: 8px 10px;
+
+    font-size: 0.8rem;
+  }
+
+  .sidebar__logout {
+    flex-shrink: 0;
+
+    padding: 9px 18px 12px;
+
+    font-size: 0.8rem;
+  }
+
   .sidebar-overlay {
     display: block;
+
     position: fixed;
+
     inset: 0;
+
     z-index: 1150;
+
     background: rgba(0, 0, 0, 0.45);
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-menu-button {
+    top: 12px;
+    left: 12px;
+
+    width: 42px;
+    height: 42px;
+  }
+
+  .main-layout__content {
+    padding-top: 60px;
+  }
+
+  .sidebar {
+    width: 250px;
+    max-width: 82vw;
+  }
+
+  .sidebar__brand {
+    height: 105px;
+
+    padding: 12px 16px;
+  }
+
+  .sidebar__logo {
+    width: 95px;
+  }
+
+  .sidebar__nav {
+    padding: 5px 7px;
+  }
+
+  .sidebar__link {
+    gap: 9px;
+
+    padding: 7px 9px;
+
+    font-size: 0.76rem;
+  }
+
+  .sidebar__logout {
+    padding: 8px 16px 10px;
+
+    font-size: 0.76rem;
   }
 }
 </style>
