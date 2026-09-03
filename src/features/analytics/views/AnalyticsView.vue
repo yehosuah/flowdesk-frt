@@ -672,6 +672,164 @@ onMounted(loadAll);
   }
 }
 
+@media (max-width: 768px) {
+  .analytics-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 16px;
+    gap: 20px;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .header-main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+  }
+
+  .tabs-container {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: max-content;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-filter {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .period-selector {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+  }
+
+  .period-btn {
+    flex: 1;
+    min-width: max-content;
+    padding: 7px 10px;
+    white-space: nowrap;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .metric-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+  }
+
+  .metric-card__value {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-grid,
+  .dashboard-grid--1-1,
+  .dashboard-grid--1-2 {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .chart-section,
+  .products-section {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 16px !important;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .chart-wrapper {
+    width: 100%;
+    height: 260px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .trend-chart {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .products-table {
+    min-width: 520px;
+  }
+
+  .drawer-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .drawer-header,
+  .drawer-body,
+  .drawer-footer {
+    padding: 20px 16px;
+  }
+
+  .date-inputs,
+  .range-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-inputs span,
+  .range-inputs span {
+    text-align: center;
+  }
+
+  .drawer-footer {
+    flex-direction: column;
+  }
+}
+
 .period-selector {
   display: flex;
   gap: 4px;
@@ -1026,7 +1184,6 @@ onMounted(loadAll);
 .risk-badge--mid  { background: #fff3e0; color: #e65100; }
 .risk-badge--high { background: #ffebee; color: #c62828; }
 
-/* DRAWER */
 .drawer-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
