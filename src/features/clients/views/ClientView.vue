@@ -5,6 +5,7 @@
         <h1 class="page-title">Clientes</h1>
         <p class="page-subtitle">Gestiona el directorio de tus clientes</p>
       </div>
+
       <button class="btn-add" @click="openCreateModal">
         <span class="btn-icon">+</span> Nuevo Cliente
       </button>
@@ -15,7 +16,6 @@
     </div>
 
     <div class="split-layout">
-      <!-- PANEL IZQUIERDO: MASTER LIST -->
       <aside class="master-panel card">
         <div class="toolbar">
           <div class="search-box">
@@ -28,12 +28,48 @@
               @input="onSearch"
             />
           </div>
+
           <div class="filter-box">
-            <select v-model="statusFilter" class="filter-select" @change="fetchData">
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
+            <details ref="filterDropdown" class="filter-dropdown">
+              <summary class="filter-select">
+                {{
+                  statusFilter === 'all'
+                    ? 'Todos'
+                    : statusFilter === 'active'
+                      ? 'Activos'
+                      : 'Inactivos'
+                }}
+              </summary>
+
+              <div class="filter-options">
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'all' }"
+                  @click="changeStatusFilter('all')"
+                >
+                  Todos
+                </button>
+
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'active' }"
+                  @click="changeStatusFilter('active')"
+                >
+                  Activos
+                </button>
+
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'inactive' }"
+                  @click="changeStatusFilter('inactive')"
+                >
+                  Inactivos
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -74,38 +110,47 @@
           <div class="detail-header">
             <div>
               <h2 class="detail-name">{{ selectedClient.nombre }}</h2>
-              <p class="detail-desc">{{ selectedClient.is_active ? 'Cliente activo' : 'Cliente inactivo' }}</p>
+              <p class="detail-desc">
+                {{ selectedClient.is_active ? 'Cliente activo' : 'Cliente inactivo' }}
+              </p>
             </div>
+
             <div class="detail-actions">
-              <button class="btn-icon-action" @click="openEditModal(selectedClient)" title="Editar información">
-                <Pencil :size="18" /> Editar
+              <button
+                class="btn-icon-action"
+                title="Editar información"
+                @click="openEditModal(selectedClient)"
+              >
+                <Pencil :size="18" />
+                Editar
               </button>
             </div>
           </div>
 
-            <section class="detail-section">
-              <h3 class="section-title">Información de Contacto</h3>
-              <div class="contact-card">
-                <div class="contact-row">
-                  <Phone :size="16" class="contact-icon" />
-                  <span>{{ selectedClient.telefono || 'No registrado' }}</span>
-                </div>
-                <div class="contact-row">
-                  <Mail :size="16" class="contact-icon" />
-                  <span>{{ selectedClient.correo || 'No registrado' }}</span>
-                </div>
-                <div class="contact-row">
-                  <MapPin :size="16" class="contact-icon" />
-                  <span>{{ selectedClient.direccion || 'No registrada' }}</span>
-                </div>
-              </div>
-            </section>
+          <section class="detail-section">
+            <h3 class="section-title">Información de Contacto</h3>
 
+            <div class="contact-card">
+              <div class="contact-row">
+                <Phone :size="16" class="contact-icon" />
+                <span>{{ selectedClient.telefono || 'No registrado' }}</span>
+              </div>
+
+              <div class="contact-row">
+                <Mail :size="16" class="contact-icon" />
+                <span>{{ selectedClient.correo || 'No registrado' }}</span>
+              </div>
+
+              <div class="contact-row">
+                <MapPin :size="16" class="contact-icon" />
+                <span>{{ selectedClient.direccion || 'No registrada' }}</span>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
 
-    <!-- Modal -->
     <ClientModal
       v-if="showModal"
       :client="clientToEdit"
@@ -124,44 +169,41 @@ import { fetchClients, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
 
-// Estado General
 const clients = ref<Client[]>([]);
 const isLoading = ref(true);
 const globalError = ref('');
 const searchQuery = ref('');
-const statusFilter = ref('active'); // Por defecto ver activos (o 'all')
-
-// Master-Detail State
+const statusFilter = ref<'all' | 'active' | 'inactive'>('active');
+const filterDropdown = ref<HTMLDetailsElement | null>(null);
 const selectedClient = ref<Client | null>(null);
-
-// Variables Modal
 const showModal = ref(false);
 const clientToEdit = ref<Client | null>(null);
 
-// Buscador
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 async function fetchData() {
   isLoading.value = true;
   globalError.value = '';
+
   try {
-    // El backend solo soporta active_only: true (solo activos) o false (todos).
-    // Para el filtro "Inactivos" pedimos todos y filtramos en el cliente.
     const activeOnlyParam = statusFilter.value === 'active';
     let results = await fetchClients(searchQuery.value, activeOnlyParam);
 
     if (statusFilter.value === 'inactive') {
-      results = results.filter((c) => !c.is_active);
+      results = results.filter((client) => !client.is_active);
     }
 
     clients.value = results;
 
-    // Auto-seleccionar el primero si no hay selección o la selección ya no existe
     if (!selectedClient.value && clients.value.length > 0) {
       selectedClient.value = clients.value[0];
     } else if (selectedClient.value) {
-      const stillExists = clients.value.find(c => c.id === selectedClient.value?.id);
-      selectedClient.value = stillExists || (clients.value.length > 0 ? clients.value[0] : null);
+      const stillExists = clients.value.find(
+        (client) => client.id === selectedClient.value?.id,
+      );
+
+      selectedClient.value =
+        stillExists || (clients.value.length > 0 ? clients.value[0] : null);
     }
   } catch (err) {
     globalError.value = getApiErrorMessage(err);
@@ -172,9 +214,20 @@ async function fetchData() {
 
 function onSearch() {
   clearTimeout(searchTimeout);
+
   searchTimeout = setTimeout(() => {
     fetchData();
-  }, 400); // 400ms debounce
+  }, 400);
+}
+
+function changeStatusFilter(value: 'all' | 'active' | 'inactive') {
+  statusFilter.value = value;
+
+  if (filterDropdown.value) {
+    filterDropdown.value.open = false;
+  }
+
+  fetchData();
 }
 
 function selectClient(cli: Client) {
@@ -197,7 +250,6 @@ function onModalSaved() {
 }
 
 function onStatusChanged(updated: Client) {
-  // Mantiene el modal abierto; solo refresca la lista para respetar el filtro activo.
   clientToEdit.value = updated;
   fetchData();
 }
@@ -268,20 +320,19 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* Master-Detail Layout */
 .split-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 24px;
   align-items: stretch;
 }
 
-/* Left Panel */
 .master-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
   max-height: 800px;
+  min-width: 0;
 }
 
 .toolbar {
@@ -306,6 +357,7 @@ onMounted(() => {
 
 .search-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 10px 10px 36px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -316,22 +368,102 @@ onMounted(() => {
 .search-input:focus {
   outline: none;
   border-color: var(--color-structure-base);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-box {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+.filter-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.filter-dropdown summary {
+  list-style: none;
+}
+
+.filter-dropdown summary::-webkit-details-marker {
+  display: none;
 }
 
 .filter-select {
+  position: relative;
   width: 100%;
+  box-sizing: border-box;
   padding: 8px 32px 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 0.85rem;
   background: #f8fafc;
+  color: #334155;
+  font-size: 0.85rem;
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
+  user-select: none;
+}
+
+.filter-select::after {
+  content: '⌄';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-55%);
+  color: #94a3b8;
+}
+
+.filter-dropdown[open] .filter-select {
+  border-radius: 8px 8px 0 0;
+}
+
+.filter-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+
+  overflow: hidden;
+}
+
+.filter-option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  color: #334155;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-option:last-child {
+  border-bottom: none;
+}
+
+.filter-option:hover {
+  background: #f8fafc;
+}
+
+.filter-option--active {
+  background: #eff6ff;
+  color: var(--color-structure-base);
+  font-weight: 600;
 }
 
 .client-list {
@@ -359,13 +491,14 @@ onMounted(() => {
 .client-item.active {
   background: #eff6ff;
   border-left: 4px solid var(--color-structure-base, #3b82f6);
-  padding-left: 12px; /* Compensate border */
+  padding-left: 12px;
 }
 
 .client-item-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .client-name {
@@ -383,26 +516,13 @@ onMounted(() => {
   max-width: 250px;
 }
 
-.dot-active {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-}
-.dot-inactive {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #94a3b8;
-}
-
-
-/* Right Panel */
 .detail-panel {
   padding: 32px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .empty-detail {
@@ -440,7 +560,7 @@ onMounted(() => {
 .detail-desc {
   font-size: 0.95rem;
   color: #64748b;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0;
 }
 
 .detail-actions {
@@ -499,32 +619,11 @@ onMounted(() => {
 
 .contact-icon {
   color: #94a3b8;
+  flex-shrink: 0;
 }
 
-.font-medium { font-weight: 600; color: #0f172a; }
-.text-success { color: #16a34a; font-weight: 600; }
-.text-danger { color: #dc2626; font-weight: 600; }
-.flex-align { display: flex; align-items: center; gap: 6px; }
-.inline-icon { color: #94a3b8; }
-.mt-4 { margin-top: 32px; }
-
-/* Status Badge */
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.status-badge:hover:not(:disabled) { opacity: 0.8; }
-.status-active { background: #dcfce7; color: #166534; }
-.status-inactive { background: #f1f5f9; color: #475569; }
-.status-badge:disabled { opacity: 0.5; cursor: wait; }
-
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   padding: 48px 20px;
   text-align: center;
   color: #64748b;
@@ -540,7 +639,11 @@ onMounted(() => {
   margin: 0 auto 16px;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .error-alert {
   margin-bottom: 20px;
@@ -550,5 +653,125 @@ onMounted(() => {
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .split-layout {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .master-panel {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  .toolbar {
+    position: relative;
+    z-index: 10;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .client-list {
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail-panel {
+    width: 100%;
+    height: auto;
+    padding: 20px 16px;
+    box-sizing: border-box;
+  }
+
+  .toolbar {
+    padding: 14px;
+  }
+
+  .client-list {
+    max-height: 240px;
+  }
+
+  .client-desc {
+    max-width: 100%;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+  }
+
+  .detail-name {
+    font-size: 1.3rem;
+  }
+
+  .detail-actions {
+    width: 100%;
+  }
+
+  .btn-icon-action {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .contact-card {
+    padding: 16px;
+  }
+
+  .contact-row {
+    align-items: flex-start;
+    font-size: 0.88rem;
+    min-width: 0;
+  }
+
+  .contact-row span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .filter-dropdown,
+  .filter-select,
+  .filter-options {
+    max-width: 100%;
+  }
 }
 </style>
