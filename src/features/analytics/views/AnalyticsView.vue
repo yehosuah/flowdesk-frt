@@ -1311,4 +1311,483 @@ onMounted(loadAll);
 .btn-apply:hover {
   opacity: 0.9;
 }
+
+@media (max-width: 900px) {
+  .analytics-page {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 24px 20px;
+    gap: 20px;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .header-main,
+  .header-actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.7rem;
+  }
+
+  .tabs-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    box-sizing: border-box;
+    gap: 4px;
+    margin-top: 14px;
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  .tab-btn {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 8px 6px;
+    font-size: .78rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-filter {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+
+  .period-selector {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    box-sizing: border-box;
+    gap: 4px;
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  .period-btn {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 7px 4px;
+    font-size: .72rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .metrics-grid {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .metric-card__body {
+    min-width: 0;
+  }
+
+  .metric-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .metric-card__label {
+    font-size: .68rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .metric-card__value {
+    font-size: 1.45rem;
+  }
+
+  .dashboard-grid,
+  .dashboard-grid--1-1,
+  .dashboard-grid--1-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .chart-section,
+  .products-section {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 18px !important;
+    overflow: hidden;
+  }
+
+  .section-header {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .sort-selector {
+    width: 100%;
+  }
+
+  .sort-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+  }
+
+  .chart-wrapper {
+    width: 100%;
+    min-width: 0;
+    height: 250px;
+    overflow: hidden;
+  }
+
+  .trend-chart {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .trend-chart canvas,
+  .chart-section canvas {
+    max-width: 100% !important;
+  }
+
+  .feed-list {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .feed-list > div {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .products-table,
+  .products-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .products-table thead {
+    display: none;
+  }
+
+  .products-table tbody {
+    padding: 0;
+  }
+
+  .products-table tbody tr {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e8eef6;
+  }
+
+  .products-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .products-table tbody tr:hover {
+    background: transparent;
+  }
+
+  .products-table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 0;
+    border: none;
+    font-size: .76rem;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .products-table td::before {
+    flex: 0 0 40%;
+    color: var(--color-text);
+    font-size: .73rem;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .products-table td:nth-child(1)::before {
+    content: "Producto";
+  }
+
+  .products-table td:nth-child(2)::before {
+    content: "Entradas";
+  }
+
+  .products-table td:nth-child(3)::before {
+    content: "Salidas";
+  }
+
+  .products-table td:nth-child(4)::before {
+    content: "Stock";
+  }
+
+  .table-empty {
+    display: block !important;
+    padding: 28px 12px !important;
+    text-align: center !important;
+  }
+
+  .table-empty::before {
+    display: none !important;
+  }
+
+  .drawer-panel {
+    width: min(360px, 100vw);
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .drawer-header {
+    padding: 20px 18px;
+  }
+
+  .drawer-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .drawer-body {
+    padding: 18px;
+    gap: 18px;
+  }
+
+  .drawer-footer {
+    padding: 16px 18px;
+  }
+
+  .date-inputs,
+  .range-inputs {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-inputs span,
+  .range-inputs span {
+    text-align: center;
+  }
+
+  .filter-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  .analytics-page {
+    padding: 20px 14px;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .tab-btn {
+    padding: 8px 3px;
+    font-size: .7rem;
+  }
+
+  .period-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .period-btn {
+    padding: 7px 5px;
+    font-size: .7rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metric-card {
+    padding: 12px;
+    gap: 9px;
+  }
+
+  .metric-card__icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .metric-card__icon :deep(svg) {
+    width: 17px;
+    height: 17px;
+  }
+
+  .metric-card__label {
+    font-size: .58rem;
+    letter-spacing: .02em;
+  }
+
+  .metric-card__value {
+    font-size: 1.25rem;
+  }
+
+  .chart-section,
+  .products-section {
+    padding: 14px !important;
+    border-radius: 12px;
+  }
+
+  .section-title {
+    font-size: .9rem;
+  }
+
+  .chart-wrapper {
+    height: 220px;
+  }
+
+  .feed-list {
+    gap: 8px !important;
+  }
+
+  .feed-list > div {
+    gap: 8px !important;
+    padding: 9px !important;
+  }
+
+  .products-table tbody tr {
+    padding: 10px 12px;
+  }
+
+  .products-table td {
+    gap: 10px;
+    padding: 4px 0;
+    font-size: .68rem;
+  }
+
+  .products-table td::before {
+    flex-basis: 42%;
+    font-size: .66rem;
+  }
+
+  .drawer-panel {
+    width: 100%;
+  }
+
+  .drawer-header {
+    padding: 18px 16px;
+  }
+
+  .drawer-body {
+    padding: 16px;
+  }
+
+  .drawer-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+
+  .btn-clear,
+  .btn-apply {
+    width: 100%;
+    padding: 10px 6px;
+    font-size: .78rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .analytics-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .tabs-container {
+    gap: 2px;
+  }
+
+  .tab-btn {
+    font-size: .66rem;
+  }
+
+  .metrics-grid {
+    gap: 7px;
+  }
+
+  .metric-card {
+    padding: 10px;
+    gap: 7px;
+  }
+
+  .metric-card__icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .metric-card__value {
+    font-size: 1.1rem;
+  }
+
+  .products-table tbody tr {
+    padding: 9px 10px;
+  }
+
+  .products-table td {
+    font-size: .65rem;
+  }
+
+  .products-table td::before {
+    font-size: .63rem;
+  }
+}
 </style>
