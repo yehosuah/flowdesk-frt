@@ -292,12 +292,49 @@ async function generatePreview() {
   }, 600);
 }
 
+import { appStore } from '@/stores/app.store';
+
+async function downloadReport(format: 'csv' | 'pdf') {
+  let endpoint = '';
+  if (form.module === 'inventory') {
+     if (form.type === 'current_stock') endpoint = `/api/v1/reports/inventario?format=${format}`;
+     else if (form.type === 'movements') endpoint = `/api/v1/reports/movimientos?format=${format}`;
+     else if (form.type === 'dead_stock') endpoint = `/api/v1/reports/inventario?format=${format}&only_low_stock=true`;
+  }
+  
+  if (!endpoint) {
+    alert("Este reporte aún no está disponible en el servidor (Ej. módulo comercial).");
+    return;
+  }
+  
+  const token = appStore.state.token;
+  try {
+    const response = await fetch(endpoint, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) throw new Error("Error al descargar");
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_${form.type}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (e) {
+    alert("Ocurrió un error al descargar el reporte.");
+  }
+}
+
 function exportCSV() {
-  alert('Iniciando descarga CSV (Pronto conectado al backend)');
+  downloadReport('csv');
 }
 
 function exportPDF() {
-  alert('Iniciando descarga PDF (Pronto conectado al backend)');
+  downloadReport('pdf');
 }
 </script>
 
