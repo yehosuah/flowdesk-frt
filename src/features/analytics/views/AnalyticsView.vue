@@ -206,7 +206,7 @@
       </div>
     </div>
 
-    <!-- TAB PRODUCTOS (DUMMY) -->
+    <!-- TAB PRODUCTOS -->
     <div v-else-if="activeTab === 'products'" class="tab-content">
       <section class="metrics-grid">
         <div class="metric-card">
@@ -214,16 +214,18 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b58900" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </div>
           <div class="metric-card__body">
-            <p class="metric-card__label">Total Productos</p>
-            <p class="metric-card__value" style="color: #b58900;">145</p>
+            <p class="metric-card__label">Total Productos (Catálogo Analizado)</p>
+            <div v-if="productsLoading" class="skeleton skeleton--value"></div>
+            <p v-else class="metric-card__value" style="color: #b58900;">{{ topProducts.length }}</p>
           </div>
         </div>
       </section>
       <div class="dashboard-grid dashboard-grid--1-2">
         <section class="chart-section" style="padding: 24px;">
-          <h2 class="section-title">Distribución por Categorías</h2>
-          <div style="height: 280px; width: 100%; margin-top: 16px;">
-            <Doughnut :data="categoryChartData" :options="categoryChartOptions" />
+          <h2 class="section-title">Distribución de Riesgo</h2>
+          <div v-if="productsLoading" class="chart-skeleton"><div class="skeleton skeleton--chart"></div></div>
+          <div v-else style="height: 280px; width: 100%; margin-top: 16px;">
+            <Doughnut :data="riskChartData" :options="categoryChartOptions" />
           </div>
         </section>
         <section class="products-section" style="padding: 24px;">
@@ -364,14 +366,20 @@ const valuationChartOptions = {
   plugins: chartPlugins
 };
 
-const categoryChartData = {
-  labels: ['Lácteos', 'Abarrotes', 'Limpieza', 'Bebidas'],
-  datasets: [{
-    data: [45, 25, 20, 10],
-    backgroundColor: ['#1565c0', '#2e7d32', '#f57f17', '#c62828'],
-    borderWidth: 0
-  }]
-};
+const riskChartData = computed(() => {
+  const high = topProducts.value.filter(p => p.stock_risk_score >= 60).length;
+  const mid = topProducts.value.filter(p => p.stock_risk_score >= 30 && p.stock_risk_score < 60).length;
+  const low = topProducts.value.filter(p => p.stock_risk_score < 30).length;
+
+  return {
+    labels: ['Riesgo Alto', 'Riesgo Medio', 'Riesgo Bajo'],
+    datasets: [{
+      data: [high, mid, low],
+      backgroundColor: ['#c62828', '#f57f17', '#2e7d32'],
+      borderWidth: 0
+    }]
+  };
+});
 const categoryChartOptions = { 
   responsive: true, 
   maintainAspectRatio: false,
