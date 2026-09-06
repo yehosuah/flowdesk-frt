@@ -47,6 +47,7 @@ describe("appStore", () => {
       accessToken: "token123",
       tokenType: "bearer",
       claims: {
+        sub: "usuario-prueba",
         role: "admin",
         schema_name: "empresa",
         company_id: "1",
@@ -86,6 +87,7 @@ describe("appStore", () => {
       accessToken: "token-expirado",
       tokenType: "bearer",
       claims: {
+        sub: "usuario-prueba",
         role: "admin",
         exp:
           Math.floor(
@@ -126,7 +128,9 @@ describe("appStore", () => {
     ).mockReturnValue({
       accessToken: "token123",
       tokenType: "bearer",
-      claims: {},
+      claims: {
+        sub: "usuario-prueba",
+      },
     });
 
     vi.mocked(
@@ -160,6 +164,7 @@ describe("appStore", () => {
       accessToken: "token123",
       tokenType: "bearer",
       claims: {
+        sub: "usuario-prueba",
         role: "manager",
       },
     });
@@ -181,6 +186,7 @@ describe("appStore", () => {
       accessToken: "token123",
       tokenType: "bearer",
       claims: {
+        sub: "usuario-prueba",
         schema_name: "empresa_demo",
       },
     });
@@ -202,6 +208,7 @@ describe("appStore", () => {
       accessToken: "token123",
       tokenType: "bearer",
       claims: {
+        sub: "usuario-prueba",
         company_id: "25",
       },
     });

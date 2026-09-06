@@ -3,6 +3,8 @@ import type { BackendErrorResponse } from '@/features/auth/types';
 import { appEnv } from '@/services/env';
 import { appStore } from '@/stores/app.store';
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
+
 export class ApiError extends Error {
   status: number;
 
@@ -13,10 +15,12 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
+interface RequestOptions extends Omit<RequestInit, 'body' | 'headers' | 'signal'> {
   auth?: boolean;
   body?: unknown;
   headers?: HeadersInit;
+  timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 function normalizeErrorMessage(payload: unknown): string | null {
@@ -68,7 +72,8 @@ function buildUrl(path: string): string {
   if (!appEnv.hasApiBaseUrl) {
     throw new ApiError(
       500,
-      appEnv.apiBaseUrlError ?? 'No se encontro configuracion para la URL base del backend.',
+      appEnv.apiBaseUrlError ??
+        'No se encontro configuracion para la URL base del backend.',
     );
   }
 
@@ -95,46 +100,89 @@ export function getApiErrorMessage(error: unknown): string {
 }
 
 export const apiClient = {
-  async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    const headers = new Headers(options.headers ?? {});
+  async request<T>(
+    path: string,
+    options: RequestOptions = {},
+  ): Promise<T> {
+    const {
+      timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
+      signal: externalSignal,
+      ...requestOptions
+    } = options;
+
+    const headers = new Headers(requestOptions.headers ?? {});
     headers.set('Accept', 'application/json');
 
-    const isFormData = options.body instanceof FormData;
-    if (!isFormData && options.body !== undefined && options.body !== null) {
+    const isFormData = requestOptions.body instanceof FormData;
+
+    if (
+      !isFormData &&
+      requestOptions.body !== undefined &&
+      requestOptions.body !== null
+    ) {
       headers.set('Content-Type', 'application/json');
     }
 
-    if (options.auth) {
+    if (requestOptions.auth) {
       const accessToken = appStore.accessToken;
 
       if (!accessToken) {
-        throw new ApiError(401, 'No hay una sesion activa para completar esta solicitud.');
+        throw new ApiError(
+          401,
+          'No hay una sesion activa para completar esta solicitud.',
+        );
       }
 
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
+    const controller = new AbortController();
+    let timedOut = false;
+
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+
+    const handleExternalAbort = () => {
+      controller.abort();
+    };
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        controller.abort();
+      } else {
+        externalSignal.addEventListener(
+          'abort',
+          handleExternalAbort,
+          { once: true },
+        );
+      }
+    }
+
     try {
       const requestBody: BodyInit | undefined =
-        isFormData && options.body instanceof FormData
-          ? options.body
-          : options.body !== undefined && options.body !== null
-            ? JSON.stringify(options.body)
+        isFormData && requestOptions.body instanceof FormData
+          ? requestOptions.body
+          : requestOptions.body !== undefined && requestOptions.body !== null
+            ? JSON.stringify(requestOptions.body)
             : undefined;
 
       const response = await fetch(buildUrl(path), {
-        ...options,
+        ...requestOptions,
         headers,
         body: requestBody,
+        signal: controller.signal,
       });
 
       const responsePayload = await parseResponse(response);
 
       if (!response.ok) {
-        const errorMessage = normalizeErrorMessage(responsePayload) ??
+        const errorMessage =
+          normalizeErrorMessage(responsePayload) ??
           `La solicitud fallo con estado ${response.status}.`;
 
-        if (response.status === 401 && options.auth) {
+        if (response.status === 401 && requestOptions.auth) {
           appStore.clearSession();
         }
 
@@ -147,9 +195,33 @@ export const apiClient = {
         throw error;
       }
 
+      if (timedOut) {
+        throw new ApiError(
+          408,
+          'La solicitud tardo demasiado tiempo. Intenta de nuevo.',
+        );
+      }
+
+      if (
+        error instanceof DOMException &&
+        error.name === 'AbortError'
+      ) {
+        throw new ApiError(
+          0,
+          'La solicitud fue cancelada.',
+        );
+      }
+
       throw new ApiError(
         0,
         'No se pudo conectar con el backend. Verifica VITE_API_BASE_URL y confirma que el API este disponible.',
+      );
+    } finally {
+      clearTimeout(timeoutId);
+
+      externalSignal?.removeEventListener(
+        'abort',
+        handleExternalAbort,
       );
     }
   },
