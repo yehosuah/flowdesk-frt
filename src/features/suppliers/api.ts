@@ -102,3 +102,19 @@ export function deleteSupplier(id: string): Promise<void> {
     auth: true,
   });
 }
+
+export interface SupplierProductResponse {
+  supplier_id: string;
+  supplier_name: string;
+  product_id: string;
+  product_sku: string;
+  product_name: string;
+  quotation: number;
+}
+
+export function fetchSupplierProducts(supplierId: string): Promise<SupplierProductResponse[]> {
+  return apiClient.request<SupplierProductResponse[]>(
+    `/api/v1/inventory/supplier-products?supplier_id=${supplierId}`,
+    { method: 'GET', auth: true }
+  );
+}

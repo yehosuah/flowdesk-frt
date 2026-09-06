@@ -99,11 +99,11 @@
               </div>
             </section>
 
-          <!-- Productos (Dummy) -->
           <section class="detail-section mt-4">
             <h3 class="section-title">Productos que Provee (Catálogo)</h3>
             <div class="dummy-table-container">
-              <table class="dummy-table">
+              <div v-if="productsLoading" class="loading-state" style="padding: 24px;">Cargando productos...</div>
+              <table v-else class="dummy-table">
                 <thead>
                   <tr>
                     <th>SKU</th>
@@ -112,10 +112,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="p in mockProducts" :key="p.id">
-                    <td class="td-sku">{{ p.sku }}</td>
-                    <td class="font-medium">{{ p.name }}</td>
-                    <td>{{ p.price }}</td>
+                  <tr v-for="p in supplierProducts" :key="p.product_id">
+                    <td class="td-sku">{{ p.product_sku }}</td>
+                    <td class="font-medium">{{ p.product_name }}</td>
+                    <td>Q{{ Number(p.quotation).toFixed(2) }}</td>
+                  </tr>
+                  <tr v-if="supplierProducts.length === 0">
+                    <td colspan="3" class="empty-state" style="padding: 24px; text-align: center;">Este proveedor aún no tiene productos asociados.</td>
                   </tr>
                 </tbody>
               </table>
@@ -137,9 +140,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Search, Phone, Mail, Pencil, MapPin, Building2 } from 'lucide-vue-next';
-import { fetchSuppliers, toggleSupplierStatus, type Supplier } from '@/features/suppliers/api';
+import { fetchSuppliers, fetchSupplierProducts, toggleSupplierStatus, type Supplier, type SupplierProductResponse } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import SupplierModal from '@/features/suppliers/components/SupplierModal.vue';
 
@@ -154,20 +157,35 @@ const statusFilter = ref('active'); // Por defecto ver activos (o 'all')
 const selectedSupplier = ref<Supplier | null>(null);
 const isToggling = ref<string | null>(null);
 
+// Supplier Products
+const supplierProducts = ref<SupplierProductResponse[]>([]);
+const productsLoading = ref(false);
+
 // Variables Modal
 const showModal = ref(false);
 const supplierToEdit = ref<Supplier | null>(null);
 
-// Datos Dummy para secciones que el backend aún no soporta
-const mockProducts = [
-  { id: 1, name: 'Caja de Cartón 50x50', sku: 'BOX-50', price: '$1.20' },
-  { id: 2, name: 'Cinta Adhesiva Industrial', sku: 'TAPE-IND', price: '$0.80' },
-  { id: 3, name: 'Plástico de Burbujas 50m', sku: 'BUBBLE-50', price: '$12.00' },
-];
-
-
 // Buscador
 let searchTimeout: ReturnType<typeof setTimeout>;
+
+async function loadProducts(supplierId: string) {
+  productsLoading.value = true;
+  try {
+    supplierProducts.value = await fetchSupplierProducts(supplierId);
+  } catch (err) {
+    supplierProducts.value = [];
+  } finally {
+    productsLoading.value = false;
+  }
+}
+
+watch(selectedSupplier, (newVal) => {
+  if (newVal) {
+    loadProducts(newVal.id);
+  } else {
+    supplierProducts.value = [];
+  }
+});
 
 async function fetchData() {
   isLoading.value = true;
