@@ -222,7 +222,7 @@
       </section>
       <div class="dashboard-grid dashboard-grid--1-2">
         <section class="chart-section" style="padding: 24px;">
-          <h2 class="section-title">Distribución de Riesgo</h2>
+          <h2 class="section-title">Riesgo de Desabastecimiento</h2>
           <div v-if="productsLoading" class="chart-skeleton"><div class="skeleton skeleton--chart"></div></div>
           <div v-else style="height: 280px; width: 100%; margin-top: 16px;">
             <Doughnut :data="riskChartData" :options="categoryChartOptions" />
@@ -372,7 +372,7 @@ const riskChartData = computed(() => {
   const low = topProducts.value.filter(p => p.stock_risk_score < 30).length;
 
   return {
-    labels: ['Riesgo Alto', 'Riesgo Medio', 'Riesgo Bajo'],
+    labels: ['Crítico (Próximo a agotarse)', 'Precaución (Consumo alto)', 'Saludable (Stock suficiente)'],
     datasets: [{
       data: [high, mid, low],
       backgroundColor: ['#c62828', '#f57f17', '#2e7d32'],
