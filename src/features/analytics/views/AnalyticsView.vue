@@ -109,6 +109,7 @@
                   <th>Entradas</th>
                   <th>Salidas</th>
                   <th>Stock</th>
+                  <th>Riesgo</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,9 +118,14 @@
                   <td class="td-in">+{{ fmt(p.inbound_quantity) }}</td>
                   <td class="td-out">-{{ fmt(p.outbound_quantity) }}</td>
                   <td>{{ fmt(p.ending_stock) }}</td>
+                  <td>
+                    <span :class="['risk-badge', riskClass(p.stock_risk_score)]">
+                      {{ riskLabel(p.stock_risk_score) }}
+                    </span>
+                  </td>
                 </tr>
                 <tr v-if="topProducts.length === 0">
-                  <td colspan="4" class="table-empty">Sin datos.</td>
+                  <td colspan="5" class="table-empty">Sin datos.</td>
                 </tr>
               </tbody>
             </table>
@@ -253,32 +259,32 @@
         <div class="filter-group">
           <label>Rango de Fechas</label>
           <div class="date-inputs">
-            <input type="date" class="filter-input" />
+            <input type="date" class="filter-input" v-model="filterStartDate" />
             <span>a</span>
-            <input type="date" class="filter-input" />
+            <input type="date" class="filter-input" v-model="filterEndDate" />
           </div>
         </div>
-        <div class="filter-group">
+        <div class="filter-group" title="Próximamente">
           <label>Categoría</label>
-          <select class="filter-input">
+          <select class="filter-input" disabled>
             <option value="">Todas las categorías</option>
             <option value="lacteos">Lácteos</option>
             <option value="abarrotes">Abarrotes</option>
             <option value="limpieza">Limpieza</option>
           </select>
         </div>
-        <div class="filter-group">
+        <div class="filter-group" title="Próximamente">
           <label>Rango de Stock</label>
           <div class="range-inputs">
-            <input type="number" placeholder="Mín" class="filter-input" />
+            <input type="number" placeholder="Mín" class="filter-input" disabled />
             <span>-</span>
-            <input type="number" placeholder="Máx" class="filter-input" />
+            <input type="number" placeholder="Máx" class="filter-input" disabled />
           </div>
         </div>
       </div>
       <div class="drawer-footer">
-        <button class="btn-clear" @click="showFilters = false">Limpiar</button>
-        <button class="btn-apply" @click="showFilters = false">Aplicar Filtros</button>
+        <button class="btn-clear" @click="clearFilters">Limpiar</button>
+        <button class="btn-apply" @click="applyFilters">Aplicar Filtros</button>
       </div>
     </div>
 
@@ -500,10 +506,13 @@ function riskLabel(score: number): string {
   return 'Bajo';
 }
 
+const filterStartDate = ref('');
+const filterEndDate = ref('');
+
 async function loadMetrics() {
   metricsLoading.value = true;
   try {
-    metrics.value = await fetchMetrics(selectedPeriod.value);
+    metrics.value = await fetchMetrics(selectedPeriod.value, filterStartDate.value, filterEndDate.value);
   } catch (err) {
     globalError.value = getApiErrorMessage(err);
     metrics.value = null;
@@ -516,7 +525,7 @@ async function loadTrend() {
   trendLoading.value = true;
   trendError.value = '';
   try {
-    const res = await fetchTrend(selectedPeriod.value, selectedWindow.value);
+    const res = await fetchTrend(selectedPeriod.value, selectedWindow.value, filterStartDate.value, filterEndDate.value);
     trendData.value = res.points;
   } catch (err) {
     trendError.value = getApiErrorMessage(err);
@@ -530,7 +539,7 @@ async function loadProductAnalytics() {
   productsLoading.value = true;
   productsError.value = '';
   try {
-    const res = await fetchProductAnalytics(selectedPeriod.value, selectedSort.value, 8);
+    const res = await fetchProductAnalytics(selectedPeriod.value, selectedSort.value, 8, filterStartDate.value, filterEndDate.value);
     topProducts.value = res.products;
   } catch (err) {
     productsError.value = getApiErrorMessage(err);
@@ -544,8 +553,40 @@ async function loadAll() {
   await Promise.all([loadMetrics(), loadTrend(), loadProductAnalytics()]);
 }
 
+async function applyFilters() {
+  if (filterStartDate.value && filterEndDate.value) {
+    if (new Date(filterStartDate.value) > new Date(filterEndDate.value)) {
+      globalError.value = "La fecha de inicio no puede ser mayor a la fecha de fin.";
+      return;
+    }
+    selectedPeriod.value = 'custom';
+  } else if (selectedPeriod.value === 'custom') {
+    globalError.value = "Debes seleccionar un rango de fechas completo.";
+    return;
+  }
+  
+  showFilters.value = false;
+  globalError.value = '';
+  await loadAll();
+}
+
+async function clearFilters() {
+  filterStartDate.value = '';
+  filterEndDate.value = '';
+  if (selectedPeriod.value === 'custom') {
+    selectedPeriod.value = '30d';
+  }
+  showFilters.value = false;
+  globalError.value = '';
+  await loadAll();
+}
+
 async function changePeriod(period: AnalyticsPeriod) {
   selectedPeriod.value = period;
+  if (period !== 'custom') {
+    filterStartDate.value = '';
+    filterEndDate.value = '';
+  }
   if (period === '7d') selectedWindow.value = 'day';
   else if (period === '30d') selectedWindow.value = 'day';
   else if (period === '90d') selectedWindow.value = 'week';

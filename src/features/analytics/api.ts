@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/apiClient';
 
-export type AnalyticsPeriod = '7d' | '30d' | '90d' | '6m' | '12m' | 'ytd';
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | '6m' | '12m' | 'ytd' | 'custom';
 
 export interface InventoryMetrics {
   period: AnalyticsPeriod;
@@ -53,30 +53,37 @@ export interface ProductAnalyticsResponse {
   products: ProductAnalyticsRow[];
 }
 
-export function fetchMetrics(period: AnalyticsPeriod = '30d'): Promise<InventoryMetrics> {
-  return apiClient.request<InventoryMetrics>(
-    `/api/v1/inventory/metrics?period=${period}`,
-    { method: 'GET', auth: true }
-  );
+export function fetchMetrics(period: AnalyticsPeriod = '30d', startDate?: string, endDate?: string): Promise<InventoryMetrics> {
+  let url = `/api/v1/inventory/metrics?period=${period}`;
+  if (period === 'custom' && startDate && endDate) {
+    url += `&start_date=${startDate}&end_date=${endDate}`;
+  }
+  return apiClient.request<InventoryMetrics>(url, { method: 'GET', auth: true });
 }
 
 export function fetchTrend(
   period: AnalyticsPeriod = '30d',
-  window: 'day' | 'week' | 'month' = 'day'
+  window: 'day' | 'week' | 'month' = 'day',
+  startDate?: string,
+  endDate?: string
 ): Promise<TrendResponse> {
-  return apiClient.request<TrendResponse>(
-    `/api/v1/inventory/analytics/trend?period=${period}&window=${window}`,
-    { method: 'GET', auth: true }
-  );
+  let url = `/api/v1/inventory/analytics/trend?period=${period}&window=${window}`;
+  if (period === 'custom' && startDate && endDate) {
+    url += `&start_date=${startDate}&end_date=${endDate}`;
+  }
+  return apiClient.request<TrendResponse>(url, { method: 'GET', auth: true });
 }
 
 export function fetchProductAnalytics(
   period: AnalyticsPeriod = '30d',
   sortBy: 'outbound' | 'inbound' | 'stock_risk' = 'outbound',
-  limit = 8
+  limit = 8,
+  startDate?: string,
+  endDate?: string
 ): Promise<ProductAnalyticsResponse> {
-  return apiClient.request<ProductAnalyticsResponse>(
-    `/api/v1/inventory/analytics/products?period=${period}&sort_by=${sortBy}&limit=${limit}`,
-    { method: 'GET', auth: true }
-  );
+  let url = `/api/v1/inventory/analytics/products?period=${period}&sort_by=${sortBy}&limit=${limit}`;
+  if (period === 'custom' && startDate && endDate) {
+    url += `&start_date=${startDate}&end_date=${endDate}`;
+  }
+  return apiClient.request<ProductAnalyticsResponse>(url, { method: 'GET', auth: true });
 }
