@@ -73,15 +73,17 @@
         <section class="chart-section" style="padding: 24px;">
           <h2 class="section-title">Feed de Movimientos</h2>
           <div class="feed-list" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto;">
-            <div v-for="item in mockFeed" :key="item.id" style="display: flex; gap: 12px; align-items: center; padding: 12px; background: #f8fafc; border-radius: 8px;">
-              <div :style="{ color: item.type === 'in' ? '#2e7d32' : '#e65100' }">
-                <ArrowDownRight v-if="item.type === 'in'" />
+            <div v-if="feedLoading" class="table-loading">Cargando feed...</div>
+            <div v-else-if="feed.length === 0" class="chart-empty">No hay movimientos recientes.</div>
+            <div v-else v-for="item in feed" :key="item.id" style="display: flex; gap: 12px; align-items: center; padding: 12px; background: #f8fafc; border-radius: 8px;">
+              <div :style="{ color: item.direction === 'in' ? '#2e7d32' : '#e65100' }">
+                <ArrowDownRight v-if="item.direction === 'in'" />
                 <ArrowUpRight v-else />
               </div>
               <div style="flex: 1; font-size: 0.88rem;">
-                <strong>{{ item.user }}</strong> {{ item.action }} <strong>{{ item.product }}</strong>
+                <strong>{{ item.tipo_movimiento.replace('_', ' ') }}</strong> de <strong>{{ item.cantidad }}</strong> uds. de <strong>{{ item.nombre }}</strong>
               </div>
-              <span style="font-size: 0.75rem; color: var(--color-text-muted);">{{ item.time }}</span>
+              <span style="font-size: 0.75rem; color: var(--color-text-muted);">{{ new Date(item.fecha).toLocaleDateString() }}</span>
             </div>
           </div>
         </section>
@@ -135,21 +137,23 @@
         <section class="products-section" style="padding: 24px;">
           <h2 class="section-title">Alertas de Reabastecimiento</h2>
           <div class="table-container" style="margin-top: 16px;">
-            <table class="products-table">
+            <div v-if="alertsLoading" class="table-loading">Cargando alertas...</div>
+            <table v-else class="products-table">
               <thead>
                 <tr>
-                  <th>Producto</th>
-                  <th>Stock</th>
-                  <th>Mínimo</th>
-                  <th>Proveedor</th>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Mensaje</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="alert in mockAlerts" :key="alert.id">
-                  <td class="td-name">{{ alert.name }}</td>
-                  <td style="color: #c62828; font-weight: bold;">{{ alert.stock }}</td>
-                  <td>{{ alert.min }}</td>
-                  <td style="color: var(--color-text-muted);">{{ alert.supplier }}</td>
+                <tr v-for="alert in alerts" :key="alert.id">
+                  <td>{{ new Date(alert.fecha).toLocaleDateString() }}</td>
+                  <td style="color: #c62828; font-weight: bold;">{{ alert.tipo.replace('_', ' ') }}</td>
+                  <td>{{ alert.mensaje }}</td>
+                </tr>
+                <tr v-if="alerts.length === 0">
+                  <td colspan="3" class="table-empty">No hay alertas.</td>
                 </tr>
               </tbody>
             </table>
@@ -225,21 +229,29 @@
         <section class="products-section" style="padding: 24px;">
           <h2 class="section-title">Reporte de Stock Muerto</h2>
           <div class="table-container" style="margin-top: 16px;">
-            <table class="products-table">
+            <div v-if="productsLoading" class="table-loading">Cargando stock muerto...</div>
+            <table v-else class="products-table">
               <thead>
                 <tr>
                   <th>Producto</th>
-                  <th>Días sin movimiento</th>
+                  <th>Salidas ({{ selectedPeriod }})</th>
                   <th>Stock Estancado</th>
-                  <th>Valor Congelado</th>
+                  <th>Riesgo</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in mockDeadStock" :key="item.id">
-                  <td class="td-name">{{ item.name }}</td>
-                  <td style="color: #e65100; font-weight: bold;">{{ item.days }} días</td>
-                  <td>{{ item.stock }}</td>
-                  <td style="color: #c62828; font-weight: bold;">{{ item.value }}</td>
+                <tr v-for="item in deadStock" :key="item.product_id">
+                  <td class="td-name">{{ item.nombre }}</td>
+                  <td style="color: #e65100; font-weight: bold;">{{ item.outbound_quantity }}</td>
+                  <td>{{ fmt(item.ending_stock) }}</td>
+                  <td>
+                    <span :class="['risk-badge', riskClass(item.stock_risk_score)]">
+                      {{ riskLabel(item.stock_risk_score) }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="deadStock.length === 0">
+                  <td colspan="4" class="table-empty">No hay stock muerto detectado.</td>
                 </tr>
               </tbody>
             </table>
@@ -311,10 +323,14 @@ import {
   fetchMetrics,
   fetchTrend,
   fetchProductAnalytics,
+  fetchHistory,
+  fetchAlerts,
   type AnalyticsPeriod,
   type InventoryMetrics,
   type TrendPoint,
   type ProductAnalyticsRow,
+  type InventoryHistoryRow,
+  type InventoryAlertResponse
 } from '@/features/analytics/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 
@@ -362,22 +378,6 @@ const categoryChartOptions = {
   plugins: chartPlugins
 };
 
-const mockFeed = [
-  { id: 1, type: 'out', user: 'Juan P.', action: 'retiró 5 unid. de', product: 'Demo Frijol', time: 'Hace 10 min' },
-  { id: 2, type: 'in', user: 'María S.', action: 'ingresó 20 unid. de', product: 'Demo Arroz', time: 'Hace 2 horas' },
-  { id: 3, type: 'out', user: 'Juan P.', action: 'retiró 2 unid. de', product: 'Cafe demo', time: 'Ayer' },
-];
-
-const mockAlerts = [
-  { id: 1, name: 'Demo Arroz', stock: 5, min: 10, supplier: 'Granos S.A.' },
-  { id: 2, name: 'Aceite 1L', stock: 2, min: 15, supplier: 'Aceitera La Rosa' },
-];
-
-const mockDeadStock = [
-  { id: 1, name: 'Jabón en Polvo XXL', days: 120, stock: 45, value: 'Q1,350' },
-  { id: 2, name: 'Atún en Agua', days: 95, stock: 120, value: 'Q960' },
-];
-
 const showFilters = ref(false);
 const activeTab = ref<'inventory' | 'sales' | 'products'>('inventory');
 const selectedPeriod = ref<AnalyticsPeriod>('30d');
@@ -395,6 +395,16 @@ const trendError = ref('');
 const topProducts = ref<ProductAnalyticsRow[]>([]);
 const productsLoading = ref(false);
 const productsError = ref('');
+
+const feed = ref<InventoryHistoryRow[]>([]);
+const feedLoading = ref(false);
+
+const alerts = ref<InventoryAlertResponse[]>([]);
+const alertsLoading = ref(false);
+
+const deadStock = computed(() => {
+  return topProducts.value.filter(p => p.outbound_quantity === 0 && p.ending_stock > 0);
+});
 
 const CHART_WIDTH = 640;
 const CHART_HEIGHT = 220;
@@ -549,8 +559,36 @@ async function loadProductAnalytics() {
   }
 }
 
+async function loadHistory() {
+  feedLoading.value = true;
+  try {
+    feed.value = await fetchHistory(10);
+  } catch {
+    feed.value = [];
+  } finally {
+    feedLoading.value = false;
+  }
+}
+
+async function loadAlerts() {
+  alertsLoading.value = true;
+  try {
+    alerts.value = await fetchAlerts(true);
+  } catch {
+    alerts.value = [];
+  } finally {
+    alertsLoading.value = false;
+  }
+}
+
 async function loadAll() {
-  await Promise.all([loadMetrics(), loadTrend(), loadProductAnalytics()]);
+  await Promise.all([
+    loadMetrics(),
+    loadTrend(),
+    loadProductAnalytics(),
+    loadHistory(),
+    loadAlerts()
+  ]);
 }
 
 async function applyFilters() {

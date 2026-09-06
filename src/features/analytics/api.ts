@@ -87,3 +87,40 @@ export function fetchProductAnalytics(
   }
   return apiClient.request<ProductAnalyticsResponse>(url, { method: 'GET', auth: true });
 }
+
+export interface InventoryHistoryRow {
+  id: string;
+  producto_id: string;
+  sku: string;
+  nombre: string;
+  tipo_movimiento: string;
+  direction: 'in' | 'out';
+  fecha: string;
+  cantidad: number;
+  stock_resultante: number;
+  motivo: string | null;
+}
+
+export function fetchHistory(limit = 20): Promise<InventoryHistoryRow[]> {
+  return apiClient.request<InventoryHistoryRow[]>(
+    `/api/v1/inventory/history?limit=${limit}`,
+    { method: 'GET', auth: true }
+  );
+}
+
+export interface InventoryAlertResponse {
+  id: string;
+  producto_id: string;
+  tipo: string;
+  mensaje: string;
+  fecha: string;
+  estado: string;
+  resuelta_en: string | null;
+}
+
+export function fetchAlerts(openOnly = true): Promise<InventoryAlertResponse[]> {
+  return apiClient.request<InventoryAlertResponse[]>(
+    `/api/v1/inventory/alerts?open_only=${openOnly}`,
+    { method: 'GET', auth: true }
+  );
+}
