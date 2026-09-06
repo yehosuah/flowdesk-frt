@@ -786,12 +786,9 @@ onMounted(loadAll);
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
-@media (max-width: 1100px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .metrics-grid { grid-template-columns: 1fr; } }
-
 .metric-card {
   background: var(--color-bg-surface);
   border: 1.5px solid var(--color-structure-subtle);
