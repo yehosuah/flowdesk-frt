@@ -7,6 +7,10 @@
           <button class="tab-btn" :class="{ active: activeTab === 'inventory' }" @click="activeTab = 'inventory'">Inventario</button>
           <button class="tab-btn" :class="{ active: activeTab === 'sales' }" @click="activeTab = 'sales'">Ventas</button>
           <button class="tab-btn" :class="{ active: activeTab === 'products' }" @click="activeTab = 'products'">Productos</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'ai' }" @click="activeTab = 'ai'" style="display: flex; align-items: center; gap: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><path d="M2 12h20"/></svg>
+            Asistente IA
+          </button>
         </div>
       </div>
       <div class="header-actions">
@@ -262,6 +266,15 @@
       </div>
     </div>
 
+    <!-- TAB ASISTENTE IA -->
+    <div v-else-if="activeTab === 'ai'" class="tab-content">
+      <AiInsightsCard 
+        :period="selectedPeriod"
+        :start-date="filterStartDate"
+        :end-date="filterEndDate"
+      />
+    </div>
+
     <!-- ADVANCED FILTERS DRAWER -->
     <div class="drawer-overlay" :class="{ 'drawer-overlay--open': showFilters }" @click="showFilters = false"></div>
     <div class="drawer-panel" :class="{ 'drawer-panel--open': showFilters }">
@@ -298,6 +311,7 @@
 </template>
 
 <script setup lang="ts">
+import AiInsightsCard from '@/features/analytics/components/AiInsightsCard.vue';
 import { computed, ref, onMounted } from 'vue';
 import { Filter, ArrowUpRight, ArrowDownRight, AlertTriangle, X } from 'lucide-vue-next';
 import { Line, Doughnut, Bar } from 'vue-chartjs';
@@ -379,7 +393,7 @@ const categoryChartOptions = {
 };
 
 const showFilters = ref(false);
-const activeTab = ref<'inventory' | 'sales' | 'products'>('inventory');
+const activeTab = ref<'inventory' | 'sales' | 'products' | 'ai'>('inventory');
 const selectedPeriod = ref<AnalyticsPeriod>('30d');
 const selectedWindow = ref<'day' | 'week' | 'month'>('day');
 const selectedSort = ref<'outbound' | 'inbound' | 'stock_risk'>('outbound');

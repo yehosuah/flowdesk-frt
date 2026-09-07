@@ -124,3 +124,29 @@ export function fetchAlerts(openOnly = true): Promise<InventoryAlertResponse[]> 
     { method: 'GET', auth: true }
   );
 }
+
+export interface AiInsightResponse {
+  insights: string;
+  recommendations: string[];
+}
+
+export function fetchAIInsights(
+  period: AnalyticsPeriod,
+  startDate?: string,
+  endDate?: string
+): Promise<AiInsightResponse> {
+  const params = new URLSearchParams();
+  if (period !== 'custom') {
+    params.append('period', period);
+  }
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+
+  return apiClient.request<AiInsightResponse>(
+    `/api/v1/inventory/analytics/insights?${params.toString()}`,
+    {
+      method: 'GET',
+      auth: true,
+    }
+  );
+}
