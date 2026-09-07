@@ -7,8 +7,7 @@
           <button class="tab-btn" :class="{ active: activeTab === 'inventory' }" @click="activeTab = 'inventory'">Inventario</button>
           <button class="tab-btn" :class="{ active: activeTab === 'sales' }" @click="activeTab = 'sales'">Ventas</button>
           <button class="tab-btn" :class="{ active: activeTab === 'products' }" @click="activeTab = 'products'">Productos</button>
-          <button class="tab-btn" :class="{ active: activeTab === 'ai' }" @click="activeTab = 'ai'" style="display: flex; align-items: center; gap: 4px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><path d="M2 12h20"/></svg>
+          <button class="tab-btn" :class="{ active: activeTab === 'ai' }" @click="activeTab = 'ai'">
             Asistente IA
           </button>
         </div>

@@ -2,10 +2,6 @@
   <div class="ai-insights-card">
     <div class="ai-header">
       <div class="ai-title-wrapper">
-        <svg class="ai-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          <path d="M2 12h20" />
-        </svg>
         <h2 class="ai-title">Insights de IA</h2>
       </div>
       <button class="btn-generate" @click="generate" :disabled="loading">
@@ -19,7 +15,7 @@
 
     <div v-if="loading" class="ai-loading">
       <div class="spinner"></div>
-      <p>Nuestra IA está analizando tus métricas para encontrar patrones clave...</p>
+      <p>Analizando métricas para encontrar patrones clave...</p>
     </div>
 
     <div v-else-if="result" class="ai-content">
@@ -94,11 +90,11 @@ async function generate() {
 
 <style scoped>
 .ai-insights-card {
-  background: linear-gradient(145deg, #ffffff, #fcfcff);
-  border: 1.5px solid #d4c4fb;
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-structure-subtle);
   border-radius: 14px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(103, 58, 183, 0.08);
+  box-shadow: var(--shadow-card);
   margin-top: 24px;
 }
 
@@ -115,19 +111,15 @@ async function generate() {
   gap: 12px;
 }
 
-.ai-icon {
-  color: #673ab7;
-}
-
 .ai-title {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
-  color: #311b92;
+  color: var(--color-structure-base);
 }
 
 .btn-generate {
-  background: #673ab7;
+  background: var(--color-structure-base);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -138,15 +130,16 @@ async function generate() {
 }
 
 .btn-generate:hover:not(:disabled) {
-  background: #512da8;
+  background: var(--color-structure-hover);
 }
 .btn-generate:disabled {
-  background: #b39ddb;
+  background: var(--color-structure-subtle);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 
 .ai-empty {
-  color: #7e57c2;
+  color: var(--color-text-muted);
   font-style: italic;
   font-size: 0.95rem;
   padding: 16px 0 8px 0;
@@ -157,15 +150,15 @@ async function generate() {
   flex-direction: column;
   align-items: center;
   padding: 32px 0;
-  color: #5e35b1;
+  color: var(--color-structure-base);
   font-weight: 500;
 }
 
 .spinner {
   width: 30px;
   height: 30px;
-  border: 3px solid #ede7f6;
-  border-top: 3px solid #673ab7;
+  border: 3px solid var(--color-structure-subtle);
+  border-top: 3px solid var(--color-structure-base);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -174,8 +167,8 @@ async function generate() {
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .ai-error {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
   padding: 12px;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -184,28 +177,28 @@ async function generate() {
 
 .ai-content {
   background: white;
-  border: 1px solid #ede7f6;
+  border: 1px solid var(--color-structure-subtle);
   border-radius: 10px;
   padding: 20px;
 }
 
 .ai-summary {
   font-size: 1rem;
-  color: #424242;
+  color: var(--color-text);
   line-height: 1.6;
   margin-bottom: 16px;
 }
 
 .ai-recommendations h4 {
   margin: 0 0 10px 0;
-  color: #311b92;
+  color: var(--color-structure-base);
   font-size: 1.05rem;
 }
 
 .ai-recommendations ul {
   margin: 0;
   padding-left: 20px;
-  color: #424242;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
