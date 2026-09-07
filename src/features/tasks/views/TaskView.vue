@@ -170,4 +170,38 @@ function updateTask(updatedTask: Task) {
 .coming-soon-card p {
   color: var(--color-text-secondary);
 }
+
+@media (max-width: 768px) {
+  .tasks-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .page-subtitle {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .btn-create {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 16px;
+  }
+}
 </style>

@@ -29,11 +29,46 @@
             />
           </div>
           <div class="filter-box">
-            <select v-model="statusFilter" class="filter-select" @change="fetchData">
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
+            <details ref="filterDropdown" class="filter-dropdown">
+              <summary class="filter-select">
+                {{
+                  statusFilter === 'all'
+                    ? 'Todos'
+                    : statusFilter === 'active'
+                      ? 'Activos'
+                      : 'Inactivos'
+                }}
+              </summary>
+
+              <div class="filter-options">
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'all' }"
+                  @click="changeStatusFilter('all')"
+                >
+                  Todos
+                </button>
+
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'active' }"
+                  @click="changeStatusFilter('active')"
+                >
+                  Activos
+                </button>
+
+                <button
+                  type="button"
+                  class="filter-option"
+                  :class="{ 'filter-option--active': statusFilter === 'inactive' }"
+                  @click="changeStatusFilter('inactive')"
+                >
+                  Inactivos
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -151,7 +186,8 @@ const suppliers = ref<Supplier[]>([]);
 const isLoading = ref(true);
 const globalError = ref('');
 const searchQuery = ref('');
-const statusFilter = ref('active'); // Por defecto ver activos (o 'all')
+const statusFilter = ref<'all' | 'active' | 'inactive'>('active');
+const filterDropdown = ref<HTMLDetailsElement | null>(null);
 
 // Master-Detail State
 const selectedSupplier = ref<Supplier | null>(null);
@@ -213,6 +249,16 @@ function onSearch() {
   searchTimeout = setTimeout(() => {
     fetchData();
   }, 400); // 400ms debounce
+}
+
+function changeStatusFilter(value: 'all' | 'active' | 'inactive') {
+  statusFilter.value = value;
+
+  if (filterDropdown.value) {
+    filterDropdown.value.open = false;
+  }
+
+  fetchData();
 }
 
 function selectSupplier(sup: Supplier) {
@@ -341,6 +387,13 @@ onMounted(() => {
   gap: 12px;
 }
 
+.toolbar {
+  position: relative;
+  z-index: 10;
+  padding: 14px;
+  border-radius: 16px 16px 0 0;
+}
+
 .search-box {
   position: relative;
   display: flex;
@@ -368,19 +421,94 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
-.filter-select {
+.filter-box {
   width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+.filter-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.filter-dropdown summary {
+  list-style: none;
+}
+
+.filter-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-select {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px 32px 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 0.85rem;
   background: #f8fafc;
+  color: #334155;
+  font-size: 0.85rem;
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
+  user-select: none;
+}
+
+.filter-select::after {
+  content: '⌄';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-55%);
+  color: #94a3b8;
+}
+
+.filter-dropdown[open] .filter-select {
+  border-radius: 8px 8px 0 0;
+}
+
+.filter-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.filter-option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  color: #334155;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-option:last-child {
+  border-bottom: none;
+}
+
+.filter-option:hover {
+  background: #f8fafc;
+}
+
+.filter-option--active {
+  background: #eff6ff;
+  color: var(--color-structure-base);
+  font-weight: 600;
 }
 
 .supplier-list {
@@ -389,6 +517,18 @@ onMounted(() => {
   margin: 0;
   overflow-y: auto;
   flex: 1;
+}
+
+.supplier-list {
+  position: relative;
+  z-index: 1;
+  max-height: 240px;
+}
+
+.filter-dropdown,
+.filter-select,
+.filter-options {
+  max-width: 100%;
 }
 
 .supplier-item {
@@ -561,11 +701,11 @@ onMounted(() => {
 }
 
 .dummy-table th {
-  background: #f8fafc;
+  background: var(--color-structure-base);
   padding: 12px 16px;
-  color: #64748b;
-  font-weight: 600;
-  border-bottom: 1px solid #e2e8f0;
+  color: #f0f4f9;
+  font-weight: 700;
+  border-bottom: none;
 }
 
 .dummy-table td {
@@ -632,5 +772,269 @@ onMounted(() => {
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .page-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    width: 100%;
+    gap: 16px;
+  }
+
+  .split-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    gap: 20px;
+  }
+
+  .master-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  .supplier-list {
+    max-height: 240px;
+  }
+
+  .detail-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  .detail-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .contact-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .contact-row {
+    min-width: 0;
+  }
+
+  .contact-row span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dummy-table-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .dummy-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .dummy-table th,
+  .dummy-table td {
+    padding: 10px 12px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .dummy-table th:nth-child(1),
+  .dummy-table td:nth-child(1) {
+    width: 24%;
+  }
+
+  .dummy-table th:nth-child(2),
+  .dummy-table td:nth-child(2) {
+    width: 46%;
+  }
+
+  .dummy-table th:nth-child(3),
+  .dummy-table td:nth-child(3) {
+    width: 30%;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .header-content {
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .page-subtitle {
+    font-size: .88rem;
+    line-height: 1.4;
+  }
+
+  .btn-add {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+
+  .split-layout {
+    gap: 16px;
+  }
+
+  .detail-panel {
+    padding: 20px 16px;
+  }
+
+  .detail-header {
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+  }
+
+  .detail-name {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .contact-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .contact-row {
+    font-size: .85rem;
+  }
+
+  .mt-4 {
+    margin-top: 24px;
+  }
+
+  .dummy-table {
+    font-size: .78rem;
+  }
+
+  .dummy-table th,
+  .dummy-table td {
+    padding: 9px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 18px 14px;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .toolbar {
+    padding: 12px;
+  }
+
+  .supplier-item {
+    padding: 13px 12px;
+  }
+
+  .supplier-item.active {
+    padding-left: 8px;
+  }
+
+  .supplier-name {
+    font-size: .85rem;
+  }
+
+  .detail-panel {
+    padding: 16px 14px;
+  }
+
+  .detail-header {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .detail-name {
+    min-width: 0;
+    font-size: 1.1rem;
+    overflow-wrap: anywhere;
+  }
+
+  .btn-icon-action {
+    flex-shrink: 0;
+    padding: 7px 11px;
+    font-size: .78rem;
+  }
+
+  .section-title {
+    font-size: .9rem;
+  }
+
+  .contact-card {
+    padding: 14px;
+  }
+
+  .contact-row {
+    gap: 9px;
+    font-size: .78rem;
+  }
+
+  .dummy-table {
+    font-size: .7rem;
+  }
+
+  .dummy-table th,
+  .dummy-table td {
+    padding: 8px 8px;
+  }
+
+  .dummy-table th:nth-child(1),
+  .dummy-table td:nth-child(1) {
+    width: 25%;
+  }
+
+  .dummy-table th:nth-child(2),
+  .dummy-table td:nth-child(2) {
+    width: 45%;
+  }
+
+  .dummy-table th:nth-child(3),
+  .dummy-table td:nth-child(3) {
+    width: 30%;
+  }
+
+  .td-sku {
+    overflow-wrap: anywhere;
+  }
 }
 </style>
