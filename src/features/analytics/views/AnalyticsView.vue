@@ -35,7 +35,7 @@
     <!-- TAB INVENTARIO -->
     <div v-if="activeTab === 'inventory'" class="tab-content">
       <section class="metrics-grid">
-      <div v-for="card in metricCards" :key="card.key" class="metric-card">
+      <div v-for="card in metricCards.filter(c => visibleKpis.includes(c.key))" :key="card.key" class="metric-card">
         <div class="metric-card__icon" :style="{ background: card.iconBg }">
           <span v-html="card.icon"></span>
         </div>
@@ -278,6 +278,15 @@
             <input type="date" class="filter-input" v-model="filterEndDate" />
           </div>
         </div>
+        <div class="filter-group">
+          <label>Métricas Visibles (KPIs)</label>
+          <div class="checkbox-group">
+            <label v-for="card in metricCards" :key="'cb-'+card.key" class="checkbox-label">
+              <input type="checkbox" :value="card.key" v-model="visibleKpis" />
+              {{ card.label }}
+            </label>
+          </div>
+        </div>
         <div class="filter-group" title="Próximamente">
           <label>Categoría</label>
           <select class="filter-input" disabled>
@@ -429,6 +438,8 @@ const windowOptions = [
   { value: 'week' as const, label: 'Semana' },
   { value: 'month' as const, label: 'Mes' },
 ];
+
+const visibleKpis = ref(['entradas', 'salidas', 'stock_bajo', 'sin_stock']);
 
 const metricCards = [
   {
@@ -1208,6 +1219,30 @@ onMounted(loadAll);
   color: var(--color-text-muted);
   font-weight: 600;
 }
+.range-inputs input {
+  width: 100px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .drawer-footer {
   padding: 24px;
   border-top: 1.5px solid var(--color-structure-subtle);
