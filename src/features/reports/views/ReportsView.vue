@@ -307,13 +307,20 @@ async function downloadReport(format: 'csv' | 'pdf') {
     return;
   }
   
-  const token = appStore.state.token;
+  const token = appStore.state.session?.accessToken;
+  if (!token) {
+    alert("No hay sesión activa.");
+    return;
+  }
   try {
     const response = await fetch(endpoint, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
-    if (!response.ok) throw new Error("Error al descargar");
+    if (!response.ok) {
+        if (response.status === 401) throw new Error("No autorizado (401). Tu sesión expiró o no tienes rol de admin.");
+        throw new Error(`Error al descargar: ${response.status}`);
+    }
     
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
