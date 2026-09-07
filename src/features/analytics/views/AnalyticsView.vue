@@ -1358,6 +1358,7 @@ onMounted(loadAll);
 .date-inputs span, .range-inputs span {
   color: var(--color-text-muted);
   font-weight: 600;
+}
 .checkbox-group {
   display: flex;
   flex-direction: column;
