@@ -287,23 +287,6 @@
             </label>
           </div>
         </div>
-        <div class="filter-group" title="Próximamente">
-          <label>Categoría</label>
-          <select class="filter-input" disabled>
-            <option value="">Todas las categorías</option>
-            <option value="lacteos">Lácteos</option>
-            <option value="abarrotes">Abarrotes</option>
-            <option value="limpieza">Limpieza</option>
-          </select>
-        </div>
-        <div class="filter-group" title="Próximamente">
-          <label>Rango de Stock</label>
-          <div class="range-inputs">
-            <input type="number" placeholder="Mín" class="filter-input" disabled />
-            <span>-</span>
-            <input type="number" placeholder="Máx" class="filter-input" disabled />
-          </div>
-        </div>
       </div>
       <div class="drawer-footer">
         <button class="btn-clear" @click="clearFilters">Limpiar</button>
@@ -1218,11 +1201,6 @@ onMounted(loadAll);
 .date-inputs span, .range-inputs span {
   color: var(--color-text-muted);
   font-weight: 600;
-}
-.range-inputs input {
-  width: 100px;
-}
-
 .checkbox-group {
   display: flex;
   flex-direction: column;
