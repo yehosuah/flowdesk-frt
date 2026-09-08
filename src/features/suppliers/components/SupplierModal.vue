@@ -13,7 +13,7 @@
           {{ isEditing ? 'Actualiza los datos de contacto de este proveedor.' : 'Ingresa la información básica para registrar a este nuevo proveedor.' }}
         </p>
 
-        <div v-if="isEditing" class="status-row">
+        <div v-if="isEditing && can('suppliers.setStatus')" class="status-row">
           <span
             class="status-pill"
             :class="localSupplier?.is_active ? 'status-pill--active' : 'status-pill--inactive'"
@@ -88,6 +88,9 @@ import { X } from 'lucide-vue-next';
 import { createSupplier, updateSupplier, toggleSupplierStatus, type Supplier } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ConfirmDialog from '@/app/components/ConfirmDialog.vue';
+import { useAuth } from '@/composables/useAuth';
+
+const { can } = useAuth();
 
 const props = defineProps<{
   supplier?: Supplier | null;

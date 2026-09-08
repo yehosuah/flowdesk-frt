@@ -25,6 +25,7 @@
               class="dropdown-menu"
             >
               <button
+                v-if="can('products.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('product')"
@@ -33,6 +34,7 @@
               </button>
 
               <button
+                v-if="can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('stock')"
@@ -41,6 +43,7 @@
               </button>
 
               <button
+                v-if="can('sales.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('sale')"
@@ -48,9 +51,10 @@
                 Registrar Venta
               </button>
 
-              <div class="dropdown-divider"></div>
+              <div v-if="can('movement.create')" class="dropdown-divider"></div>
 
               <button
+                v-if="can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('other')"
@@ -697,6 +701,10 @@ import NewMovementModal
 import {
   ApiError,
 } from '@/services/apiClient';
+
+import { useAuth } from '@/composables/useAuth';
+
+const { can } = useAuth();
 
 const movimientos =
   ref<InventoryMovement[]>([]);

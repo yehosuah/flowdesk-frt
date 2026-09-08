@@ -259,7 +259,7 @@
           </p>
         </div>
 
-        <div class="filtros-footer">
+        <div v-if="can('inventory.import')" class="filtros-footer">
           <button
             class="btn-import"
             type="button"
@@ -298,6 +298,10 @@ import type {
 
 import ImportExcelModal
   from '@/features/inventory/components/ImportExcelModal.vue';
+
+import { useAuth } from '@/composables/useAuth';
+
+const { can } = useAuth();
 
 import {
   getApiErrorMessage,

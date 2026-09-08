@@ -126,9 +126,9 @@ const routes: RouteRecordRaw[] = [
         name: "inventorymovement",
         component: InventoryMovementView,
         meta: {
-          requiresAuth: true, 
-          requiresRole: ['admin'],
-          // requiresRole: ['superadmin', 'admin'],
+          requiresAuth: true,
+          // Matriz de permisos: src/utils/permissions.ts (movement.view)
+          requiresRole: ['admin', 'manager', 'employee'],
           title: "Movimiento de Inventario",
         }
       },
@@ -148,7 +148,8 @@ const routes: RouteRecordRaw[] = [
         component: TaskCalendarView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin'],
+          // Matriz de permisos: src/utils/permissions.ts (calendar.view)
+          requiresRole: ['admin', 'manager', 'employee'],
           title: 'Calendario de tareas',
         },
       },
@@ -188,7 +189,8 @@ const routes: RouteRecordRaw[] = [
         component: SuppliersView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin', 'manager', 'employee'],
+          // Matriz de permisos: src/utils/permissions.ts (suppliers.view)
+          requiresRole: ['admin', 'manager'],
           title: 'Proveedores',
         },
       },
@@ -198,7 +200,8 @@ const routes: RouteRecordRaw[] = [
         component: ClientView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin', 'manager', 'employee'],
+          // Matriz de permisos: src/utils/permissions.ts (clients.view)
+          requiresRole: ['admin', 'manager'],
           title: 'Clientes',
         },
       },
@@ -218,7 +221,8 @@ const routes: RouteRecordRaw[] = [
         component: ReportsView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin', 'manager'],
+          // Backend: GET /reports/* -> require_role("admin"). Matriz: src/utils/permissions.ts
+          requiresRole: ['admin'],
           title: 'Reportes',
         },
       },
