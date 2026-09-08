@@ -5,6 +5,10 @@ import { nextTick } from "vue";
 import ForgotPasswordView from "@/features/auth/views/ForgotPasswordView.vue";
 
 vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+  useRoute: vi.fn(() => ({ query: {} })),
   RouterLink: {
     template: "<a><slot /></a>",
   },

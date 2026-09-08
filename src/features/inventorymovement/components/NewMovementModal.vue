@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="modal-backdrop" @click.self="$emit('close')">
+    <div class="modal-backdrop" @click.self="$emit('close')" data-testid="new-movement-modal">
       <div class="modal">
         <div class="modal__header">
           <div class="header-content">

@@ -45,7 +45,7 @@ describe("InventoryMovementView", () => {
     await nextTick();
 
     expect(wrapper.text()).toContain("Movimiento de Inventario");
-    expect(wrapper.text()).toContain("Nuevo movimiento");
+    expect(wrapper.text()).toContain("Nuevo Registro");
     expect(wrapper.text()).toContain("Filtros");
   });
 
@@ -63,6 +63,12 @@ describe("InventoryMovementView", () => {
     const wrapper = createWrapper();
 
     await wrapper.find(".btn-add").trigger("click");
+    await nextTick();
+    
+    const dropdownItems = wrapper.findAll(".dropdown-item");
+    const otherItem = dropdownItems.find(item => item.text().includes("Ajuste (Otro)"));
+    await otherItem!.trigger("click");
+    await nextTick();
 
     expect(
       wrapper.find("[data-testid='new-movement-modal']").exists()
@@ -90,7 +96,7 @@ describe("InventoryMovementView", () => {
 
     await chips[1].trigger("click");
 
-    await wrapper.find(".btn-limpiar").trigger("click");
+    await wrapper.find(".btn-limpiar-text").trigger("click");
 
     expect(chips[0].classes()).toContain("chip--active");
   });

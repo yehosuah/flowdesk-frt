@@ -127,8 +127,7 @@ const routes: RouteRecordRaw[] = [
         component: InventoryMovementView,
         meta: {
           requiresAuth: true, 
-          requiresRole: ['admin'],
-          // requiresRole: ['superadmin', 'admin'],
+          requiresRole: ['admin', 'manager', 'employee'],
           title: "Movimiento de Inventario",
         }
       },
@@ -148,7 +147,7 @@ const routes: RouteRecordRaw[] = [
         component: TaskCalendarView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin'],
+          requiresRole: ['admin', 'manager', 'employee'],
           title: 'Calendario de tareas',
         },
       },
@@ -178,7 +177,7 @@ const routes: RouteRecordRaw[] = [
         component: EmployeesView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin'],
+          requiresRole: ['admin', 'manager'],
           title: 'Empleados',
         },
       },
