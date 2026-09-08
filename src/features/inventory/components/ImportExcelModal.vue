@@ -1,9 +1,21 @@
 <template>
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')">
-      <div class="modal">
+      <div
+        ref="modalRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="import-excel-modal-title"
+        tabindex="-1"
+      >
         <div class="modal__header">
-          <h2 class="modal__title">Importar productos desde Excel</h2>
+          <h2
+            id="import-excel-modal-title"
+            class="modal__title"
+          >
+            Importar productos desde Excel
+          </h2>
           <button class="modal__close" type="button" @click="$emit('close')">✕</button>
         </div>
 
@@ -86,8 +98,16 @@
 import { ref, computed } from 'vue';
 import { importProductsExcel } from '@/features/inventory/import';
 import { getApiErrorMessage } from '@/services/apiClient';
+import { useAccessibleModal } from '@/composables/useAccessibleModal';
 
 const emit = defineEmits<{ close: []; imported: [] }>();
+
+const modalRef = ref<HTMLElement | null>(null);
+function closeModal(): void {
+  emit('close');
+}
+useAccessibleModal(modalRef, closeModal);
+
 type Step = 'upload' | 'preview' | 'done';
 
 const step = ref<Step>('upload');

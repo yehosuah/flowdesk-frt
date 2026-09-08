@@ -1,9 +1,16 @@
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="modal">
+    <div
+      ref="modalRef"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="stock-input-modal-title"
+      tabindex="-1"
+    >
       <header class="modal-header">
         <div class="header-content">
-          <h2 class="modal-title">Ingresar Stock (Compra)</h2>
+          <h2 id="stock-input-modal-title" class="modal-title">Ingresar Stock (Compra)</h2>
         </div>
         <button class="btn-close" @click="$emit('close')">✕</button>
       </header>
@@ -53,6 +60,7 @@ import { reactive, ref } from 'vue';
 import { createMovement } from '@/features/inventorymovement/api';
 import type { InventoryProduct } from '@/features/inventory/types';
 import { getApiErrorMessage } from '@/services/apiClient';
+import { useAccessibleModal } from '@/composables/useAccessibleModal';
 
 defineProps<{
   products: InventoryProduct[];
@@ -62,6 +70,13 @@ const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'created'): void;
 }>();
+
+const modalRef = ref<HTMLElement | null>(null);
+function closeModal(): void {
+  emit('close');
+}
+useAccessibleModal(modalRef, closeModal);
+
 
 const form = reactive({
   producto_id: '',

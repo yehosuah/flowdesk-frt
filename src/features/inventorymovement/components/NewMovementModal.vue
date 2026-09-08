@@ -1,10 +1,17 @@
 <template>
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')">
-      <div class="modal">
+      <div
+        ref="modalRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-movement-modal-title"
+        tabindex="-1"
+      >
         <div class="modal__header">
           <div class="header-content">
-            <h2 class="modal__title">Ajuste de Inventario (Otro)</h2>
+            <h2 id="new-movement-modal-title" class="modal__title">Ajuste de Inventario (Otro)</h2>
           </div>
           <button class="modal__close" type="button" @click="$emit('close')">✕</button>
         </div>
@@ -72,6 +79,7 @@ import { reactive, ref } from 'vue';
 import { createMovement, type MovementType } from '@/features/inventorymovement/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import type { InventoryProduct } from '@/features/inventory/types';
+import { useAccessibleModal } from '@/composables/useAccessibleModal';
 
 defineProps<{ products: InventoryProduct[] }>();
 
@@ -85,6 +93,13 @@ const opcionesTipoMovimiento = [
 ];
 
 const emit = defineEmits<{ close: []; created: [] }>();
+
+const modalRef = ref<HTMLElement | null>(null);
+function closeModal(): void {
+  emit('close');
+}
+useAccessibleModal(modalRef, closeModal);
+
 
 interface FormData {
   producto_id: string;

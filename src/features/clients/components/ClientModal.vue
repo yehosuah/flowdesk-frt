@@ -1,8 +1,15 @@
 <template>
   <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="modal-content">
+    <div
+      ref="modalRef"
+      class="modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="client-modal-title"
+      tabindex="-1"
+    >
       <header class="modal-header">
-        <h3 class="modal-title">{{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+        <h3 id="client-modal-title" class="modal-title">{{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
         <button class="btn-close" @click="$emit('close')">
           <X :size="20" />
         </button>
@@ -80,6 +87,7 @@ import { reactive, ref, computed } from 'vue';
 import { X } from 'lucide-vue-next';
 import { createClient, updateClient, toggleClientStatus, deleteClient, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
+import { useAccessibleModal } from '@/composables/useAccessibleModal';
 
 const props = defineProps<{
   client?: Client | null;
@@ -91,6 +99,13 @@ const emit = defineEmits<{
   (e: 'status-changed', client: Client): void;
   (e: 'deleted', clientId: string): void;
 }>();
+
+const modalRef = ref<HTMLElement | null>(null);
+
+function closeModal(): void {
+  emit('close');
+}
+useAccessibleModal(modalRef, closeModal);
 
 const isEditing = computed(() => !!props.client);
 
