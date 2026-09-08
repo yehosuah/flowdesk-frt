@@ -86,7 +86,14 @@
             @click="selectClient(cli)"
           >
             <div class="client-item-content">
-              <div class="client-name">{{ cli.nombre }}</div>
+              <div class="client-name">
+                <span
+                  v-if="!cli.is_active"
+                  class="status-dot status-dot--inactive"
+                  title="Inactivo"
+                ></span>
+                {{ cli.nombre }}
+              </div>
               <div class="client-desc">
                 {{ cli.correo || cli.telefono || 'Sin datos de contacto' }}
               </div>
@@ -109,10 +116,14 @@
         <div v-else class="detail-content">
           <div class="detail-header">
             <div>
-              <h2 class="detail-name">{{ selectedClient.nombre }}</h2>
-              <p class="detail-desc">
-                {{ selectedClient.is_active ? 'Cliente activo' : 'Cliente inactivo' }}
-              </p>
+              <div class="detail-title-row">
+                <h2 class="detail-name">{{ selectedClient.nombre }}</h2>
+                <span
+                  class="status-dot"
+                  :class="selectedClient.is_active ? 'status-dot--active' : 'status-dot--inactive'"
+                  :title="selectedClient.is_active ? 'Activo' : 'Inactivo'"
+                ></span>
+              </div>
             </div>
 
             <div class="detail-actions">
@@ -157,7 +168,6 @@
       @close="showModal = false"
       @saved="onModalSaved"
       @status-changed="onStatusChanged"
-      @deleted="onClientDeleted"
     />
   </div>
 </template>
@@ -251,11 +261,6 @@ function onModalSaved() {
 
 function onStatusChanged(updated: Client) {
   clientToEdit.value = updated;
-  fetchData();
-}
-
-function onClientDeleted() {
-  showModal.value = false;
   fetchData();
 }
 
@@ -550,6 +555,13 @@ onMounted(() => {
   border-bottom: 1px solid var(--color-bg-border);
 }
 
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .detail-name {
   font-size: 1.5rem;
   font-weight: 800;
@@ -557,10 +569,27 @@ onMounted(() => {
   margin: 0;
 }
 
-.detail-desc {
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  margin: 4px 0 0;
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.status-dot--active {
+  background: var(--color-success);
+}
+
+.status-dot--inactive {
+  background: var(--color-danger);
+}
+
+.client-name .status-dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  vertical-align: middle;
 }
 
 .detail-actions {

@@ -21,7 +21,7 @@
             type="button"
             class="btn-status-toggle"
             @click="toggleStatus"
-            :disabled="isTogglingStatus || isDeleting"
+            :disabled="isTogglingStatus"
           >
             {{ isTogglingStatus ? 'Actualizando...' : (localClient?.is_active ? 'Desactivar cliente' : 'Activar cliente') }}
           </button>
@@ -50,24 +50,13 @@
 
           <div v-if="error" class="error-alert full-width">{{ error }}</div>
 
-          <div class="form-actions full-width" :class="{ 'form-actions--split': isEditing }">
-            <button
-              v-if="isEditing"
-              type="button"
-              class="btn-danger"
-              @click="removeClient"
-              :disabled="isDeleting || isSubmitting || isTogglingStatus"
-            >
-              {{ isDeleting ? 'Eliminando...' : 'Eliminar cliente' }}
+          <div class="form-actions full-width">
+            <button type="button" class="btn-secondary" @click="$emit('close')" :disabled="isSubmitting">
+              Cancelar
             </button>
-            <div class="form-actions-right">
-              <button type="button" class="btn-secondary" @click="$emit('close')" :disabled="isSubmitting">
-                Cancelar
-              </button>
-              <button type="submit" class="btn-primary" :disabled="isSubmitting">
-                {{ isSubmitting ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Cliente') }}
-              </button>
-            </div>
+            <button type="submit" class="btn-primary" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Cliente') }}
+            </button>
           </div>
         </form>
       </div>
@@ -78,7 +67,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
 import { X } from 'lucide-vue-next';
-import { createClient, updateClient, toggleClientStatus, deleteClient, type Client } from '@/features/clients/api';
+import { createClient, updateClient, toggleClientStatus, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 
 const props = defineProps<{
@@ -89,7 +78,6 @@ const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'saved', client: Client): void;
   (e: 'status-changed', client: Client): void;
-  (e: 'deleted', clientId: string): void;
 }>();
 
 const isEditing = computed(() => !!props.client);
@@ -107,7 +95,6 @@ const form = reactive({
 
 const isSubmitting = ref(false);
 const isTogglingStatus = ref(false);
-const isDeleting = ref(false);
 const error = ref('');
 
 function validateForm(): string | null {
@@ -174,27 +161,6 @@ async function toggleStatus() {
     error.value = getApiErrorMessage(err);
   } finally {
     isTogglingStatus.value = false;
-  }
-}
-
-async function removeClient() {
-  if (!localClient.value) return;
-
-  const confirmed = window.confirm(
-    `¿Eliminar a "${localClient.value.nombre}"? Esta acción desactivará al cliente.`,
-  );
-  if (!confirmed) return;
-
-  isDeleting.value = true;
-  error.value = '';
-
-  try {
-    await deleteClient(localClient.value.id);
-    emit('deleted', localClient.value.id);
-  } catch (err) {
-    error.value = getApiErrorMessage(err);
-  } finally {
-    isDeleting.value = false;
   }
 }
 </script>
@@ -365,34 +331,6 @@ async function removeClient() {
   padding-top: 20px;
   border-top: 1px solid var(--color-bg-border);
 }
-.form-actions--split {
-  justify-content: space-between;
-}
-
-.form-actions-right {
-  display: flex;
-  gap: 12px;
-}
-
-.btn-danger {
-  padding: 10px 20px;
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-  border: 1px solid var(--color-danger-border);
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.btn-danger:hover:not(:disabled) {
-  background: var(--color-danger-bg);
-  border-color: var(--color-danger-border);
-}
-.btn-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .btn-secondary {
   padding: 10px 20px;
   background: var(--color-bg-hover);
@@ -461,23 +399,10 @@ async function removeClient() {
     grid-column: 1;
   }
 
-  .form-actions,
-  .form-actions--split {
+  .form-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
-  }
-
-  .form-actions-right {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .btn-danger {
-    width: 100%;
-    box-sizing: border-box;
   }
 
   .btn-secondary,

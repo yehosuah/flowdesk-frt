@@ -85,7 +85,14 @@
             @click="selectSupplier(sup)"
           >
             <div class="supplier-item-content">
-              <div class="supplier-name">{{ sup.nombre }}</div>
+              <div class="supplier-name">
+                <span
+                  v-if="!sup.is_active"
+                  class="status-dot status-dot--inactive"
+                  title="Inactivo"
+                ></span>
+                {{ sup.nombre }}
+              </div>
             </div>
           </li>
         </ul>
@@ -107,7 +114,14 @@
           <!-- Detail Header -->
           <div class="detail-header">
             <div>
-              <h2 class="detail-name">{{ selectedSupplier.nombre }}</h2>
+              <div class="detail-title-row">
+                <h2 class="detail-name">{{ selectedSupplier.nombre }}</h2>
+                <span
+                  class="status-dot"
+                  :class="selectedSupplier.is_active ? 'status-dot--active' : 'status-dot--inactive'"
+                  :title="selectedSupplier.is_active ? 'Activo' : 'Inactivo'"
+                ></span>
+              </div>
             </div>
             <div class="detail-actions">
               <button class="btn-icon-action" @click="openEditModal(selectedSupplier)" title="Editar información">
@@ -165,11 +179,12 @@
     </div>
 
     <!-- Modal (Paso 3) -->
-    <SupplierModal 
-      v-if="showModal" 
+    <SupplierModal
+      v-if="showModal"
       :supplier="supplierToEdit"
       @close="showModal = false"
       @saved="onModalSaved"
+      @status-changed="onStatusChanged"
     />
   </div>
 </template>
@@ -177,7 +192,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { Search, Phone, Mail, Pencil, MapPin, Building2 } from 'lucide-vue-next';
-import { fetchSuppliers, fetchSupplierProducts, toggleSupplierStatus, type Supplier, type SupplierProductResponse } from '@/features/suppliers/api';
+import { fetchSuppliers, fetchSupplierProducts, type Supplier, type SupplierProductResponse } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import SupplierModal from '@/features/suppliers/components/SupplierModal.vue';
 
@@ -191,7 +206,6 @@ const filterDropdown = ref<HTMLDetailsElement | null>(null);
 
 // Master-Detail State
 const selectedSupplier = ref<Supplier | null>(null);
-const isToggling = ref<string | null>(null);
 
 // Supplier Products
 const supplierProducts = ref<SupplierProductResponse[]>([]);
@@ -267,24 +281,9 @@ function selectSupplier(sup: Supplier) {
 
 
 
-async function toggleStatus(sup: Supplier) {
-  if (isToggling.value) return;
-  isToggling.value = sup.id;
-  try {
-    const updated = await toggleSupplierStatus(sup.id, !sup.is_active);
-    
-    // Update local state
-    sup.is_active = updated.is_active;
-    
-    // If it's the selected one, update it directly too just in case (reference should be the same though)
-    if (selectedSupplier.value && selectedSupplier.value.id === sup.id) {
-      selectedSupplier.value.is_active = updated.is_active;
-    }
-  } catch (err) {
-    alert('Error al cambiar el estado: ' + getApiErrorMessage(err));
-  } finally {
-    isToggling.value = null;
-  }
+function onStatusChanged(updated: Supplier) {
+  supplierToEdit.value = updated;
+  fetchData();
 }
 
 function openCreateModal() {
@@ -619,6 +618,13 @@ onMounted(() => {
   border-bottom: 1px solid var(--color-bg-border);
 }
 
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .detail-name {
   font-size: 1.5rem;
   font-weight: 800;
@@ -626,10 +632,27 @@ onMounted(() => {
   margin: 0;
 }
 
-.detail-desc {
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  margin: 4px 0 0 0;
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.status-dot--active {
+  background: var(--color-success);
+}
+
+.status-dot--inactive {
+  background: var(--color-danger);
+}
+
+.supplier-name .status-dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  vertical-align: middle;
 }
 
 .detail-actions {

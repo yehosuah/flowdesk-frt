@@ -12,7 +12,24 @@
         <p class="modal-description">
           {{ isEditing ? 'Actualiza los datos de contacto de este proveedor.' : 'Ingresa la información básica para registrar a este nuevo proveedor.' }}
         </p>
-        
+
+        <div v-if="isEditing" class="status-row">
+          <span
+            class="status-pill"
+            :class="localSupplier?.is_active ? 'status-pill--active' : 'status-pill--inactive'"
+          >
+            {{ localSupplier?.is_active ? 'Activo' : 'Inactivo' }}
+          </span>
+          <button
+            type="button"
+            class="btn-status-toggle"
+            @click="toggleStatus"
+            :disabled="isTogglingStatus"
+          >
+            {{ isTogglingStatus ? 'Actualizando...' : (localSupplier?.is_active ? 'Desactivar proveedor' : 'Activar proveedor') }}
+          </button>
+        </div>
+
         <form @submit.prevent="submit" class="form-grid">
           <div class="form-group full-width">
             <label class="form-label">Nombre o Razón Social *</label>
@@ -53,7 +70,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
 import { X } from 'lucide-vue-next';
-import { createSupplier, updateSupplier, type Supplier } from '@/features/suppliers/api';
+import { createSupplier, updateSupplier, toggleSupplierStatus, type Supplier } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 
 const props = defineProps<{
@@ -63,9 +80,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'saved', supplier: Supplier): void;
+  (e: 'status-changed', supplier: Supplier): void;
 }>();
 
 const isEditing = computed(() => !!props.supplier);
+
+// Copia local editable para reflejar el estado activo/inactivo al instante.
+const localSupplier = ref<Supplier | null>(props.supplier ?? null);
 
 const form = reactive({
   nombre: props.supplier?.nombre || '',
@@ -75,7 +96,28 @@ const form = reactive({
 });
 
 const isSubmitting = ref(false);
+const isTogglingStatus = ref(false);
 const error = ref('');
+
+async function toggleStatus() {
+  if (!localSupplier.value) return;
+
+  isTogglingStatus.value = true;
+  error.value = '';
+
+  try {
+    const updated = await toggleSupplierStatus(
+      localSupplier.value.id,
+      !localSupplier.value.is_active,
+    );
+    localSupplier.value = updated;
+    emit('status-changed', updated);
+  } catch (err) {
+    error.value = getApiErrorMessage(err);
+  } finally {
+    isTogglingStatus.value = false;
+  }
+}
 
 function validateForm(): string | null {
   if (!form.nombre.trim()) {
@@ -202,6 +244,44 @@ async function submit() {
   margin-bottom: 24px;
 }
 
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.status-pill--active { background: var(--color-success-bg); color: var(--color-success-text); }
+.status-pill--inactive { background: var(--color-bg-hover); color: var(--color-text-secondary); }
+
+.btn-status-toggle {
+  padding: 6px 14px;
+  background: var(--color-bg-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-status-toggle:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-text-faint);
+}
+.btn-status-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -290,5 +370,25 @@ async function submit() {
 .btn-primary:disabled, .btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .status-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: 1;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
 }
 </style>
