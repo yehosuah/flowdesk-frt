@@ -2,8 +2,20 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image" href="/src/logo/logo-blancoSolo4.PNG" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FlowDesk</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('flowdesk:theme');
+          if (!t) {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

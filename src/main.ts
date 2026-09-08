@@ -7,6 +7,7 @@ import { appStore } from '@/stores/app.store';
 import '@/styles/tokens.css';
 import '@/styles/theme.css';
 import '@/styles/globals.css';
+import '@/styles/useTheme';
 
 appStore.hydrate();
 
