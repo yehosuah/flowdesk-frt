@@ -12,6 +12,17 @@ vi.mock("@/services/apiClient", () => ({
   getApiErrorMessage: vi.fn(() => "Error"),
 }));
 
+// La vista se prueba con permisos completos; el gating por rol tiene sus
+// propios tests en src/tests/core/permissions.spec.ts.
+vi.mock("@/composables/useAuth", () => ({
+  useAuth: () => ({
+    role: { value: "admin" },
+    is: () => true,
+    can: () => true,
+    canAccessRoute: () => true,
+  }),
+}));
+
 vi.mock("@/features/inventory/components/ImportExcelModal.vue", () => ({
   default: {
     template: "<div>Mock ImportExcelModal</div>",

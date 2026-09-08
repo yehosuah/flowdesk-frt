@@ -75,15 +75,15 @@
           <div class="feed-list" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto;">
             <div v-if="feedLoading" class="table-loading">Cargando feed...</div>
             <div v-else-if="feed.length === 0" class="chart-empty">No hay movimientos recientes.</div>
-            <div v-else v-for="item in feed" :key="item.id" style="display: flex; gap: 12px; align-items: center; padding: 12px; background: #f8fafc; border-radius: 8px;">
-              <div :style="{ color: item.direction === 'in' ? '#2e7d32' : '#e65100' }">
+            <div v-else v-for="item in feed" :key="item.id" class="feed-item">
+              <div class="feed-item__dir" :class="item.direction === 'in' ? 'feed-item__dir--in' : 'feed-item__dir--out'">
                 <ArrowDownRight v-if="item.direction === 'in'" />
                 <ArrowUpRight v-else />
               </div>
-              <div style="flex: 1; font-size: 0.88rem;">
+              <div class="feed-item__text">
                 <strong>{{ item.tipo_movimiento.replace('_', ' ') }}</strong> de <strong>{{ item.cantidad }}</strong> uds. de <strong>{{ item.nombre }}</strong>
               </div>
-              <span style="font-size: 0.75rem; color: var(--color-text-muted);">{{ new Date(item.fecha).toLocaleDateString() }}</span>
+              <span class="feed-item__date">{{ new Date(item.fecha).toLocaleDateString() }}</span>
             </div>
           </div>
         </section>
@@ -149,7 +149,7 @@
               <tbody>
                 <tr v-for="alert in alerts" :key="alert.id">
                   <td>{{ new Date(alert.fecha).toLocaleDateString() }}</td>
-                  <td style="color: #c62828; font-weight: bold;">{{ alert.tipo.replace('_', ' ') }}</td>
+                  <td class="td-alert-type">{{ alert.tipo.replace('_', ' ') }}</td>
                   <td>{{ alert.mensaje }}</td>
                 </tr>
                 <tr v-if="alerts.length === 0">
@@ -669,7 +669,7 @@ onMounted(loadAll);
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 16px 0;
-  color: var(--color-text);
+  color: var(--color-heading);
 }
 .header-main {
   display: flex;
@@ -711,7 +711,7 @@ onMounted(loadAll);
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #fff;
+  background: var(--color-bg-surface);
   border: 1.5px solid var(--color-structure-subtle);
   border-radius: 8px;
   font-size: 0.85rem;
@@ -721,8 +721,8 @@ onMounted(loadAll);
   transition: all 0.15s;
 }
 .btn-filter:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-bg-subtle);
+  border-color: var(--color-text-faint);
 }
 
 .dashboard-grid {
@@ -976,7 +976,7 @@ onMounted(loadAll);
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f0f4f9 25%, #e0e8f0 50%, #f0f4f9 75%);
+  background: linear-gradient(90deg, var(--color-bg-border) 25%, var(--color-bg-hover) 50%, var(--color-bg-border) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 6px;
@@ -999,7 +999,7 @@ onMounted(loadAll);
 .section-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-heading);
   margin: 0;
 }
 
@@ -1071,8 +1071,8 @@ onMounted(loadAll);
   height: 10px;
   border-radius: 999px;
 }
-.chart-legend__swatch--in { background: #2e7d32; }
-.chart-legend__swatch--out { background: #e65100; }
+.chart-legend__swatch--in { background: var(--color-success-text); }
+.chart-legend__swatch--out { background: var(--color-warning-text); }
 .chart-plot {
   flex: 1;
   width: 100%;
@@ -1121,8 +1121,8 @@ onMounted(loadAll);
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
-.chart-line--in { stroke: #2e7d32; }
-.chart-line--out { stroke: #e65100; }
+.chart-line--in { stroke: var(--color-success-text); }
+.chart-line--out { stroke: var(--color-warning-text); }
 
 .chart-points-overlay {
   position: absolute;
@@ -1138,12 +1138,12 @@ onMounted(loadAll);
   height: 8px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid #fff;
+  border: 2px solid var(--color-bg-surface);
   z-index: 2;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-.html-point--in { background: #2e7d32; }
-.html-point--out { background: #e65100; }
+.html-point--in { background: var(--color-success-text); }
+.html-point--out { background: var(--color-warning-text); }
 
 .chart-x-axis {
   position: relative;
@@ -1191,7 +1191,33 @@ onMounted(loadAll);
   color: var(--color-text-muted);
   font-size: 0.88rem;
 }
-.chart-empty--error { color: #c03a3a; }
+.chart-empty--error { color: var(--color-danger-text); }
+
+.feed-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 8px;
+}
+.feed-item__dir {
+  display: flex;
+  align-items: center;
+}
+.feed-item__dir--in { color: var(--color-success-text); }
+.feed-item__dir--out { color: var(--color-warning-text); }
+.feed-item__text {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+.feed-item__date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
 
 .products-section {
   background: var(--color-bg-surface);
@@ -1206,7 +1232,7 @@ onMounted(loadAll);
   border-radius: 8px;
   font-size: 0.82rem;
   color: var(--color-text-secondary);
-  background: #fff;
+  background: var(--color-bg-surface);
   outline: none;
   font-family: var(--font-sans);
   cursor: pointer;
@@ -1218,7 +1244,7 @@ onMounted(loadAll);
   color: var(--color-text-muted);
   font-size: 0.88rem;
 }
-.table-empty--error { color: #c03a3a; }
+.table-empty--error { color: var(--color-danger-text); }
 .products-table {
   width: 100%;
   border-collapse: collapse;
@@ -1229,16 +1255,16 @@ onMounted(loadAll);
   padding: 12px 16px;
   text-align: center;
   font-weight: 700;
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
   font-size: 0.8rem;
   white-space: nowrap;
 }
 .products-table tbody tr {
-  border-bottom: 1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
   transition: background 0.12s;
 }
 .products-table tbody tr:last-child { border-bottom: none; }
-.products-table tbody tr:hover { background: #f8fafc; }
+.products-table tbody tr:hover { background: var(--color-bg-subtle); }
 .products-table td {
   padding: 12px 16px;
   vertical-align: middle;
@@ -1246,10 +1272,11 @@ onMounted(loadAll);
   color: var(--color-text-secondary);
   font-weight: 600;
 }
-.td-name { color: var(--color-structure-base); }
+.td-name { color: var(--color-heading); }
 .td-sku { font-size: 0.78rem; color: var(--color-text-muted); font-family: monospace; }
-.td-in { color: #2e7d32; }
-.td-out { color: #e65100; }
+.td-in { color: var(--color-success-text); }
+.td-out { color: var(--color-warning-text); }
+.td-alert-type { color: var(--color-danger-text); font-weight: bold; }
 
 .risk-badge {
   display: inline-block;
@@ -1258,9 +1285,9 @@ onMounted(loadAll);
   font-size: 0.75rem;
   font-weight: 700;
 }
-.risk-badge--low  { background: #e8f5e9; color: #2e7d32; }
-.risk-badge--mid  { background: #fff3e0; color: #e65100; }
-.risk-badge--high { background: #ffebee; color: #c62828; }
+.risk-badge--low  { background: var(--color-success-bg); color: var(--color-success-text); }
+.risk-badge--mid  { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.risk-badge--high { background: var(--color-danger-bg); color: var(--color-danger-text); }
 
 .drawer-overlay {
   position: fixed;
@@ -1280,7 +1307,7 @@ onMounted(loadAll);
   position: fixed;
   top: 0; right: 0; bottom: 0;
   width: 360px;
-  background: #ffffff;
+  background: var(--color-bg-surface);
   z-index: 101;
   box-shadow: -4px 0 24px rgba(0,0,0,0.1);
   transform: translateX(100%);
@@ -1302,7 +1329,7 @@ onMounted(loadAll);
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
 }
 .drawer-close {
   background: transparent;
@@ -1317,7 +1344,7 @@ onMounted(loadAll);
   justify-content: center;
 }
 .drawer-close:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
   color: var(--color-text);
 }
 .drawer-body {
@@ -1348,7 +1375,7 @@ onMounted(loadAll);
   box-sizing: border-box;
 }
 .filter-input:focus {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 }
 .date-inputs, .range-inputs {
   display: flex;
@@ -1396,11 +1423,11 @@ onMounted(loadAll);
   border: none;
 }
 .btn-clear {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
   color: var(--color-text-secondary);
 }
 .btn-clear:hover {
-  background: #e2e8f0;
+  background: var(--color-bg-hover);
 }
 .btn-apply {
   background: var(--color-structure-base);
@@ -1624,7 +1651,7 @@ onMounted(loadAll);
     width: 100%;
     box-sizing: border-box;
     padding: 12px 14px;
-    border-bottom: 1px solid #e8eef6;
+    border-bottom: 1px solid var(--color-bg-border);
   }
 
   .products-table tbody tr:last-child {

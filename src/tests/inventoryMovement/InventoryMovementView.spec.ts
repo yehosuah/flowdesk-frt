@@ -19,6 +19,15 @@ vi.mock("@/services/apiClient", () => ({
   },
 }));
 
+vi.mock("@/composables/useAuth", () => ({
+  useAuth: () => ({
+    role: { value: "admin" },
+    is: () => true,
+    can: () => true,
+    canAccessRoute: () => true,
+  }),
+}));
+
 vi.mock(
   "@/features/inventorymovement/components/NewMovementModal.vue",
   () => ({

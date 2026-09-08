@@ -86,7 +86,14 @@
             @click="selectClient(cli)"
           >
             <div class="client-item-content">
-              <div class="client-name">{{ cli.nombre }}</div>
+              <div class="client-name">
+                <span
+                  v-if="!cli.is_active"
+                  class="status-dot status-dot--inactive"
+                  title="Inactivo"
+                ></span>
+                {{ cli.nombre }}
+              </div>
               <div class="client-desc">
                 {{ cli.correo || cli.telefono || 'Sin datos de contacto' }}
               </div>
@@ -109,10 +116,14 @@
         <div v-else class="detail-content">
           <div class="detail-header">
             <div>
-              <h2 class="detail-name">{{ selectedClient.nombre }}</h2>
-              <p class="detail-desc">
-                {{ selectedClient.is_active ? 'Cliente activo' : 'Cliente inactivo' }}
-              </p>
+              <div class="detail-title-row">
+                <h2 class="detail-name">{{ selectedClient.nombre }}</h2>
+                <span
+                  class="status-dot"
+                  :class="selectedClient.is_active ? 'status-dot--active' : 'status-dot--inactive'"
+                  :title="selectedClient.is_active ? 'Activo' : 'Inactivo'"
+                ></span>
+              </div>
             </div>
 
             <div class="detail-actions">
@@ -157,7 +168,6 @@
       @close="showModal = false"
       @saved="onModalSaved"
       @status-changed="onStatusChanged"
-      @deleted="onClientDeleted"
     />
   </div>
 </template>
@@ -254,11 +264,6 @@ function onStatusChanged(updated: Client) {
   fetchData();
 }
 
-function onClientDeleted() {
-  showModal.value = false;
-  fetchData();
-}
-
 onMounted(() => {
   fetchData();
 });
@@ -281,12 +286,12 @@ onMounted(() => {
 .page-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0 0 4px;
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-text-muted);
   margin: 0;
   font-size: 1rem;
 }
@@ -313,10 +318,10 @@ onMounted(() => {
 }
 
 .card {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   overflow: hidden;
 }
 
@@ -337,7 +342,7 @@ onMounted(() => {
 
 .toolbar {
   padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -352,14 +357,14 @@ onMounted(() => {
 .search-icon {
   position: absolute;
   left: 12px;
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .search-input {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 10px 10px 36px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.2s;
@@ -367,7 +372,7 @@ onMounted(() => {
 
 .search-input:focus {
   outline: none;
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -395,10 +400,10 @@ onMounted(() => {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 32px 8px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
   font-size: 0.85rem;
   cursor: pointer;
   user-select: none;
@@ -410,7 +415,7 @@ onMounted(() => {
   right: 12px;
   top: 50%;
   transform: translateY(-55%);
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .filter-dropdown[open] .filter-select {
@@ -426,9 +431,9 @@ onMounted(() => {
   width: 100%;
   box-sizing: border-box;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
 
@@ -443,9 +448,9 @@ onMounted(() => {
   box-sizing: border-box;
   padding: 9px 12px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: #ffffff;
-  color: #334155;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text);
   text-align: left;
   font-family: inherit;
   font-size: 0.85rem;
@@ -457,12 +462,12 @@ onMounted(() => {
 }
 
 .filter-option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .filter-option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-bg-active);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 
@@ -479,17 +484,17 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-bg-border);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .client-item:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .client-item.active {
-  background: #eff6ff;
+  background: var(--color-bg-active);
   border-left: 4px solid var(--color-structure-base, #3b82f6);
   padding-left: 12px;
 }
@@ -503,13 +508,13 @@ onMounted(() => {
 
 .client-name {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-heading);
   font-size: 0.95rem;
 }
 
 .client-desc {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -531,13 +536,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #94a3b8;
+  color: var(--color-text-faint);
   text-align: center;
   padding: 60px 20px;
 }
 
 .empty-icon {
-  color: #cbd5e1;
+  color: var(--color-text-faint);
   margin-bottom: 16px;
 }
 
@@ -547,20 +552,44 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .detail-name {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0;
 }
 
-.detail-desc {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 4px 0 0;
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.status-dot--active {
+  background: var(--color-success);
+}
+
+.status-dot--inactive {
+  background: var(--color-danger);
+}
+
+.client-name .status-dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  vertical-align: middle;
 }
 
 .detail-actions {
@@ -573,10 +602,10 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
@@ -584,8 +613,8 @@ onMounted(() => {
 }
 
 .btn-icon-action:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-bg-hover);
+  border-color: var(--color-text-faint);
 }
 
 .detail-section {
@@ -595,30 +624,30 @@ onMounted(() => {
 .section-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-heading);
   margin-bottom: 16px;
 }
 
 .contact-card {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
   border-radius: 12px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--color-bg-border);
 }
 
 .contact-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #334155;
+  color: var(--color-text);
   font-size: 0.95rem;
 }
 
 .contact-icon {
-  color: #94a3b8;
+  color: var(--color-text-faint);
   flex-shrink: 0;
 }
 
@@ -626,13 +655,13 @@ onMounted(() => {
 .empty-state {
   padding: 48px 20px;
   text-align: center;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--color-bg-border);
   border-top-color: var(--color-structure-base, #3b82f6);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -648,8 +677,8 @@ onMounted(() => {
 .error-alert {
   margin-bottom: 20px;
   padding: 16px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   border-radius: 8px;
   text-align: center;
   font-weight: 500;

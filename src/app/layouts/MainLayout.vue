@@ -29,7 +29,7 @@
 
       <nav class="sidebar__nav">
         <RouterLink
-          v-for="item in navItems.filter(i => i.roles.includes(roleName ?? ''))"
+          v-for="item in visibleNavItems"
           :key="item.name"
           :to="item.to"
           class="sidebar__link"
@@ -59,14 +59,15 @@
 
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { appStore } from '@/stores/app.store';
+import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
 
 const sidebarOpen = ref(false);
 
-const roleName = appStore.roleName;
+const { canAccessRoute } = useAuth();
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
@@ -81,7 +82,6 @@ const navItems = [
     name: 'inventory',
     label: 'Inventario',
     to: { name: 'inventory' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -93,7 +93,6 @@ const navItems = [
     name: 'inventorymovement',
     label: 'Movimiento de Inventario',
     to: { name: 'inventorymovement' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -105,7 +104,6 @@ const navItems = [
     name: 'tasks',
     label: 'Gestión de tareas',
     to: { name: 'tasks' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -117,7 +115,6 @@ const navItems = [
     name: 'tasks-calendar',
     label: 'Calendario',
     to: { name: 'tasks-calendar' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -131,7 +128,6 @@ const navItems = [
     name: 'superAdmin',
     label: 'Manejo de Cuentas',
     to: { name: 'superAdmin' },
-    roles: ['superadmin'],
     icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
       <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -148,7 +144,6 @@ const navItems = [
     name: 'analytics',
     label: 'Análisis',
     to: { name: 'analytics' },
-    roles: ['admin', 'manager'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -161,7 +156,6 @@ const navItems = [
     name: 'employees',
     label: 'Empleados',
     to: { name: 'employees' },
-    roles: ['admin', 'manager'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -175,7 +169,6 @@ const navItems = [
     name: 'suppliers',
     label: 'Proveedores',
     to: { name: 'suppliers' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -195,7 +188,6 @@ const navItems = [
     name: 'clients',
     label: 'Clientes',
     to: { name: 'clients' },
-    roles: ['admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -210,7 +202,6 @@ const navItems = [
     name: 'reports',
     label: 'Reportes',
     to: { name: 'reports' },
-    roles: ['admin', 'manager'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -225,7 +216,6 @@ const navItems = [
     name: 'profile',
     label: 'Mi Perfil',
     to: { name: 'profile' },
-    roles: ['superadmin', 'admin', 'manager', 'employee'],
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -234,6 +224,12 @@ const navItems = [
           </svg>`,
   },
 ];
+
+// Solo se muestran las páginas a las que el rol de la sesión puede entrar
+// (misma matriz que usan los guards del router: src/utils/permissions.ts).
+const visibleNavItems = computed(() =>
+  navItems.filter((item) => canAccessRoute(item.name)),
+);
 
 const iconLogout = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
   fill="none" stroke="currentColor" stroke-width="2"
@@ -342,12 +338,12 @@ async function cerrarSesion(): Promise<void> {
 
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #fff;
 }
 
 .sidebar__link--active {
   background: rgba(255, 255, 255, 0.13);
-  color: #ffffff;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -488,7 +484,7 @@ async function cerrarSesion(): Promise<void> {
     border-radius: 8px;
 
     background: var(--color-structure-base);
-    color: #ffffff;
+    color: #fff;
 
     font-size: 24px;
     line-height: 1;

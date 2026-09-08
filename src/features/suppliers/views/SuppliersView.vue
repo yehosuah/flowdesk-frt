@@ -85,7 +85,14 @@
             @click="selectSupplier(sup)"
           >
             <div class="supplier-item-content">
-              <div class="supplier-name">{{ sup.nombre }}</div>
+              <div class="supplier-name">
+                <span
+                  v-if="!sup.is_active"
+                  class="status-dot status-dot--inactive"
+                  title="Inactivo"
+                ></span>
+                {{ sup.nombre }}
+              </div>
             </div>
           </li>
         </ul>
@@ -107,7 +114,14 @@
           <!-- Detail Header -->
           <div class="detail-header">
             <div>
-              <h2 class="detail-name">{{ selectedSupplier.nombre }}</h2>
+              <div class="detail-title-row">
+                <h2 class="detail-name">{{ selectedSupplier.nombre }}</h2>
+                <span
+                  class="status-dot"
+                  :class="selectedSupplier.is_active ? 'status-dot--active' : 'status-dot--inactive'"
+                  :title="selectedSupplier.is_active ? 'Activo' : 'Inactivo'"
+                ></span>
+              </div>
             </div>
             <div class="detail-actions">
               <button class="btn-icon-action" @click="openEditModal(selectedSupplier)" title="Editar información">
@@ -165,11 +179,12 @@
     </div>
 
     <!-- Modal (Paso 3) -->
-    <SupplierModal 
-      v-if="showModal" 
+    <SupplierModal
+      v-if="showModal"
       :supplier="supplierToEdit"
       @close="showModal = false"
       @saved="onModalSaved"
+      @status-changed="onStatusChanged"
     />
   </div>
 </template>
@@ -177,7 +192,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { Search, Phone, Mail, Pencil, MapPin, Building2 } from 'lucide-vue-next';
-import { fetchSuppliers, fetchSupplierProducts, toggleSupplierStatus, type Supplier, type SupplierProductResponse } from '@/features/suppliers/api';
+import { fetchSuppliers, fetchSupplierProducts, type Supplier, type SupplierProductResponse } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import SupplierModal from '@/features/suppliers/components/SupplierModal.vue';
 
@@ -191,7 +206,6 @@ const filterDropdown = ref<HTMLDetailsElement | null>(null);
 
 // Master-Detail State
 const selectedSupplier = ref<Supplier | null>(null);
-const isToggling = ref<string | null>(null);
 
 // Supplier Products
 const supplierProducts = ref<SupplierProductResponse[]>([]);
@@ -267,24 +281,9 @@ function selectSupplier(sup: Supplier) {
 
 
 
-async function toggleStatus(sup: Supplier) {
-  if (isToggling.value) return;
-  isToggling.value = sup.id;
-  try {
-    const updated = await toggleSupplierStatus(sup.id, !sup.is_active);
-    
-    // Update local state
-    sup.is_active = updated.is_active;
-    
-    // If it's the selected one, update it directly too just in case (reference should be the same though)
-    if (selectedSupplier.value && selectedSupplier.value.id === sup.id) {
-      selectedSupplier.value.is_active = updated.is_active;
-    }
-  } catch (err) {
-    alert('Error al cambiar el estado: ' + getApiErrorMessage(err));
-  } finally {
-    isToggling.value = null;
-  }
+function onStatusChanged(updated: Supplier) {
+  supplierToEdit.value = updated;
+  fetchData();
 }
 
 function openCreateModal() {
@@ -324,12 +323,12 @@ onMounted(() => {
 .page-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0 0 4px;
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--color-text-muted);
   margin: 0;
   font-size: 1rem;
 }
@@ -356,10 +355,10 @@ onMounted(() => {
 }
 
 .card {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   overflow: hidden;
 }
 
@@ -381,7 +380,7 @@ onMounted(() => {
 
 .toolbar {
   padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -403,13 +402,13 @@ onMounted(() => {
 .search-icon {
   position: absolute;
   left: 12px;
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .search-input {
   width: 100%;
   padding: 10px 10px 10px 36px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.2s;
@@ -417,7 +416,7 @@ onMounted(() => {
 
 .search-input:focus {
   outline: none;
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
@@ -445,10 +444,10 @@ onMounted(() => {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 32px 8px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
   font-size: 0.85rem;
   cursor: pointer;
   user-select: none;
@@ -460,7 +459,7 @@ onMounted(() => {
   right: 12px;
   top: 50%;
   transform: translateY(-55%);
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .filter-dropdown[open] .filter-select {
@@ -474,8 +473,8 @@ onMounted(() => {
   z-index: 50;
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
@@ -488,9 +487,9 @@ onMounted(() => {
   box-sizing: border-box;
   padding: 9px 12px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: #ffffff;
-  color: #334155;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text);
   text-align: left;
   font-family: inherit;
   font-size: 0.85rem;
@@ -502,12 +501,12 @@ onMounted(() => {
 }
 
 .filter-option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .filter-option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-bg-active);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 
@@ -536,17 +535,17 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-bg-border);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .supplier-item:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .supplier-item.active {
-  background: #eff6ff;
+  background: var(--color-bg-active);
   border-left: 4px solid var(--color-structure-base, #3b82f6);
   padding-left: 12px; /* Compensate border */
 }
@@ -559,13 +558,13 @@ onMounted(() => {
 
 .supplier-name {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-heading);
   font-size: 0.95rem;
 }
 
 .supplier-desc {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -576,13 +575,13 @@ onMounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-success);
 }
 .dot-inactive {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: var(--color-text-faint);
 }
 
 
@@ -600,13 +599,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #94a3b8;
+  color: var(--color-text-faint);
   text-align: center;
   padding: 60px 20px;
 }
 
 .empty-icon {
-  color: #cbd5e1;
+  color: var(--color-text-faint);
   margin-bottom: 16px;
 }
 
@@ -616,20 +615,44 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .detail-name {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0;
 }
 
-.detail-desc {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 4px 0 0 0;
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.status-dot--active {
+  background: var(--color-success);
+}
+
+.status-dot--inactive {
+  background: var(--color-danger);
+}
+
+.supplier-name .status-dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  vertical-align: middle;
 }
 
 .detail-actions {
@@ -642,10 +665,10 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
@@ -653,42 +676,42 @@ onMounted(() => {
 }
 
 .btn-icon-action:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-bg-hover);
+  border-color: var(--color-text-faint);
 }
 
 .section-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-heading);
   margin-bottom: 16px;
 }
 
 .contact-card {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
   border-radius: 12px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--color-bg-border);
 }
 
 .contact-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #334155;
+  color: var(--color-text);
   font-size: 0.95rem;
 }
 
 .contact-icon {
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 /* Dummy Tables */
 .dummy-table-container {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -703,15 +726,15 @@ onMounted(() => {
 .dummy-table th {
   background: var(--color-structure-base);
   padding: 12px 16px;
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
   font-weight: 700;
   border-bottom: none;
 }
 
 .dummy-table td {
   padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
+  border-bottom: 1px solid var(--color-bg-border);
+  color: var(--color-text);
 }
 
 .dummy-table tbody tr:last-child td {
@@ -719,15 +742,15 @@ onMounted(() => {
 }
 
 .dummy-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
-.td-sku { font-family: monospace; color: #64748b; }
-.font-medium { font-weight: 600; color: #0f172a; }
-.text-success { color: #16a34a; font-weight: 600; }
-.text-danger { color: #dc2626; font-weight: 600; }
+.td-sku { font-family: monospace; color: var(--color-text-muted); }
+.font-medium { font-weight: 600; color: var(--color-heading); }
+.text-success { color: var(--color-success-text); font-weight: 600; }
+.text-danger { color: var(--color-danger-text); font-weight: 600; }
 .flex-align { display: flex; align-items: center; gap: 6px; }
-.inline-icon { color: #94a3b8; }
+.inline-icon { color: var(--color-text-faint); }
 .mt-4 { margin-top: 32px; }
 
 /* Status Badge */
@@ -742,20 +765,20 @@ onMounted(() => {
 }
 
 .status-badge:hover:not(:disabled) { opacity: 0.8; }
-.status-active { background: #dcfce7; color: #166534; }
-.status-inactive { background: #f1f5f9; color: #475569; }
+.status-active { background: var(--color-success-bg); color: var(--color-success-text); }
+.status-inactive { background: var(--color-bg-hover); color: var(--color-text-secondary); }
 .status-badge:disabled { opacity: 0.5; cursor: wait; }
 
 .loading-state, .empty-state {
   padding: 48px 20px;
   text-align: center;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--color-bg-border);
   border-top-color: var(--color-structure-base, #3b82f6);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -767,8 +790,8 @@ onMounted(() => {
 .error-alert {
   margin-bottom: 20px;
   padding: 16px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   border-radius: 8px;
   text-align: center;
   font-weight: 500;

@@ -1,48 +1,169 @@
-:root {
+/* =========================================================================
+   FlowDesk design tokens
+   -------------------------------------------------------------------------
+   Two themes share ONE set of semantic names. Components must only ever
+   reference the semantic tokens below (never raw hex), so light / dark stay
+   in sync automatically.
+
+   Roles
+     bg-app        page background (darkest layer)
+     bg-surface    cards, panels, tables, modals
+     bg-subtle     inset fields, recessed strips (feed rows, code, search box)
+     bg-hover      row / list-item hover
+     bg-active     selected row / active filter option
+     bg-row-alt    zebra striping
+     bg-border     default hairline border / divider
+     border-strong stronger border (button outlines, focus)
+
+     heading       page & card titles            -> ALWAYS use for <h1>/<h2>
+     text          primary body text / table values
+     text-secondary secondary body text
+     text-muted    captions, subtitles, metadata
+     text-faint    icons, placeholders, disabled
+     text-on-structure  text sitting on --color-structure-base (sidebar,
+                        dark table headers) — light in BOTH themes
+
+     structure-base    primary brand slab (sidebar, table headers, primary btn)
+     structure-hover   interactive accent (links, active text, focus ring)
+     structure-subtle  brand-tinted background wash / focus-ring fill
+
+     accent            destructive / attention red
+     success|warning|info|danger  + -bg / -border / -text variants
+   ========================================================================= */
+
+:root,
+[data-theme='light'] {
   color-scheme: light;
+
   --font-sans: 'Segoe UI', 'Helvetica Neue', sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, monospace;
 
-  --color-structure-base:    #1E2738;   
-  --color-structure-hover:   #2D5878;  
-  --color-structure-subtle:  #E8F0F8;   
-  --color-structure-tint:    #F0EBE3;  
+  /* ---- brand / structure ---- */
+  --color-structure-base:   #1E2738;
+  --color-structure-hover:  #2D5878;
+  --color-structure-subtle: #EEF2F7;
+  --color-structure-tint:   #F0EBE3;
 
-  --color-bg-app:            #f5f5f5;  
-  --color-bg-panel:          #EDE5D8;  
-  --color-bg-border:         #E0D0BC;  
-  --color-bg-surface:        #FFFFFF;   
-  --color-bg-row-alt:        #FBF7F3;  
+  /* ---- surfaces ---- */
+  --color-bg-app:      #F4F6F9;
+  --color-bg-surface:  #FFFFFF;
+  --color-bg-subtle:   #F8FAFC;
+  --color-bg-hover:    #F1F5F9;
+  --color-bg-active:   #EFF4FF;
+  --color-bg-panel:    #F8FAFC;
+  --color-bg-row-alt:  #FBFCFE;
 
-  --color-accent:            #C54F44;  
-  --color-accent-hover:      #E07068;  
-  --color-accent-subtle:     #FAEAE8;  
+  /* ---- borders ---- */
+  --color-bg-border:     #E3E8EF;
+  --color-border-strong: #CBD5E1;
 
-  --color-success:           #4CAF50;
-  --color-success-bg:        #E8F5E9;
-  --color-success-border:    #C8E6C9;
+  /* ---- text ---- */
+  --color-heading:          #0F172A;
+  --color-text:             #334155;
+  --color-text-secondary:   #475569;
+  --color-text-muted:       #64748B;
+  --color-text-faint:       #94A3B8;
+  --color-text-on-structure:#F0F4F9;
 
-  --color-warning:           #FFA726;
-  --color-warning-bg:        #FFF3E0;
-  --color-warning-border:    #FFE0B2;
+  /* ---- accent (red) ---- */
+  --color-accent:        #C54F44;
+  --color-accent-hover:  #E07068;
+  --color-accent-subtle: #FAEAE8;
 
-  --color-info:              #42A5F5;
-  --color-info-bg:           #E3F2FD;
-  --color-info-border:       #BBDEFB;
+  /* ---- status ---- */
+  --color-success:        #16A34A;
+  --color-success-bg:     #E8F5E9;
+  --color-success-border: #C8E6C9;
+  --color-success-text:   #15803D;
 
-  --color-danger:            #EF5350;
-  --color-danger-bg:         #FFEBEE;
-  --color-danger-border:     #FFCDD2;
+  --color-warning:        #F59E0B;
+  --color-warning-bg:     #FFF4E5;
+  --color-warning-border: #FFE0B2;
+  --color-warning-text:   #B45309;
 
-  --color-pop-teal:          #E3F5F2;  
-  --color-pop-honey:         #FEF3E2;   
-  --color-pop-sage:          #ECF5EC;   
-  --color-pop-sand:          #FDF5E0;   
-  --color-pop-slate:         #E8F0F8;   
+  --color-info:        #3B82F6;
+  --color-info-bg:     #E7F1FD;
+  --color-info-border: #BBDEFB;
+  --color-info-text:   #1565C0;
 
-  --color-text:              #2D3748;   
-  --color-text-secondary:    #2C3E55;   
-  --color-text-muted:        #A8B8CC;  
+  --color-danger:        #EF4444;
+  --color-danger-bg:     #FDECEC;
+  --color-danger-border: #FBCFCF;
+  --color-danger-text:   #B91C1C;
+
+  /* ---- soft accent washes (dashboard tiles) ---- */
+  --color-pop-teal:  #E3F5F2;
+  --color-pop-honey: #FEF3E2;
+  --color-pop-sage:  #ECF5EC;
+  --color-pop-sand:  #FDF5E0;
+  --color-pop-slate: #EEF2F7;
 
   --shadow-card: 0 2px 12px rgba(13, 17, 24, 0.08);
+}
+
+/* =========================================================================
+   DARK THEME
+   Slate-based neutral ramp. Surfaces get lighter as they come forward
+   (app < subtle < surface < hover); text gets dimmer as it recedes
+   (heading > text > secondary > muted > faint). Status colours keep a
+   deep-tinted background with a bright, legible text colour.
+   ========================================================================= */
+:root[data-theme='dark'],
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-structure-base:   #161C27;
+  --color-structure-hover:  #7FB2DE;
+  --color-structure-subtle: #253244;
+  --color-structure-tint:   #1E2836;
+
+  --color-bg-app:      #0E121A;
+  --color-bg-surface:  #1A2130;
+  --color-bg-subtle:   #141A25;
+  --color-bg-hover:    #232C3D;
+  --color-bg-active:   #1E3050;
+  --color-bg-panel:    #141A25;
+  --color-bg-row-alt:  #1D2533;
+
+  --color-bg-border:     #2C3646;
+  --color-border-strong: #3B4859;
+
+  --color-heading:          #F1F5F9;
+  --color-text:             #DEE5EF;
+  --color-text-secondary:   #B4C0D0;
+  --color-text-muted:       #8593A6;
+  --color-text-faint:       #616E80;
+  --color-text-on-structure:#E8EEF6;
+
+  --color-accent:        #E07068;
+  --color-accent-hover:  #EC8A83;
+  --color-accent-subtle: #3A2523;
+
+  --color-success:        #34C77B;
+  --color-success-bg:     #14301D;
+  --color-success-border: #2A5A38;
+  --color-success-text:   #5FD08B;
+
+  --color-warning:        #E8A64D;
+  --color-warning-bg:     #362915;
+  --color-warning-border: #5E4620;
+  --color-warning-text:   #E8B968;
+
+  --color-info:        #58A6E8;
+  --color-info-bg:     #152A40;
+  --color-info-border: #2C4A6B;
+  --color-info-text:   #74B4E8;
+
+  --color-danger:        #F26D6D;
+  --color-danger-bg:     #391E1E;
+  --color-danger-border: #6B3232;
+  --color-danger-text:   #F09292;
+
+  --color-pop-teal:  #15302D;
+  --color-pop-honey: #342A16;
+  --color-pop-sage:  #1B2E1F;
+  --color-pop-sand:  #322B18;
+  --color-pop-slate: #1E2A3A;
+
+  --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.5);
 }

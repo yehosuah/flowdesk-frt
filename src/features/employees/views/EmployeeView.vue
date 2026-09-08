@@ -335,7 +335,7 @@ function formatDate(
 .page-title {
   margin: 0;
 
-  color: var(--color-text);
+  color: var(--color-heading);
 
   font-size: 2rem;
   font-weight: 700;
@@ -352,7 +352,7 @@ function formatDate(
   background:
     var(--color-structure-base);
 
-  color: #ffffff;
+  color: #fff;
 
   font-family: var(--font-sans);
 
@@ -385,11 +385,11 @@ function formatDate(
 }
 
 .alert-success {
-  background: #ecfdf5;
+  background: var(--color-success-bg);
 
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-success-border);
 
-  color: #166534;
+  color: var(--color-success-text);
 }
 
 .alert-close {
@@ -412,7 +412,7 @@ function formatDate(
   width: 100%;
   max-width: 100%;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   border-radius: 12px;
 
@@ -437,7 +437,7 @@ function formatDate(
 .emp-table th {
   padding: 13px 20px;
 
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
 
   font-size: .82rem;
   font-weight: 700;
@@ -450,8 +450,7 @@ function formatDate(
 }
 
 .emp-table tbody tr {
-  border-bottom:
-    1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
 
   transition: background .12s;
 }
@@ -461,7 +460,7 @@ function formatDate(
 }
 
 .emp-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .emp-table td {
@@ -474,8 +473,7 @@ function formatDate(
 }
 
 .td-name {
-  color:
-    var(--color-structure-base);
+  color: var(--color-heading);
 
   font-weight: 600;
 }
@@ -530,15 +528,14 @@ function formatDate(
 }
 
 .btn-edit:hover {
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 
   background:
     var(--color-structure-subtle);
 }
 
 .no-action {
-  color: #b0bbd4;
+  color: var(--color-text-faint);
 }
 
 .table-empty {
@@ -553,7 +550,7 @@ function formatDate(
 }
 
 .table-empty--error {
-  color: #c03a3a;
+  color: var(--color-danger-text);
 }
 
 .role-badge {
@@ -589,7 +586,7 @@ function formatDate(
     1px solid
     var(--color-info-border);
 
-  color: #1565c0;
+  color: var(--color-info-text);
 }
 
 .role-badge--emp {
@@ -600,7 +597,7 @@ function formatDate(
     1px solid
     var(--color-warning-border);
 
-  color: #b37400;
+  color: var(--color-warning-text);
 }
 
 .status-wrap {
@@ -614,11 +611,11 @@ function formatDate(
 }
 
 .status-wrap--active {
-  color: #2e7d32;
+  color: var(--color-success-text);
 }
 
 .status-wrap--inactive {
-  color: #b0bbd4;
+  color: var(--color-text-faint);
 }
 
 .status-dot {
@@ -631,11 +628,11 @@ function formatDate(
 }
 
 .status-wrap--active .status-dot {
-  background: #4caf50;
+  background: var(--color-success);
 }
 
 .status-wrap--inactive .status-dot {
-  background: #b0bbd4;
+  background: var(--color-border-strong);
 }
 
 .summary-bar {
@@ -668,11 +665,11 @@ function formatDate(
 }
 
 .summary-item--active strong {
-  color: #2e7d32;
+  color: var(--color-success-text);
 }
 
 .summary-item--inactive strong {
-  color: #b0bbd4;
+  color: var(--color-text-faint);
 }
 
 @media (max-width: 900px) {
@@ -708,8 +705,7 @@ function formatDate(
 
     padding: 14px 16px;
 
-    border-bottom:
-      1px solid #dde3ec;
+    border-bottom: 1px solid var(--color-bg-border);
   }
 
   .emp-table tbody tr:last-child {
@@ -717,7 +713,7 @@ function formatDate(
   }
 
   .emp-table tbody tr:hover {
-    background: #ffffff;
+    background: var(--color-bg-surface);
   }
 
   .emp-table td {
@@ -761,8 +757,7 @@ function formatDate(
   }
 
   .td-name {
-    color:
-      var(--color-structure-base);
+    color: var(--color-heading);
   }
 
   .td-email {

@@ -429,9 +429,9 @@ const missionBlocks = [
 .hero__eyebrow-dot {
   width: 6px;
   height: 6px;
-  background: #4caf50;
+  background: var(--color-success);
   border-radius: 50%;
-  box-shadow: 0 0 6px #4caf50;
+  box-shadow: 0 0 6px var(--color-success);
   animation: pulse 2s infinite;
   flex-shrink: 0;
 }
@@ -573,7 +573,7 @@ const missionBlocks = [
   font-family: 'DM Serif Display', var(--font-sans);
   font-size: clamp(1.8rem, 3.5vw, 2.8rem);
   font-weight: 400;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   text-align: center;
   margin: 0 0 64px;
   line-height: 1.2;
@@ -635,7 +635,7 @@ const missionBlocks = [
   font-family: 'DM Serif Display', var(--font-sans);
   font-size: 1.15rem;
   font-weight: 400;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0 0 10px;
   letter-spacing: -0.01em;
   line-height: 1.35;
@@ -673,7 +673,7 @@ const missionBlocks = [
   font-family: 'DM Serif Display', var(--font-sans);
   font-size: clamp(1.6rem, 3vw, 2.3rem);
   font-weight: 400;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0 0 16px;
   line-height: 1.25;
 }
@@ -723,7 +723,7 @@ const missionBlocks = [
   font-family: 'DM Serif Display', var(--font-sans);
   font-size: 1.1rem;
   font-weight: 400;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0 0 8px;
   letter-spacing: -0.01em;
   line-height: 1.3;

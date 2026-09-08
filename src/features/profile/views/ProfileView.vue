@@ -85,6 +85,30 @@
           </div>
         </form>
       </section>
+
+      <section class="card section-card">
+        <div class="preference-row">
+          <div class="preference-info">
+            <span class="preference-label">Modo oscuro</span>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="isDark"
+            aria-label="Alternar modo oscuro"
+            class="theme-switch"
+            :class="{ 'theme-switch--on': isDark }"
+            @click="toggleTheme"
+          >
+            <span class="theme-switch__track">
+              <span class="theme-switch__thumb">
+                <component :is="isDark ? Moon : Sun" :size="12" />
+              </span>
+            </span>
+          </button>
+        </div>
+      </section>
     </template>
   </div>
 </template>
@@ -92,10 +116,14 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Moon, Sun } from 'lucide-vue-next';
 import { fetchProfile, updateProfile } from '@/features/profile/api';
 import type { ProfileResponse } from '@/features/profile/types';
 import { getApiErrorMessage } from '@/services/apiClient';
+import { useTheme } from '@/styles/useTheme';
+
+const { theme, toggle: toggleTheme } = useTheme();
+const isDark = computed(() => theme.value === 'dark');
 
 interface ProfileFormData {
   username: string;
@@ -218,7 +246,7 @@ function goToChangePassword() {
 
 .spinner--dark {
   border-color: var(--color-structure-subtle);
-  border-top-color: var(--color-structure-base);
+  border-top-color: var(--color-structure-hover);
   width: 28px;
   height: 28px;
 }
@@ -271,7 +299,7 @@ function goToChangePassword() {
 .section-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-heading);
   margin: 0 0 18px;
 }
 
@@ -296,7 +324,7 @@ function goToChangePassword() {
 }
 
 .btn-icon-action:hover {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   background: var(--color-structure-subtle);
 }
 
@@ -384,7 +412,7 @@ function goToChangePassword() {
   padding: 10px 20px;
   border: 1.5px solid var(--color-structure-subtle);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-muted);
   font-size: 0.88rem;
   font-weight: 600;
@@ -394,8 +422,8 @@ function goToChangePassword() {
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-structure-base);
-  color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
+  color: var(--color-structure-hover);
 }
 
 .btn-inline {
@@ -414,6 +442,85 @@ function goToChangePassword() {
 }
 
 .role-badge--admin   { background: var(--color-structure-subtle); color: var(--color-structure-hover); border: 1px solid var(--color-info-border); }
-.role-badge--manager { background: var(--color-info-bg); color: #1565c0; border: 1px solid var(--color-info-border); }
-.role-badge--emp     { background: var(--color-pop-honey); color: #B37400; border: 1px solid var(--color-warning-border); }
+.role-badge--manager { background: var(--color-info-bg); color: var(--color-info-text); border: 1px solid var(--color-info-border); }
+.role-badge--emp     { background: var(--color-pop-honey); color: var(--color-warning-text); border: 1px solid var(--color-warning-border); }
+
+.preference-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.preference-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preference-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.preference-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  max-width: 46ch;
+}
+
+.theme-switch {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.theme-switch__track {
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 28px;
+  padding: 3px;
+  border-radius: 99px;
+  background: var(--color-structure-subtle);
+  transition: background 0.16s ease;
+}
+
+.theme-switch__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-bg-surface);
+  color: var(--color-warning);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.16s ease, color 0.16s ease;
+}
+
+.theme-switch--on .theme-switch__track {
+  background: var(--color-structure-base);
+}
+
+.theme-switch--on .theme-switch__thumb {
+  transform: translateX(24px);
+  color: var(--color-structure-hover);
+}
+
+.theme-switch:focus-visible .theme-switch__track {
+  outline: 2px solid var(--color-structure-hover);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .preference-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
 </style>

@@ -223,7 +223,7 @@ function formatDate(
   width: 100%;
   max-width: 100%;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   border-radius: 12px;
 
@@ -258,7 +258,7 @@ function formatDate(
   background:
     var(--color-structure-base);
 
-  color: #ffffff;
+  color: #fff;
 
   font-size: .85rem;
   font-weight: 700;
@@ -273,8 +273,7 @@ function formatDate(
 .task-table td {
   padding: 18px 20px;
 
-  border-bottom:
-    1px solid #edf1f7;
+  border-bottom: 1px solid var(--color-bg-border);
 
   color:
     var(--color-text-secondary);
@@ -331,39 +330,39 @@ function formatDate(
 }
 
 .badge--high {
-  background: #ffe3e3;
+  background: var(--color-danger-bg);
 
-  color: #c92a2a;
+  color: var(--color-danger-text);
 }
 
 .badge--medium {
-  background: #fff3bf;
+  background: var(--color-warning-bg);
 
-  color: #e67700;
+  color: var(--color-warning-text);
 }
 
 .badge--low {
-  background: #d3f9d8;
+  background: var(--color-success-bg);
 
-  color: #2b8a3e;
+  color: var(--color-success-text);
 }
 
 .badge--pending {
-  background: #edf2ff;
+  background: var(--color-info-bg);
 
-  color: #364fc7;
+  color: var(--color-info-text);
 }
 
 .badge--progress {
-  background: #d0ebff;
+  background: var(--color-bg-active);
 
-  color: #1971c2;
+  color: var(--color-info-text);
 }
 
 .badge--completed {
-  background: #d3f9d8;
+  background: var(--color-success-bg);
 
-  color: #2b8a3e;
+  color: var(--color-success-text);
 }
 
 .status-wrapper {
@@ -467,8 +466,7 @@ function formatDate(
 
     padding: 18px 22px;
 
-    border-bottom:
-      1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-bg-border);
   }
 
   .task-table tbody tr:last-child {

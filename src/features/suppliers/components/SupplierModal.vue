@@ -12,7 +12,26 @@
         <p class="modal-description">
           {{ isEditing ? 'Actualiza los datos de contacto de este proveedor.' : 'Ingresa la información básica para registrar a este nuevo proveedor.' }}
         </p>
-        
+
+        <div v-if="isEditing && can('suppliers.setStatus')" class="status-row">
+          <span
+            class="status-pill"
+            :class="localSupplier?.is_active ? 'status-pill--active' : 'status-pill--inactive'"
+          >
+            {{ localSupplier?.is_active ? 'Activo' : 'Inactivo' }}
+          </span>
+          <button
+            type="button"
+            class="btn-status-toggle"
+            @click="requestToggle"
+            :disabled="isTogglingStatus"
+          >
+            {{ isTogglingStatus ? 'Actualizando...' : (localSupplier?.is_active ? 'Desactivar proveedor' : 'Activar proveedor') }}
+          </button>
+        </div>
+
+        <p v-if="statusFeedback" class="status-feedback">{{ statusFeedback }}</p>
+
         <form @submit.prevent="submit" class="form-grid">
           <div class="form-group full-width">
             <label class="form-label">Nombre o Razón Social *</label>
@@ -47,14 +66,31 @@
         </form>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-if="showConfirm"
+      title="Desactivar proveedor"
+      :message="confirmMessage"
+      confirm-label="Desactivar"
+      cancel-label="Cancelar"
+      variant="danger"
+      :loading="isTogglingStatus"
+      :error="confirmError"
+      @confirm="runToggle"
+      @cancel="cancelConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, onBeforeUnmount } from 'vue';
 import { X } from 'lucide-vue-next';
-import { createSupplier, updateSupplier, type Supplier } from '@/features/suppliers/api';
+import { createSupplier, updateSupplier, toggleSupplierStatus, type Supplier } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
+import ConfirmDialog from '@/app/components/ConfirmDialog.vue';
+import { useAuth } from '@/composables/useAuth';
+
+const { can } = useAuth();
 
 const props = defineProps<{
   supplier?: Supplier | null;
@@ -63,9 +99,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'saved', supplier: Supplier): void;
+  (e: 'status-changed', supplier: Supplier): void;
 }>();
 
 const isEditing = computed(() => !!props.supplier);
+
+// Copia local editable para reflejar el estado activo/inactivo al instante.
+const localSupplier = ref<Supplier | null>(props.supplier ?? null);
 
 const form = reactive({
   nombre: props.supplier?.nombre || '',
@@ -75,7 +115,75 @@ const form = reactive({
 });
 
 const isSubmitting = ref(false);
+const isTogglingStatus = ref(false);
 const error = ref('');
+
+// --- Confirmación visual del cambio de estado ---
+const showConfirm = ref(false);
+const confirmError = ref('');
+const statusFeedback = ref('');
+let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+const confirmMessage = computed(
+  () =>
+    `«${localSupplier.value?.nombre ?? 'Este proveedor'}» dejará de aparecer en los listados y ` +
+    'selecciones. Se conserva su historial y podrás reactivarlo cuando quieras.',
+);
+
+function showFeedback(text: string) {
+  statusFeedback.value = text;
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => {
+    statusFeedback.value = '';
+  }, 4000);
+}
+
+onBeforeUnmount(() => clearTimeout(feedbackTimer));
+
+function requestToggle() {
+  if (!localSupplier.value) return;
+  error.value = '';
+  statusFeedback.value = '';
+
+  if (localSupplier.value.is_active) {
+    confirmError.value = '';
+    showConfirm.value = true;
+  } else {
+    runToggle();
+  }
+}
+
+function cancelConfirm() {
+  if (isTogglingStatus.value) return;
+  showConfirm.value = false;
+  confirmError.value = '';
+}
+
+async function runToggle() {
+  if (!localSupplier.value) return;
+
+  const willActivate = !localSupplier.value.is_active;
+  isTogglingStatus.value = true;
+  confirmError.value = '';
+  error.value = '';
+
+  try {
+    const updated = await toggleSupplierStatus(localSupplier.value.id, willActivate);
+    localSupplier.value = updated;
+    emit('status-changed', updated);
+    showConfirm.value = false;
+    showFeedback(willActivate ? 'Proveedor activado.' : 'Proveedor desactivado.');
+  } catch (err) {
+    const message = getApiErrorMessage(err);
+    if (showConfirm.value) {
+      confirmError.value = message;
+    } else {
+      error.value = message;
+    }
+  } finally {
+    isTogglingStatus.value = false;
+  }
+}
 
 function validateForm(): string | null {
   if (!form.nombre.trim()) {
@@ -145,7 +253,7 @@ async function submit() {
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   width: 100%;
   max-width: 550px;
@@ -160,7 +268,7 @@ async function submit() {
 
 .modal-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -169,14 +277,14 @@ async function submit() {
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0;
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -187,8 +295,8 @@ async function submit() {
 }
 
 .btn-close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--color-bg-hover);
+  color: var(--color-heading);
 }
 
 .modal-body {
@@ -196,10 +304,59 @@ async function submit() {
 }
 
 .modal-description {
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   margin-top: 0;
   margin-bottom: 24px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.status-pill--active { background: var(--color-success-bg); color: var(--color-success-text); }
+.status-pill--inactive { background: var(--color-bg-hover); color: var(--color-text-secondary); }
+
+.btn-status-toggle {
+  padding: 6px 14px;
+  background: var(--color-bg-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-status-toggle:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-text-faint);
+}
+.btn-status-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-feedback {
+  margin: -8px 0 20px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .form-grid {
@@ -221,12 +378,12 @@ async function submit() {
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text);
 }
 
 .form-input {
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -241,8 +398,8 @@ async function submit() {
 
 .error-alert {
   padding: 12px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -254,13 +411,13 @@ async function submit() {
   gap: 12px;
   margin-top: 16px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .btn-secondary {
   padding: 10px 20px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -269,7 +426,7 @@ async function submit() {
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(--color-bg-hover);
 }
 
 .btn-primary {
@@ -290,5 +447,25 @@ async function submit() {
 .btn-primary:disabled, .btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .status-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: 1;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
 }
 </style>

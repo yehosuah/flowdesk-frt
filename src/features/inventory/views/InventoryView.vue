@@ -259,7 +259,7 @@
           </p>
         </div>
 
-        <div class="filtros-footer">
+        <div v-if="can('inventory.import')" class="filtros-footer">
           <button
             class="btn-import"
             type="button"
@@ -298,6 +298,10 @@ import type {
 
 import ImportExcelModal
   from '@/features/inventory/components/ImportExcelModal.vue';
+
+import { useAuth } from '@/composables/useAuth';
+
+const { can } = useAuth();
 
 import {
   getApiErrorMessage,
@@ -747,7 +751,7 @@ const productosStockBajo =
 .page-title {
   margin: 0;
 
-  color: var(--color-text);
+  color: var(--color-heading);
 
   font-size: 2rem;
 
@@ -791,7 +795,7 @@ const productosStockBajo =
 .table-container {
   width: 100%;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   border-radius: 12px;
 
@@ -814,15 +818,14 @@ const productosStockBajo =
   background:
     var(--color-structure-base);
 
-  border-bottom:
-    2px solid #e8eef6;
+  border-bottom: 2px solid var(--color-bg-border);
 }
 
 
 .inventory-table th {
   padding: 14px 20px;
 
-  color: #ffffff;
+  color: #fff;
 
   font-size: .85rem;
 
@@ -833,8 +836,7 @@ const productosStockBajo =
 
 
 .inventory-table tbody tr {
-  border-bottom:
-    1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
 
   transition:
     background .12s;
@@ -894,9 +896,9 @@ const productosStockBajo =
 
 
 .badge--inactive {
-  background: #f0f0f0;
+  background: var(--color-bg-subtle);
 
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 
@@ -917,9 +919,9 @@ const productosStockBajo =
 
 
 .cantidad-badge--low {
-  background: #fde8e8;
+  background: var(--color-danger-bg);
 
-  color: #c03a3a;
+  color: var(--color-danger-text);
 }
 
 
@@ -963,7 +965,7 @@ const productosStockBajo =
 .filtros-titulo {
   margin: 0 0 12px;
 
-  color: var(--color-text);
+  color: var(--color-heading);
 
   font-size: .95rem;
 
@@ -985,8 +987,7 @@ const productosStockBajo =
 .filtros-divider {
   margin: 14px 0;
 
-  border-top:
-    1px solid #dde3ec;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 
@@ -1049,12 +1050,11 @@ const productosStockBajo =
 
   box-sizing: border-box;
 
-  border:
-    2px solid #b0bbd4;
+  border: 2px solid var(--color-border-strong);
 
   border-radius: 3px;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   transition:
     all .14s;
@@ -1062,14 +1062,14 @@ const productosStockBajo =
 
 
 .checkbox.checked {
-  background: #4a90d9;
+  background: var(--color-info);
 
-  border-color: #4a90d9;
+  border-color: var(--color-info);
 }
 
 
 .checkbox__check {
-  color: #ffffff;
+  color: #fff;
 
   font-size: .6rem;
 
@@ -1093,8 +1093,7 @@ const productosStockBajo =
 .chip {
   padding: 5px 10px;
 
-  border:
-    1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
 
   border-radius: 99px;
 
@@ -1123,7 +1122,7 @@ const productosStockBajo =
 
 
 .chip:hover:not(.chip--active) {
-  border-color: #b0bbd4;
+  border-color: var(--color-text-faint);
 
   background:
     rgba(0, 0, 0, .04);
@@ -1141,7 +1140,7 @@ const productosStockBajo =
   border-color:
     var(--color-structure-base) !important;
 
-  color: #ffffff !important;
+  color: #fff !important;
 
   font-weight: 600;
 }
@@ -1161,10 +1160,9 @@ const productosStockBajo =
 
   padding: 10px 12px;
 
-  background: #fff5f5;
+  background: var(--color-danger-bg);
 
-  border:
-    1px solid #fde8e8;
+  border: 1px solid var(--color-danger-border);
 
   border-radius: 8px;
 }
@@ -1173,7 +1171,7 @@ const productosStockBajo =
 .stock-alerta__titulo {
   margin: 0 0 4px;
 
-  color: #c03a3a;
+  color: var(--color-danger-text);
 
   font-size: .82rem;
 
@@ -1184,7 +1182,7 @@ const productosStockBajo =
 .stock-alerta__texto {
   margin: 0;
 
-  color: #c03a3a;
+  color: var(--color-danger-text);
 
   font-size: .78rem;
 
@@ -1216,7 +1214,7 @@ const productosStockBajo =
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -1238,8 +1236,7 @@ const productosStockBajo =
 
 
 .btn-import:hover {
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 
   background:
     var(--color-structure-subtle);
@@ -1307,10 +1304,9 @@ const productosStockBajo =
 
     padding: 18px;
 
-    background: #ffffff;
+    background: var(--color-bg-surface);
 
-    border:
-      1px solid #dde3ec;
+    border: 1px solid var(--color-bg-border);
 
     border-radius: 12px;
 
@@ -1385,8 +1381,7 @@ const productosStockBajo =
 
     overflow: hidden;
 
-    border:
-      1px solid #dde3ec;
+    border: 1px solid var(--color-bg-border);
 
     border-radius: 12px;
   }
@@ -1423,8 +1418,7 @@ const productosStockBajo =
 
     padding: 14px 16px;
 
-    border-bottom:
-      1px solid #dde3ec;
+    border-bottom: 1px solid var(--color-bg-border);
   }
 
 
@@ -1539,7 +1533,7 @@ const productosStockBajo =
   .cantidad-badge--low {
     padding: 2px 7px;
 
-    background: #fde8e8;
+    background: var(--color-danger-bg);
   }
 
 

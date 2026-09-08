@@ -685,7 +685,7 @@ function shortTitle(
 
   padding: 28px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
   border-radius: 16px;
 
@@ -704,8 +704,7 @@ function shortTitle(
   margin-bottom: 28px;
   padding-bottom: 20px;
 
-  border-bottom:
-    1px solid #edf1f7;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .calendar-nav {
@@ -726,7 +725,7 @@ function shortTitle(
 
   text-align: center;
 
-  color: var(--color-text);
+  color: var(--color-heading);
 
   font-size: 1.6rem;
   font-weight: 700;
@@ -787,7 +786,7 @@ function shortTitle(
 }
 
 .calendar-btn:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
 }
 
 .calendar-btn--active {
@@ -844,25 +843,23 @@ function shortTitle(
 
   overflow: hidden;
 
-  border:
-    1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 12px;
 
-  background: white;
+  background: var(--color-bg-surface);
 }
 
 .day-cell.today {
-  background: #eff6ff;
+  background: var(--color-bg-active);
 
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 }
 
 .day-cell.outside {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 
-  color: #cbd5e1;
+  color: var(--color-text-faint);
 }
 
 .day-cell-header {
@@ -906,32 +903,32 @@ function shortTitle(
 
 .task-dot.high,
 .priority-badge.high {
-  background: #ffe3e3;
-  color: #c92a2a;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
 }
 
 .task-dot.high {
-  background: #ef4444;
+  background: var(--color-danger);
 }
 
 .task-dot.medium,
 .priority-badge.medium {
-  background: #fff3bf;
-  color: #e67700;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .task-dot.medium {
-  background: #f59e0b;
+  background: var(--color-warning);
 }
 
 .task-dot.low,
 .priority-badge.low {
-  background: #d3f9d8;
-  color: #2b8a3e;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .task-dot.low {
-  background: #22c55e;
+  background: var(--color-success);
 }
 
 .task-title {
@@ -974,12 +971,11 @@ function shortTitle(
 
   overflow: hidden;
 
-  border:
-    1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 12px;
 
-  background: white;
+  background: var(--color-bg-surface);
 }
 
 .week-header {
@@ -987,10 +983,9 @@ function shortTitle(
 
   text-align: center;
 
-  border-bottom:
-    1px solid #edf1f7;
+  border-bottom: 1px solid var(--color-bg-border);
 
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .week-header h3 {
@@ -1007,8 +1002,7 @@ function shortTitle(
 
   margin-top: 5px;
 
-  color:
-    var(--color-structure-base);
+  color: var(--color-structure-hover);
 
   font-size: 1.25rem;
   font-weight: 700;
@@ -1072,12 +1066,11 @@ function shortTitle(
 .day-card {
   padding: 20px;
 
-  border:
-    1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 14px;
 
-  background: #fff;
+  background: var(--color-bg-surface);
 
   cursor: pointer;
 
@@ -1148,8 +1141,7 @@ function shortTitle(
   color:
     var(--color-text-secondary);
 
-  border:
-    1px dashed #dbe3ef;
+  border: 1px dashed var(--color-bg-border);
 
   border-radius: 12px;
 }

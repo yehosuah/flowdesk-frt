@@ -416,7 +416,7 @@ async function submit() {
   overflow-y: auto;
   overflow-x: visible;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   border-radius: 14px;
 
@@ -438,8 +438,7 @@ async function submit() {
 .modal__title {
   margin: 0;
 
-  color:
-    var(--color-structure-base);
+  color: var(--color-heading);
 
   font-size: 1.15rem;
   font-weight: 700;
@@ -464,7 +463,7 @@ async function submit() {
 }
 
 .modal__close:hover {
-  background: #f0f4f9;
+  background: var(--color-bg-border);
 }
 
 .alert {
@@ -484,11 +483,11 @@ async function submit() {
 }
 
 .alert-error {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
 
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
 
-  color: #b91c1c;
+  color: var(--color-danger-text);
 }
 
 .alert-close {
@@ -530,12 +529,11 @@ async function submit() {
 
   padding: 11px 14px;
 
-  border:
-    1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -551,8 +549,7 @@ async function submit() {
 .form-input:focus {
   outline: none;
 
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 
   box-shadow:
     0 0 0 3px
@@ -560,11 +557,11 @@ async function submit() {
 }
 
 .form-input.input-error {
-  border-color: #ef4444;
+  border-color: var(--color-danger);
 }
 
 .error-msg {
-  color: #dc2626;
+  color: var(--color-danger-text);
 
   font-size: .75rem;
 }
@@ -599,12 +596,11 @@ async function submit() {
   padding:
     11px 36px 11px 14px;
 
-  border:
-    1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -632,15 +628,14 @@ async function submit() {
   transform:
     translateY(-55%);
 
-  color: #94a3b8;
+  color: var(--color-text-faint);
 
   font-size: .9rem;
 }
 
 .custom-select[open]
 .custom-select__trigger {
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 
   border-radius: 8px;
 
@@ -651,11 +646,11 @@ async function submit() {
 
 .custom-select--error
 .custom-select__trigger {
-  border-color: #ef4444;
+  border-color: var(--color-danger);
 }
 
 .custom-select__placeholder {
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .custom-select__options {
@@ -672,9 +667,9 @@ async function submit() {
 
   overflow: hidden;
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
 
   border-radius: 8px;
 
@@ -693,10 +688,9 @@ async function submit() {
   padding: 10px 14px;
 
   border: none;
-  border-bottom:
-    1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-bg-border);
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   color:
     var(--color-text-secondary);
@@ -715,14 +709,13 @@ async function submit() {
 }
 
 .custom-select__option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .custom-select__option--active {
-  background: #eff6ff;
+  background: var(--color-bg-active);
 
-  color:
-    var(--color-structure-base);
+  color: var(--color-structure-hover);
 
   font-weight: 600;
 }
@@ -761,18 +754,16 @@ async function submit() {
     1.5px solid
     var(--color-structure-subtle);
 
-  background: #ffffff;
+  background: var(--color-bg-surface);
 
   color:
     var(--color-text-muted);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  border-color:
-    var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 
-  color:
-    var(--color-structure-base);
+  color: var(--color-structure-hover);
 }
 
 .btn-primary {
@@ -790,7 +781,7 @@ async function submit() {
   background:
     var(--color-structure-base);
 
-  color: #ffffff;
+  color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -812,7 +803,7 @@ async function submit() {
     2px solid
     rgba(255, 255, 255, .4);
 
-  border-top-color: #ffffff;
+  border-top-color: #fff;
 
   border-radius: 50%;
 
