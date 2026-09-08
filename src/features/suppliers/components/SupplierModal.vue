@@ -23,12 +23,14 @@
           <button
             type="button"
             class="btn-status-toggle"
-            @click="toggleStatus"
+            @click="requestToggle"
             :disabled="isTogglingStatus"
           >
             {{ isTogglingStatus ? 'Actualizando...' : (localSupplier?.is_active ? 'Desactivar proveedor' : 'Activar proveedor') }}
           </button>
         </div>
+
+        <p v-if="statusFeedback" class="status-feedback">{{ statusFeedback }}</p>
 
         <form @submit.prevent="submit" class="form-grid">
           <div class="form-group full-width">
@@ -64,14 +66,28 @@
         </form>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-if="showConfirm"
+      title="Desactivar proveedor"
+      :message="confirmMessage"
+      confirm-label="Desactivar"
+      cancel-label="Cancelar"
+      variant="danger"
+      :loading="isTogglingStatus"
+      :error="confirmError"
+      @confirm="runToggle"
+      @cancel="cancelConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, onBeforeUnmount } from 'vue';
 import { X } from 'lucide-vue-next';
 import { createSupplier, updateSupplier, toggleSupplierStatus, type Supplier } from '@/features/suppliers/api';
 import { getApiErrorMessage } from '@/services/apiClient';
+import ConfirmDialog from '@/app/components/ConfirmDialog.vue';
 
 const props = defineProps<{
   supplier?: Supplier | null;
@@ -99,21 +115,68 @@ const isSubmitting = ref(false);
 const isTogglingStatus = ref(false);
 const error = ref('');
 
-async function toggleStatus() {
+// --- Confirmación visual del cambio de estado ---
+const showConfirm = ref(false);
+const confirmError = ref('');
+const statusFeedback = ref('');
+let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+const confirmMessage = computed(
+  () =>
+    `«${localSupplier.value?.nombre ?? 'Este proveedor'}» dejará de aparecer en los listados y ` +
+    'selecciones. Se conserva su historial y podrás reactivarlo cuando quieras.',
+);
+
+function showFeedback(text: string) {
+  statusFeedback.value = text;
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => {
+    statusFeedback.value = '';
+  }, 4000);
+}
+
+onBeforeUnmount(() => clearTimeout(feedbackTimer));
+
+function requestToggle() {
+  if (!localSupplier.value) return;
+  error.value = '';
+  statusFeedback.value = '';
+
+  if (localSupplier.value.is_active) {
+    confirmError.value = '';
+    showConfirm.value = true;
+  } else {
+    runToggle();
+  }
+}
+
+function cancelConfirm() {
+  if (isTogglingStatus.value) return;
+  showConfirm.value = false;
+  confirmError.value = '';
+}
+
+async function runToggle() {
   if (!localSupplier.value) return;
 
+  const willActivate = !localSupplier.value.is_active;
   isTogglingStatus.value = true;
+  confirmError.value = '';
   error.value = '';
 
   try {
-    const updated = await toggleSupplierStatus(
-      localSupplier.value.id,
-      !localSupplier.value.is_active,
-    );
+    const updated = await toggleSupplierStatus(localSupplier.value.id, willActivate);
     localSupplier.value = updated;
     emit('status-changed', updated);
+    showConfirm.value = false;
+    showFeedback(willActivate ? 'Proveedor activado.' : 'Proveedor desactivado.');
   } catch (err) {
-    error.value = getApiErrorMessage(err);
+    const message = getApiErrorMessage(err);
+    if (showConfirm.value) {
+      confirmError.value = message;
+    } else {
+      error.value = message;
+    }
   } finally {
     isTogglingStatus.value = false;
   }
@@ -280,6 +343,17 @@ async function submit() {
 .btn-status-toggle:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.status-feedback {
+  margin: -8px 0 20px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .form-grid {
