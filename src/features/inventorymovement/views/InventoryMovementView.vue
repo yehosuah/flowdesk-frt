@@ -1584,7 +1584,7 @@ function limpiarFiltros() {
   min-height: 100vh;
   font-family: var(--font-sans, 'Inter', sans-serif);
   color: var(--color-text, #1e293b);
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
 }
 
 .content-container {
@@ -1618,13 +1618,13 @@ function limpiarFiltros() {
   font-size: 2.25rem;
   font-weight: 800;
   margin: 0;
-  color: #0f172a;
+  color: var(--color-heading);
   letter-spacing: -.02em;
 }
 
 .page-subtitle {
   margin: 6px 0 0;
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: .95rem;
 }
 
@@ -1671,9 +1671,9 @@ function limpiarFiltros() {
   width: 220px;
   padding: 8px 0;
   box-sizing: border-box;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-bg-surface);
   box-shadow: 0 10px 25px rgba(0, 0, 0, .1);
 }
 
@@ -1684,7 +1684,7 @@ function limpiarFiltros() {
   box-sizing: border-box;
   background: none;
   border: none;
-  color: #334155;
+  color: var(--color-text-secondary);
   font-family: inherit;
   font-size: .9rem;
   font-weight: 500;
@@ -1693,14 +1693,14 @@ function limpiarFiltros() {
 }
 
 .dropdown-item:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--color-structure-subtle);
+  color: var(--color-text);
 }
 
 .dropdown-divider {
   height: 1px;
   margin: 6px 0;
-  background: #e2e8f0;
+  background: var(--color-bg-border);
 }
 
 .alert {
@@ -1713,9 +1713,9 @@ function limpiarFiltros() {
 }
 
 .alert-success {
-  border: 1px solid #bbf7d0;
-  background: #dcfce7;
-  color: #166534;
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .alert-close {
@@ -1734,7 +1734,7 @@ function limpiarFiltros() {
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-bg-surface);
   box-shadow: var(--shadow-card);
 }
 
@@ -1757,20 +1757,20 @@ function limpiarFiltros() {
 }
 
 .movimiento-table thead tr {
-  border-bottom: 2px solid #e8eef6;
+  border-bottom: 2px solid var(--color-bg-border);
   background: var(--color-structure-base);
 }
 
 .movimiento-table th {
   padding: 14px 20px;
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
   font-size: .85rem;
   font-weight: 700;
   text-align: left;
 }
 
 .movimiento-table tbody tr {
-  border-bottom: 1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .movimiento-table tbody tr:last-child {
@@ -1817,13 +1817,13 @@ function limpiarFiltros() {
 }
 
 .tipo-badge--entrada {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .tipo-badge--salida {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .cantidad-num {
@@ -1833,11 +1833,11 @@ function limpiarFiltros() {
 }
 
 .cantidad-num--entrada {
-  color: #15803d;
+  color: var(--color-success);
 }
 
 .cantidad-num--salida {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .loading-state,
@@ -1860,13 +1860,13 @@ function limpiarFiltros() {
 }
 
 .empty-state--error {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--color-bg-border);
   border-top-color: var(--color-structure-base, #3b82f6);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -1886,8 +1886,8 @@ function limpiarFiltros() {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 20px;
-  border-top: 1px solid #f0f4f9;
-  background: #fff;
+  border-top: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
 }
 
 .pagination-info {
@@ -1904,9 +1904,9 @@ function limpiarFiltros() {
 
 .btn-page {
   padding: 7px 12px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -1964,7 +1964,7 @@ function limpiarFiltros() {
 
 .filtros-titulo {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: .95rem;
   font-weight: 700;
 }
@@ -1974,7 +1974,7 @@ function limpiarFiltros() {
   border: none;
   border-radius: 6px;
   background: none;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-family: var(--font-sans);
   font-size: .72rem;
   font-weight: 600;
@@ -1996,7 +1996,7 @@ function limpiarFiltros() {
 
 .filtros-divider {
   margin: 14px 0;
-  border-top: 1px solid #dde3ec;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .custom-select {
@@ -2017,9 +2017,9 @@ function limpiarFiltros() {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 32px 8px 11px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -2032,12 +2032,12 @@ function limpiarFiltros() {
   top: 50%;
   right: 11px;
   transform: translateY(-55%);
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .custom-select[open]
 .custom-select__trigger {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   box-shadow: 0 0 0 2px var(--color-structure-subtle);
 }
 
@@ -2050,9 +2050,9 @@ function limpiarFiltros() {
   max-height: 220px;
   box-sizing: border-box;
   overflow-y: auto;
-  border: 1px solid #dde3ec;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   box-shadow: 0 8px 18px rgba(15, 23, 42, .12);
 }
 
@@ -2062,8 +2062,8 @@ function limpiarFiltros() {
   box-sizing: border-box;
   padding: 9px 11px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: #fff;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -2076,12 +2076,12 @@ function limpiarFiltros() {
 }
 
 .custom-select__option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-app);
 }
 
 .custom-select__option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-structure-subtle);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 
@@ -2093,7 +2093,7 @@ function limpiarFiltros() {
 
 .chip {
   padding: 5px 10px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 99px;
   background: transparent;
   color: var(--color-text-secondary);
@@ -2142,9 +2142,9 @@ function limpiarFiltros() {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 10px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -2153,17 +2153,17 @@ function limpiarFiltros() {
 }
 
 .date-picker__trigger--active {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   box-shadow: 0 0 0 2px var(--color-structure-subtle);
 }
 
 .date-placeholder {
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .date-picker__icon {
   flex-shrink: 0;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .calendar-popover {
@@ -2175,9 +2175,9 @@ function limpiarFiltros() {
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
   padding: 16px;
-  border: 1px solid #dde3ec;
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-bg-surface);
   box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
 }
 
@@ -2204,7 +2204,7 @@ function limpiarFiltros() {
   padding: 0;
   border: none;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--color-bg-app);
   color: var(--color-text);
   font-size: 1.2rem;
   cursor: pointer;
@@ -2241,15 +2241,15 @@ function limpiarFiltros() {
 }
 
 .calendar-day:hover {
-  background: #f1f5f9;
+  background: var(--color-structure-subtle);
 }
 
 .calendar-day--outside {
-  color: #b0bbd4;
+  color: var(--color-text-muted);
 }
 
 .calendar-day--today {
-  border: 1px solid var(--color-structure-base);
+  border: 1px solid var(--color-structure-hover);
 }
 
 .calendar-day--selected {
@@ -2264,14 +2264,14 @@ function limpiarFiltros() {
   justify-content: space-between;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .calendar-footer button {
   padding: 5px;
   border: none;
   background: transparent;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-family: var(--font-sans);
   font-size: .72rem;
   font-weight: 600;
@@ -2304,14 +2304,14 @@ function limpiarFiltros() {
   width: 16px;
   height: 16px;
   box-sizing: border-box;
-  border: 2px solid #b0bbd4;
+  border: 2px solid var(--color-bg-border);
   border-radius: 3px;
-  background: #fff;
+  background: var(--color-bg-surface);
 }
 
 .checkbox.checked {
-  border-color: #4a90d9;
-  background: #4a90d9;
+  border-color: var(--color-structure-hover);
+  background: var(--color-structure-hover);
 }
 
 .checkbox__check {
@@ -2413,9 +2413,9 @@ function limpiarFiltros() {
 
   .filtros-panel {
     padding: 16px;
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid var(--color-bg-border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--color-bg-surface);
     box-shadow: var(--shadow-card);
   }
 
@@ -2482,7 +2482,7 @@ function limpiarFiltros() {
     width: 100%;
     box-sizing: border-box;
     padding: 12px 14px;
-    border-bottom: 1px solid #e8eef6;
+    border-bottom: 1px solid var(--color-bg-border);
   }
 
   .movimiento-table tbody tr.movement-row:last-child {

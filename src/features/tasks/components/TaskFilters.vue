@@ -173,7 +173,7 @@ function clearFilters() {
   align-items: center;
   gap: 16px;
 
-  background: white;
+  background: var(--color-bg-surface);
   padding: 18px 22px;
   margin-bottom: 24px;
 
@@ -187,14 +187,14 @@ function clearFilters() {
   display: flex;
   align-items: center;
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
 
   padding: 0 12px;
 }
 
 .search-icon {
-  color: #9aa7bd;
+  color: var(--color-text-faint);
   flex-shrink: 0;
 }
 
@@ -227,9 +227,9 @@ function clearFilters() {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 34px 12px 12px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text);
   font-size: .9rem;
   font-family: var(--font-sans);
@@ -243,7 +243,7 @@ function clearFilters() {
   right: 12px;
   top: 50%;
   transform: translateY(-55%);
-  color: #9aa7bd;
+  color: var(--color-text-faint);
 }
 
 .filter-dropdown[open] .filter-select {
@@ -257,8 +257,8 @@ function clearFilters() {
   z-index: 50;
   width: 100%;
   box-sizing: border-box;
-  background: white;
-  border: 1px solid #dbe3ef;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
@@ -271,8 +271,8 @@ function clearFilters() {
   box-sizing: border-box;
   padding: 10px 12px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: white;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
   color: var(--color-text);
   text-align: left;
   font-family: var(--font-sans);
@@ -285,12 +285,12 @@ function clearFilters() {
 }
 
 .filter-option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .filter-option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-bg-active);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 

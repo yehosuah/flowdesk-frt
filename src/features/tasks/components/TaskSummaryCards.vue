@@ -89,7 +89,7 @@ const completed = computed(() =>
 }
 
 .summary-card {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 12px;
   padding: 18px;
   min-height: 110px;
@@ -118,18 +118,18 @@ const completed = computed(() =>
 }
 
 .summary-icon.pending {
-  color: #e67e22;
+  color: var(--color-warning-text);
 }
 
 .summary-icon.progress {
-  color: #3498db;
+  color: var(--color-info);
 }
 
 .summary-icon.completed {
-  color: #2ecc71;
+  color: var(--color-success);
 }
 
 .summary-icon.total {
-  color: #2c3e50;
+  color: var(--color-heading);
 }
 </style>

@@ -240,7 +240,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 }
 
 .modal {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 14px;
   width: 100%;
   max-width: 600px;
@@ -260,7 +260,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 .modal__title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0;
 }
 
@@ -275,7 +275,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 }
 
 .modal__close:hover {
-  background: #f0f4f9;
+  background: var(--color-bg-border);
 }
 
 .modal__footer {
@@ -293,11 +293,11 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 }
 
 .upload-hint code {
-  background: #f0f4f9;
+  background: var(--color-bg-border);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: .78rem;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
 }
 
 .dropzone {
@@ -311,14 +311,14 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
   cursor: pointer;
   color: var(--color-text-muted);
   transition: all .15s;
-  background: #fafbfc;
+  background: var(--color-bg-surface);
 }
 
 .dropzone:hover,
 .dropzone--over {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   background: var(--color-structure-subtle);
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
 }
 
 .dropzone--error {
@@ -332,7 +332,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 }
 
 .link {
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   text-decoration: underline;
 }
 
@@ -345,7 +345,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 
 .preview-badge {
   background: var(--color-structure-subtle);
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-size: .75rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -363,7 +363,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 
 .preview-scroll {
   overflow-x: auto;
-  border: 1px solid #e8eef6;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
   max-height: 240px;
   overflow-y: auto;
@@ -377,7 +377,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 
 .preview-table th {
   background: var(--color-structure-base);
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
   padding: 10px 14px;
   text-align: left;
   font-weight: 700;
@@ -388,7 +388,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 
 .preview-table td {
   padding: 9px 14px;
-  border-bottom: 1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -422,7 +422,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 .done-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0;
 }
 
@@ -436,7 +436,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
   padding: 10px 20px;
   border: 1.5px solid var(--color-structure-subtle);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-muted);
   font-size: .88rem;
   font-weight: 600;
@@ -446,7 +446,7 @@ async function unzip(buffer: ArrayBuffer): Promise<Record<string, string>> {
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-structure-base);
-  color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
+  color: var(--color-structure-hover);
 }
 </style>

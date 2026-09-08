@@ -471,7 +471,7 @@ function createTask() {
 .modal {
   width: 700px;
   max-width: 90vw;
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
   overflow: visible;
@@ -482,7 +482,7 @@ function createTask() {
   justify-content: space-between;
   align-items: center;
   padding: 22px 28px;
-  border-bottom: 1px solid #edf1f7;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .modal-header h2 {
@@ -495,7 +495,7 @@ function createTask() {
   background: none;
   border: none;
   cursor: pointer;
-  color: #8fa3c1;
+  color: var(--color-text-faint);
   display: flex;
   align-items: center;
 }
@@ -540,18 +540,18 @@ function createTask() {
 .form-group textarea {
   width: 100%;
   padding: 11px 14px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
   font-size: .9rem;
   font-family: var(--font-sans);
-  background: white;
+  background: var(--color-bg-surface);
   box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 }
 
 .form-group textarea {
@@ -577,9 +577,9 @@ function createTask() {
   width: 100%;
   box-sizing: border-box;
   padding: 11px 34px 11px 14px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text);
   font-size: .9rem;
   font-family: var(--font-sans);
@@ -593,7 +593,7 @@ function createTask() {
   right: 12px;
   top: 50%;
   transform: translateY(-55%);
-  color: #8fa3c1;
+  color: var(--color-text-faint);
 }
 
 .custom-select[open]
@@ -609,8 +609,8 @@ function createTask() {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  background: white;
-  border: 1px solid #dbe3ef;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 8px 16px rgba(15, 23, 42, .12);
@@ -623,8 +623,8 @@ function createTask() {
   box-sizing: border-box;
   padding: 10px 14px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: white;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
   color: var(--color-text);
   text-align: left;
   font-family: var(--font-sans);
@@ -637,12 +637,12 @@ function createTask() {
 }
 
 .custom-select__option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .custom-select__option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-bg-active);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 
@@ -663,9 +663,9 @@ function createTask() {
   width: 100%;
   box-sizing: border-box;
   padding: 11px 14px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text);
   font-size: .9rem;
   font-family: var(--font-sans);
@@ -689,8 +689,8 @@ function createTask() {
   max-width: min(280px, calc(100vw - 32px));
   box-sizing: border-box;
   padding: 14px;
-  background: white;
-  border: 1px solid #dbe3ef;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
 }
@@ -714,14 +714,14 @@ function createTask() {
   height: 34px;
   border: none;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
   color: var(--color-text);
   font-size: 1.3rem;
   cursor: pointer;
 }
 
 .calendar-nav:hover {
-  background: #eef2f7;
+  background: var(--color-bg-subtle);
 }
 
 .calendar-weekdays,
@@ -743,7 +743,7 @@ function createTask() {
 .calendar-weekdays span {
   padding: 5px 0;
   text-align: center;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-size: .72rem;
   font-weight: 700;
 }
@@ -763,7 +763,7 @@ function createTask() {
 }
 
 .calendar-day:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
 }
 
 .calendar-day--empty {
@@ -771,7 +771,7 @@ function createTask() {
 }
 
 .calendar-day--today {
-  border: 1px solid var(--color-structure-base);
+  border: 1px solid var(--color-structure-hover);
 }
 
 .calendar-day--selected {
@@ -790,14 +790,14 @@ function createTask() {
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .calendar-footer-btn {
   padding: 6px 8px;
   border: none;
   background: transparent;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-family: var(--font-sans);
   font-size: .8rem;
   font-weight: 600;
@@ -809,21 +809,21 @@ function createTask() {
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 26px;
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .btn-cancel {
   padding: 10px 18px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   cursor: pointer;
   font-weight: 600;
   transition: .2s;
 }
 
 .btn-cancel:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .btn-create {

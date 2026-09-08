@@ -145,7 +145,7 @@ async function submit() {
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   width: 100%;
   max-width: 550px;
@@ -160,7 +160,7 @@ async function submit() {
 
 .modal-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -169,14 +169,14 @@ async function submit() {
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0;
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -187,8 +187,8 @@ async function submit() {
 }
 
 .btn-close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--color-bg-hover);
+  color: var(--color-heading);
 }
 
 .modal-body {
@@ -196,7 +196,7 @@ async function submit() {
 }
 
 .modal-description {
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   margin-top: 0;
   margin-bottom: 24px;
@@ -221,12 +221,12 @@ async function submit() {
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text);
 }
 
 .form-input {
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -241,8 +241,8 @@ async function submit() {
 
 .error-alert {
   padding: 12px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -254,13 +254,13 @@ async function submit() {
   gap: 12px;
   margin-top: 16px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .btn-secondary {
   padding: 10px 20px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -269,7 +269,7 @@ async function submit() {
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(--color-bg-hover);
 }
 
 .btn-primary {

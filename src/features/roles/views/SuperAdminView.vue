@@ -188,7 +188,7 @@ function roleBadgeClass(role: string): string {
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0;
 }
 
@@ -231,7 +231,7 @@ function roleBadgeClass(role: string): string {
 .btn.activo {
   border-color: var(--color-warning);
   background: var(--color-warning-bg);
-  color: #E65100;
+  color: var(--color-warning-text);
 }
 
 .section-label {
@@ -279,7 +279,7 @@ function roleBadgeClass(role: string): string {
 .item-name {
   font-size: .92rem;
   font-weight: 600;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
 }
 
 .item-meta {
@@ -299,17 +299,17 @@ function roleBadgeClass(role: string): string {
 }
 
 .business-status--active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .business-status--inactive {
-  background: #f0f4f9;
+  background: var(--color-bg-border);
   color: var(--color-text-muted);
 }
 
 .table-container {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 12px;
   box-shadow: var(--shadow-card);
   overflow: hidden;
@@ -329,12 +329,12 @@ function roleBadgeClass(role: string): string {
   padding: 13px 20px;
   text-align: left;
   font-weight: 700;
-  color: #f0f4f9;
+  color: var(--color-text-on-structure);
   font-size: .82rem;
 }
 
 .emp-table tbody tr {
-  border-bottom: 1px solid #f0f4f9;
+  border-bottom: 1px solid var(--color-bg-border);
   transition: background .12s;
 }
 
@@ -343,7 +343,7 @@ function roleBadgeClass(role: string): string {
 }
 
 .emp-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .emp-table td {
@@ -354,7 +354,7 @@ function roleBadgeClass(role: string): string {
 
 .td-name {
   font-weight: 600;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
 }
 
 .td-email {
@@ -370,7 +370,7 @@ function roleBadgeClass(role: string): string {
 }
 
 .table-empty--error {
-  color: #c03a3a;
+  color: var(--color-danger-text);
 }
 
 .role-badge {
@@ -391,13 +391,13 @@ function roleBadgeClass(role: string): string {
 
 .role-badge--manager {
   background: var(--color-info-bg);
-  color: #1565c0;
+  color: var(--color-info-text);
   border: 1px solid var(--color-info-border);
 }
 
 .role-badge--emp {
   background: var(--color-pop-honey);
-  color: #B37400;
+  color: var(--color-warning-text);
   border: 1px solid var(--color-warning-border);
 }
 
@@ -410,11 +410,11 @@ function roleBadgeClass(role: string): string {
 }
 
 .status-dot-wrap--active {
-  color: #2e7d32;
+  color: var(--color-success-text);
 }
 
 .status-dot-wrap--inactive {
-  color: #b0bbd4;
+  color: var(--color-text-faint);
 }
 
 .status-dot {
@@ -425,11 +425,11 @@ function roleBadgeClass(role: string): string {
 }
 
 .status-dot-wrap--active .status-dot {
-  background: #4caf50;
+  background: var(--color-success);
 }
 
 .status-dot-wrap--inactive .status-dot {
-  background: #b0bbd4;
+  background: var(--color-border-strong);
 }
 
 </style>

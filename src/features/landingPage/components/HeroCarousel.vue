@@ -193,7 +193,7 @@ onBeforeUnmount(() => {
 }
 
 .image-placeholder--empty {
-  background: linear-gradient(135deg, #edf3fb, #dbe8fb, #edf3fb);
+  background: linear-gradient(135deg, var(--color-bg-subtle), var(--color-bg-active), var(--color-bg-subtle));
 }
 
 @media (max-width: 480px) {

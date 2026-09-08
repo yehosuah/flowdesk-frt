@@ -216,7 +216,7 @@ async function removeClient() {
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   width: 100%;
   max-width: 550px;
@@ -231,7 +231,7 @@ async function removeClient() {
 
 .modal-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -240,14 +240,14 @@ async function removeClient() {
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-heading);
   margin: 0;
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -258,8 +258,8 @@ async function removeClient() {
 }
 
 .btn-close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--color-bg-hover);
+  color: var(--color-heading);
 }
 
 .modal-body {
@@ -267,7 +267,7 @@ async function removeClient() {
 }
 
 .modal-description {
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   margin-top: 0;
   margin-bottom: 24px;
@@ -279,7 +279,7 @@ async function removeClient() {
   gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .status-pill {
@@ -288,14 +288,14 @@ async function removeClient() {
   font-size: 0.8rem;
   font-weight: 600;
 }
-.status-pill--active { background: #dcfce7; color: #166534; }
-.status-pill--inactive { background: #f1f5f9; color: #475569; }
+.status-pill--active { background: var(--color-success-bg); color: var(--color-success-text); }
+.status-pill--inactive { background: var(--color-bg-hover); color: var(--color-text-secondary); }
 
 .btn-status-toggle {
   padding: 6px 14px;
-  background: #fff;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  background: var(--color-bg-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -303,8 +303,8 @@ async function removeClient() {
   transition: background 0.2s, border-color 0.2s;
 }
 .btn-status-toggle:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #94a3b8;
+  background: var(--color-bg-subtle);
+  border-color: var(--color-text-faint);
 }
 .btn-status-toggle:disabled {
   opacity: 0.6;
@@ -330,12 +330,12 @@ async function removeClient() {
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text);
 }
 
 .form-input {
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -350,8 +350,8 @@ async function removeClient() {
 
 .error-alert {
   padding: 12px;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -363,7 +363,7 @@ async function removeClient() {
   gap: 12px;
   margin-top: 16px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-bg-border);
 }
 .form-actions--split {
   justify-content: space-between;
@@ -376,17 +376,17 @@ async function removeClient() {
 
 .btn-danger {
   padding: 10px 20px;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
 }
 .btn-danger:hover:not(:disabled) {
-  background: #fee2e2;
-  border-color: #fca5a5;
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
 }
 .btn-danger:disabled {
   opacity: 0.6;
@@ -395,8 +395,8 @@ async function removeClient() {
 
 .btn-secondary {
   padding: 10px 20px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -405,7 +405,7 @@ async function removeClient() {
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(--color-bg-hover);
 }
 
 .btn-primary {

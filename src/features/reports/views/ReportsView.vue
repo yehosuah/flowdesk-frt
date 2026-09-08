@@ -1308,7 +1308,7 @@ function exportPDF() {
   flex-direction: column;
   overflow: hidden;
   background: var(--color-bg-surface);
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
 }
@@ -1333,7 +1333,7 @@ function exportPDF() {
 
 .filtros-titulo {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: .95rem;
   font-weight: 700;
 }
@@ -1358,7 +1358,7 @@ function exportPDF() {
 
 .filtros-divider {
   margin: 14px 0;
-  border-top: 1px solid #dde3ec;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .filtros-chips {
@@ -1371,7 +1371,7 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 7px 10px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 99px;
   background: transparent;
   color: var(--color-text-secondary);
@@ -1388,7 +1388,7 @@ function exportPDF() {
 }
 
 .chip:hover:not(.chip--active) {
-  border-color: #b0bbd4;
+  border-color: var(--color-text-faint);
   background: rgba(0, 0, 0, .04);
 }
 
@@ -1399,7 +1399,7 @@ function exportPDF() {
 .chip--active:active {
   background: var(--color-structure-base) !important;
   border-color: var(--color-structure-base) !important;
-  color: #ffffff !important;
+  color: #fff !important;
   font-weight: 600;
 }
 
@@ -1434,9 +1434,9 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 9px 32px 9px 10px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -1450,11 +1450,11 @@ function exportPDF() {
   right: 11px;
   top: 50%;
   transform: translateY(-55%);
-  color: #94a3b8;
+  color: var(--color-text-faint);
 }
 
 .custom-select[open] .custom-select__trigger {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
   border-radius: 8px 8px 0 0;
 }
 
@@ -1466,8 +1466,8 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  background: white;
-  border: 1.5px solid #dde3ec;
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, .14);
@@ -1479,8 +1479,8 @@ function exportPDF() {
   box-sizing: border-box;
   padding: 9px 10px;
   border: none;
-  border-bottom: 1px solid #f1f5f9;
-  background: white;
+  border-bottom: 1px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   text-align: left;
   font-family: var(--font-sans);
@@ -1493,12 +1493,12 @@ function exportPDF() {
 }
 
 .custom-select__option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .custom-select__option--active {
-  background: #eff6ff;
-  color: var(--color-structure-base);
+  background: var(--color-bg-active);
+  color: var(--color-structure-hover);
   font-weight: 600;
 }
 
@@ -1515,7 +1515,7 @@ function exportPDF() {
 .input-group label {
   display: block;
   margin-bottom: 4px;
-  color: #94a3b8;
+  color: var(--color-text-faint);
   font-size: .7rem;
 }
 
@@ -1527,9 +1527,9 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 9px 10px;
-  border: 1.5px solid #dde3ec;
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -1537,11 +1537,11 @@ function exportPDF() {
 }
 
 .date-picker[open] .date-picker__trigger {
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 }
 
 .date-picker__trigger.input-error {
-  border-color: #ef4444;
+  border-color: var(--color-danger);
 }
 
 .date-placeholder {
@@ -1557,8 +1557,8 @@ function exportPDF() {
   max-width: min(280px, calc(100vw - 32px));
   box-sizing: border-box;
   padding: 14px;
-  background: white;
-  border: 1px solid #dbe3ef;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, .18);
 }
@@ -1583,14 +1583,14 @@ function exportPDF() {
   padding: 0;
   border: none;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
   color: var(--color-text);
   font-size: 1.2rem;
   cursor: pointer;
 }
 
 .calendar-nav:hover {
-  background: #eef2f7;
+  background: var(--color-bg-subtle);
 }
 
 .calendar-weekdays,
@@ -1607,7 +1607,7 @@ function exportPDF() {
 .calendar-weekdays span {
   padding: 5px 0;
   text-align: center;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-size: .68rem;
   font-weight: 700;
 }
@@ -1632,7 +1632,7 @@ function exportPDF() {
 }
 
 .calendar-day:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
 }
 
 .calendar-day--empty {
@@ -1640,7 +1640,7 @@ function exportPDF() {
 }
 
 .calendar-day--today {
-  border: 1px solid var(--color-structure-base);
+  border: 1px solid var(--color-structure-hover);
 }
 
 .calendar-day--selected {
@@ -1659,14 +1659,14 @@ function exportPDF() {
   align-items: center;
   margin-top: 10px;
   padding-top: 9px;
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .calendar-footer-btn {
   padding: 5px 7px;
   border: none;
   background: transparent;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-family: var(--font-sans);
   font-size: .75rem;
   font-weight: 600;
@@ -1684,7 +1684,7 @@ function exportPDF() {
   padding: 0;
   border: none;
   background: none;
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
   font-size: .65rem;
   font-weight: 600;
   cursor: pointer;
@@ -1721,14 +1721,14 @@ function exportPDF() {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 2px solid #b0bbd4;
+  border: 2px solid var(--color-border-strong);
   border-radius: 3px;
-  background: white;
+  background: var(--color-bg-surface);
 }
 
 .checkbox.checked {
-  background: #4a90d9;
-  border-color: #4a90d9;
+  background: var(--color-info);
+  border-color: var(--color-info);
 }
 
 .checkbox__check {
@@ -1739,7 +1739,7 @@ function exportPDF() {
 
 .error-msg {
   margin: 2px 0 0;
-  color: #ef4444;
+  color: var(--color-danger);
   font-size: .7rem;
 }
 
@@ -1776,9 +1776,9 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 8px;
-  border: 1px solid #dde3ec;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
   font-weight: 600;
   cursor: pointer;
@@ -1805,7 +1805,7 @@ function exportPDF() {
 
 .empty-icon {
   margin-bottom: 16px;
-  color: #cbd5e1;
+  color: var(--color-text-faint);
 }
 
 .empty-state h3,
@@ -1825,8 +1825,8 @@ function exportPDF() {
   width: 36px;
   height: 36px;
   margin-bottom: 16px;
-  border: 3px solid #dde3ec;
-  border-top-color: var(--color-structure-base);
+  border: 3px solid var(--color-bg-border);
+  border-top-color: var(--color-structure-hover);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1843,7 +1843,7 @@ function exportPDF() {
   justify-content: space-between;
   gap: 16px;
   padding: 16px 20px;
-  border-bottom: 1px solid #dde3ec;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .preview-header h3 {
@@ -1854,8 +1854,8 @@ function exportPDF() {
 .badge {
   padding: 4px 10px;
   border-radius: 12px;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-bg-hover);
+  color: var(--color-text-muted);
   font-size: .7rem;
   font-weight: 600;
 }
@@ -1880,7 +1880,7 @@ function exportPDF() {
   min-width: 0;
   padding: 12px 10px;
   text-align: left;
-  border-bottom: 1px solid #dde3ec;
+  border-bottom: 1px solid var(--color-bg-border);
   font-size: .78rem;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -1893,7 +1893,7 @@ function exportPDF() {
 
 .data-table th {
   background: var(--color-structure-base);
-  color: #ffffff;
+  color: #fff;
   font-weight: 700;
   border-bottom: none;
 }
@@ -1923,8 +1923,8 @@ function exportPDF() {
   .filtros-panel {
     width: 100%;
     padding: 18px;
-    background: white;
-    border: 1px solid #dde3ec;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-bg-border);
     border-radius: 12px;
     box-shadow: var(--shadow-card);
   }
@@ -1995,7 +1995,7 @@ function exportPDF() {
   .chip--active:active {
     background: var(--color-structure-base) !important;
     border-color: var(--color-structure-base) !important;
-    color: #ffffff !important;
+    color: #fff !important;
   }
 
   .fecha-inputs {
@@ -2069,7 +2069,7 @@ function exportPDF() {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
-  border-bottom: 1px solid #dde3ec;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .data-table td {

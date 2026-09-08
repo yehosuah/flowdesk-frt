@@ -342,12 +342,12 @@ async function cerrarSesion(): Promise<void> {
 
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #fff;
 }
 
 .sidebar__link--active {
   background: rgba(255, 255, 255, 0.13);
-  color: #ffffff;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -488,7 +488,7 @@ async function cerrarSesion(): Promise<void> {
     border-radius: 8px;
 
     background: var(--color-structure-base);
-    color: #ffffff;
+    color: #fff;
 
     font-size: 24px;
     line-height: 1;

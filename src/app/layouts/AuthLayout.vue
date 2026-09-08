@@ -1,5 +1,6 @@
 <template>
-  <div class="auth-page">
+  <!-- Las pantallas de autenticación siempre se muestran en tema claro. -->
+  <div class="auth-page" data-theme="light">
     <RouterView />
   </div>
 </template>

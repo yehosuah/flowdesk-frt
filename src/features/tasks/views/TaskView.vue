@@ -133,6 +133,7 @@ function updateTask(updatedTask: Task) {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
+  color: var(--color-heading);
 }
 
 .page-subtitle {
@@ -157,7 +158,7 @@ function updateTask(updatedTask: Task) {
 }
 
 .coming-soon-card {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 12px;
   box-shadow: var(--shadow-card);
   padding: 32px;

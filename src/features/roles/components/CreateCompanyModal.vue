@@ -160,7 +160,7 @@ async function submit(): Promise<void> {
 }
 
 .modal {
-  background: #fff;
+  background: var(--color-bg-surface);
   border-radius: 14px;
   width: 100%;
   max-width: 460px;
@@ -178,7 +178,7 @@ async function submit(): Promise<void> {
 .modal__title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--color-structure-base);
+  color: var(--color-heading);
   margin: 0;
 }
 
@@ -193,7 +193,7 @@ async function submit(): Promise<void> {
 }
 
 .modal__close:hover {
-  background: #f0f4f9;
+  background: var(--color-bg-border);
 }
 
 .modal__footer {
@@ -207,7 +207,7 @@ async function submit(): Promise<void> {
   padding: 10px 20px;
   border: 1.5px solid var(--color-structure-subtle);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-muted);
   font-size: .88rem;
   font-weight: 600;
@@ -217,7 +217,7 @@ async function submit(): Promise<void> {
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-structure-base);
-  color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
+  color: var(--color-structure-hover);
 }
 </style>

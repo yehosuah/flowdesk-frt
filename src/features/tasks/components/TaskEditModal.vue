@@ -442,7 +442,7 @@ function saveTask() {
   max-width: 100%;
   max-height: calc(100vh - 32px);
 
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 16px;
 
   box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
@@ -458,7 +458,7 @@ function saveTask() {
 
   padding: 22px 28px;
 
-  border-bottom: 1px solid #edf1f7;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
 .modal-header h2 {
@@ -479,7 +479,7 @@ function saveTask() {
   background: none;
   border: none;
 
-  color: #8fa3c1;
+  color: var(--color-text-faint);
 
   cursor: pointer;
 }
@@ -533,10 +533,10 @@ function saveTask() {
 
   padding: 11px 14px;
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -548,7 +548,7 @@ function saveTask() {
 .form-group textarea:focus {
   outline: none;
 
-  border-color: var(--color-structure-base);
+  border-color: var(--color-structure-hover);
 }
 
 .form-group textarea {
@@ -582,10 +582,10 @@ function saveTask() {
 
   padding: 11px 34px 11px 14px;
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -606,7 +606,7 @@ function saveTask() {
 
   transform: translateY(-55%);
 
-  color: #8fa3c1;
+  color: var(--color-text-faint);
 }
 
 .custom-select[open] .custom-select__trigger {
@@ -626,9 +626,9 @@ function saveTask() {
 
   overflow: hidden;
 
-  background: white;
+  background: var(--color-bg-surface);
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
 
@@ -644,9 +644,9 @@ function saveTask() {
   padding: 10px 14px;
 
   border: none;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-bg-border);
 
-  background: white;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -663,13 +663,13 @@ function saveTask() {
 }
 
 .custom-select__option:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .custom-select__option--active {
-  background: #eff6ff;
+  background: var(--color-bg-active);
 
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
 
   font-weight: 600;
 }
@@ -686,10 +686,10 @@ function saveTask() {
 
   padding: 11px 14px;
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
   color: var(--color-text);
 
@@ -714,9 +714,9 @@ function saveTask() {
 
   padding: 14px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 12px;
 
   box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
@@ -749,7 +749,7 @@ function saveTask() {
   border: none;
   border-radius: 8px;
 
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 
   color: var(--color-text);
 
@@ -759,7 +759,7 @@ function saveTask() {
 }
 
 .calendar-nav:hover {
-  background: #eef2f7;
+  background: var(--color-bg-subtle);
 }
 
 .calendar-weekdays,
@@ -780,7 +780,7 @@ function saveTask() {
 
   text-align: center;
 
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
 
   font-size: .72rem;
   font-weight: 700;
@@ -814,7 +814,7 @@ function saveTask() {
 }
 
 .calendar-day:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-hover);
 }
 
 .calendar-day--empty {
@@ -822,7 +822,7 @@ function saveTask() {
 }
 
 .calendar-day--today {
-  border: 1px solid var(--color-structure-base);
+  border: 1px solid var(--color-structure-hover);
 }
 
 .calendar-day--selected {
@@ -845,7 +845,7 @@ function saveTask() {
   margin-top: 12px;
   padding-top: 10px;
 
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .calendar-footer-btn {
@@ -855,7 +855,7 @@ function saveTask() {
 
   background: transparent;
 
-  color: var(--color-structure-base);
+  color: var(--color-structure-hover);
 
   font-family: var(--font-sans);
   font-size: .8rem;
@@ -872,16 +872,16 @@ function saveTask() {
 
   padding: 16px 26px;
 
-  border-top: 1px solid #edf1f7;
+  border-top: 1px solid var(--color-bg-border);
 }
 
 .btn-cancel {
   padding: 10px 18px;
 
-  border: 1px solid #dbe3ef;
+  border: 1px solid var(--color-bg-border);
   border-radius: 8px;
 
-  background: white;
+  background: var(--color-bg-surface);
 
   font-weight: 600;
 
@@ -889,7 +889,7 @@ function saveTask() {
 }
 
 .btn-cancel:hover {
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .btn-save {
