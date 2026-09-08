@@ -36,12 +36,14 @@
       </button>
     </form>
 
-    <RouterLink class="auth-link" to="/login">Volver al login</RouterLink>
+    <RouterLink class="auth-link" :to="returnRoute">
+      {{ returnLabel }}
+    </RouterLink>
   </section>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { forgotPassword } from '@/features/auth/api';
 import { getApiErrorMessage } from '@/services/apiClient';
@@ -52,6 +54,18 @@ interface ForgotPasswordForm {
 }
 
 const route = useRoute();
+
+const returnRoute = computed(() => {
+  return route.query.redirect === '/profile'
+    ? '/profile'
+    : '/login';
+});
+
+const returnLabel = computed(() => {
+  return returnRoute.value === '/profile'
+    ? 'Volver a mi perfil'
+    : 'Volver al login';
+});
 
 const form = reactive<ForgotPasswordForm>({
   email: typeof route.query.email === 'string' ? route.query.email : '',

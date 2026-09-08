@@ -213,8 +213,14 @@ async function submitProfile() {
 }
 
 function goToChangePassword() {
-  router.push({ name: 'forgot-password', query: profile.value ? { email: profile.value.email } : undefined });
+  router.push({
+    name: 'forgot-password',
+    query: profile.value
+      ? { email: profile.value.email, redirect: '/profile' }
+      : { redirect: '/profile' },
+  });
 }
+
 </script>
 
 <style scoped>
