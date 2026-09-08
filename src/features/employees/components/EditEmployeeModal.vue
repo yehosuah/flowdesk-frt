@@ -4,11 +4,18 @@
       class="modal-backdrop"
       @click.self="emit('close')"
     >
-      <div class="modal">
+      <div
+        ref="modalRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-employee-modal-title"
+        tabindex="-1"
+      >
 
         <!-- Header -->
         <div class="modal__header">
-          <h2 class="modal__title">
+          <h2 id="edit-employee-modal-title" class="modal__title">
             Editar Empleado
           </h2>
 
@@ -225,6 +232,8 @@ import {
   getApiErrorMessage,
 } from '@/services/apiClient';
 
+import { useAccessibleModal } from '@/composables/useAccessibleModal';
+
 const props = defineProps<{
   employee: UserResponse;
 }>();
@@ -233,6 +242,12 @@ const emit = defineEmits<{
   close: [];
   updated: [];
 }>();
+
+const modalRef = ref<HTMLElement | null>(null);
+function closeModal(): void {
+  emit('close');
+}
+useAccessibleModal(modalRef, closeModal);
 
 interface FormData {
   username: string;
