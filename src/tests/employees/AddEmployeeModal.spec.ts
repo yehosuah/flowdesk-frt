@@ -112,7 +112,7 @@ describe("AddEmployeeModal", () => {
     await Promise.resolve();
     await nextTick();
 
-    expect(wrapper.findAll("option").length).toBeGreaterThan(1);
+    expect(wrapper.findAll(".custom-select__option").length).toBeGreaterThan(1);
   });
 
 });

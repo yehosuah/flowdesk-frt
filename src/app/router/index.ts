@@ -179,7 +179,7 @@ const routes: RouteRecordRaw[] = [
         component: EmployeesView,
         meta: {
           requiresAuth: true,
-          requiresRole: ['admin'],
+          requiresRole: ['admin', 'manager'],
           title: 'Empleados',
         },
       },

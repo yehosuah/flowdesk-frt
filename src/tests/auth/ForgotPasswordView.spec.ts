@@ -7,6 +7,10 @@ import ForgotPasswordView from "@/features/auth/views/ForgotPasswordView.vue";
 const mockQuery: Record<string, string> = {};
 
 vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+  useRoute: vi.fn(() => ({ query: {} })),
   RouterLink: {
     props: ["to"],
     template: "<a><slot /></a>",

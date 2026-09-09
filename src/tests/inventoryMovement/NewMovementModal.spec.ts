@@ -42,7 +42,7 @@ describe("NewMovementModal", () => {
     const wrapper = createWrapper();
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.text()).toContain("Nuevo movimiento");
+    expect(wrapper.text()).toContain("Ajuste de Inventario (Otro)");
     expect(wrapper.text()).toContain("Registrar");
   });
 
@@ -100,8 +100,8 @@ describe("NewMovementModal", () => {
 
     expect(wrapper.text()).toContain("Entrada");
     expect(wrapper.text()).toContain("Salida");
-    expect(wrapper.text()).toContain("Ajuste positivo");
-    expect(wrapper.text()).toContain("Ajuste negativo");
+    expect(wrapper.text()).toContain("Ajuste Positivo (+)");
+    expect(wrapper.text()).toContain("Ajuste Negativo (-)");
   });
 
   it("muestra el botón registrar", () => {
