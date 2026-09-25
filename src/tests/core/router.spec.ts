@@ -70,20 +70,14 @@ describe("protección de rutas", () => {
     await router.push("/inventory");
 
     expect(router.currentRoute.value.name).toBe("login");
-
-    expect(
-      router.currentRoute.value.query.redirect,
-    ).toBe("/inventory");
+    expect(router.currentRoute.value.query.redirect).toBe("/inventory");
   });
 
   it("redirige al login al intentar acceder a otra ruta protegida sin sesión", async () => {
     await router.push("/profile");
 
     expect(router.currentRoute.value.name).toBe("login");
-
-    expect(
-      router.currentRoute.value.query.redirect,
-    ).toBe("/profile");
+    expect(router.currentRoute.value.query.redirect).toBe("/profile");
   });
 
   it("permite acceder al login cuando no existe una sesión", async () => {
@@ -95,6 +89,55 @@ describe("protección de rutas", () => {
   it("permite acceder a una ruta protegida cuando existe una sesión válida", async () => {
     mocks.isAuthenticated.value = true;
     mocks.roleName.value = "admin";
+
+    await router.push("/inventory");
+
+    expect(router.currentRoute.value.name).toBe("inventory");
+  });
+
+  it("bloquea a employee cuando intenta acceder a reportes", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "employee";
+    mocks.resolveHomeByRole.mockReturnValue("/inventory");
+
+    await router.push("/reports");
+
+    expect(mocks.resolveHomeByRole).toHaveBeenCalledWith("employee");
+    expect(router.currentRoute.value.path).toBe("/inventory");
+  });
+
+  it("bloquea a employee cuando intenta acceder a empleados", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "employee";
+    mocks.resolveHomeByRole.mockReturnValue("/inventory");
+
+    await router.push("/employees");
+
+    expect(mocks.resolveHomeByRole).toHaveBeenCalledWith("employee");
+    expect(router.currentRoute.value.path).toBe("/inventory");
+  });
+
+  it("permite a admin acceder a reportes", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "admin";
+
+    await router.push("/reports");
+
+    expect(router.currentRoute.value.name).toBe("reports");
+  });
+
+  it("permite a superadmin acceder a su módulo", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "superadmin";
+
+    await router.push("/superAdmin");
+
+    expect(router.currentRoute.value.name).toBe("superAdmin");
+  });
+
+  it("permite a employee acceder al inventario", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "employee";
 
     await router.push("/inventory");
 
