@@ -1,19 +1,28 @@
-import { describe, it, expect, vi } from "vitest";
+import {
+  beforeEach,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 
 import InventoryView from "@/features/inventory/views/InventoryView.vue";
 
+const mocks = vi.hoisted(() => ({
+  fetchInventoryProducts: vi.fn(),
+  getApiErrorMessage: vi.fn(),
+}));
+
 vi.mock("@/features/inventory/api", () => ({
-  fetchInventoryProducts: vi.fn(() => Promise.resolve([])),
+  fetchInventoryProducts: mocks.fetchInventoryProducts,
 }));
 
 vi.mock("@/services/apiClient", () => ({
-  getApiErrorMessage: vi.fn(() => "Error"),
+  getApiErrorMessage: mocks.getApiErrorMessage,
 }));
 
-// La vista se prueba con permisos completos; el gating por rol tiene sus
-// propios tests en src/tests/core/permissions.spec.ts.
 vi.mock("@/composables/useAuth", () => ({
   useAuth: () => ({
     role: { value: "admin" },
@@ -33,17 +42,27 @@ function createWrapper() {
   return mount(InventoryView);
 }
 
+async function waitForLoad() {
+  await nextTick();
+  await Promise.resolve();
+  await nextTick();
+}
+
 describe("InventoryView", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.fetchInventoryProducts.mockResolvedValue([]);
+    mocks.getApiErrorMessage.mockReturnValue(
+      "Error al cargar inventario",
+    );
+  });
 
   it("renderiza correctamente la vista de inventario", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     expect(wrapper.exists()).toBe(true);
-
     expect(wrapper.text()).toContain("Inventario");
     expect(wrapper.text()).toContain("Filtros");
     expect(wrapper.text()).toContain("Importar Excel");
@@ -52,21 +71,17 @@ describe("InventoryView", () => {
   it("muestra mensaje cuando no hay productos", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     expect(wrapper.text()).toContain(
-      "No hay productos que coincidan con los filtros."
+      "No hay productos que coincidan con los filtros.",
     );
   });
 
   it("abre el modal de importar excel", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     await wrapper.find(".btn-import").trigger("click");
 
@@ -76,9 +91,7 @@ describe("InventoryView", () => {
   it("permite mostrar y ocultar columnas", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     const primeraColumna = wrapper.find(".filtros-list li");
 
@@ -90,9 +103,7 @@ describe("InventoryView", () => {
   it("permite cambiar el filtro de estado", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     const botones = wrapper.findAll(".chip");
 
@@ -104,9 +115,7 @@ describe("InventoryView", () => {
   it("permite cambiar el filtro de stock", async () => {
     const wrapper = createWrapper();
 
-    await nextTick();
-    await Promise.resolve();
-    await nextTick();
+    await waitForLoad();
 
     const botones = wrapper.findAll(".chip");
 
@@ -115,4 +124,18 @@ describe("InventoryView", () => {
     expect(botones[3].classes()).toContain("chip--active");
   });
 
+  it("muestra un error cuando falla la carga del inventario", async () => {
+    mocks.fetchInventoryProducts.mockRejectedValue(
+      new Error("Backend no disponible"),
+    );
+
+    const wrapper = createWrapper();
+
+    await waitForLoad();
+
+    expect(mocks.getApiErrorMessage).toHaveBeenCalled();
+    expect(wrapper.text()).toContain(
+      "Error al cargar inventario",
+    );
+  });
 });
