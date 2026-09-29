@@ -20,21 +20,36 @@
           Registra la salida de un producto por concepto de venta.
         </p>
         
-        <form @submit.prevent="submit" class="form-grid">
+        <form @submit.prevent="submit" class="form-grid" novalidate>
           <div class="form-group full-width">
             <label class="form-label">Producto *</label>
-            <select v-model="form.producto_id" class="form-input" required>
+            <select
+              v-model="form.producto_id"
+              class="form-input"
+              :class="{ 'input-error': errors.producto_id }"
+              @change="errors.producto_id = ''"
+            >
               <option value="" disabled>Selecciona un producto...</option>
               <option v-for="prod in products" :key="prod.id" :value="prod.id" :disabled="prod.cantidad <= 0">
                 {{ prod.nombre }} (Stock: {{ prod.cantidad }})
               </option>
             </select>
+            <span v-if="errors.producto_id" class="error-msg">{{ errors.producto_id }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Cantidad a descontar *</label>
-            <input v-model.number="form.cantidad" type="number" min="1" :max="selectedProductMax" class="form-input" required />
-            <span v-if="selectedProductMax !== undefined" class="stock-hint">Max: {{ selectedProductMax }}</span>
+            <input
+              v-model.number="form.cantidad"
+              type="number"
+              min="1"
+              :max="selectedProductMax"
+              class="form-input"
+              :class="{ 'input-error': errors.cantidad }"
+              @input="errors.cantidad = ''"
+            />
+            <span v-if="selectedProductMax !== undefined && !errors.cantidad" class="stock-hint">Max: {{ selectedProductMax }}</span>
+            <span v-if="errors.cantidad" class="error-msg">{{ errors.cantidad }}</span>
           </div>
 
           <div class="form-group full-width">
@@ -94,26 +109,55 @@ const selectedProductMax = computed(() => {
 const isSubmitting = ref(false);
 const error = ref('');
 
-async function submit() {
-  if (!form.producto_id || form.cantidad <= 0) {
-    error.value = 'Por favor selecciona un producto e ingresa una cantidad válida.';
-    return;
+const errors = reactive({
+  producto_id: '',
+  cantidad: '',
+});
+
+function isBlank(value: number | string): boolean {
+  return String(value).trim() === '';
+}
+
+function validateForm(): boolean {
+  errors.producto_id = '';
+  errors.cantidad = '';
+
+  let isValid = true;
+
+  if (!form.producto_id) {
+    errors.producto_id = 'Selecciona un producto.';
+    isValid = false;
   }
 
-  if (selectedProductMax.value !== undefined && form.cantidad > selectedProductMax.value) {
-    error.value = `No hay suficiente stock. Máximo disponible: ${selectedProductMax.value}`;
+  if (isBlank(form.cantidad)) {
+    errors.cantidad = 'Ingresa la cantidad a descontar.';
+    isValid = false;
+  } else if (Number(form.cantidad) <= 0) {
+    errors.cantidad = 'La cantidad debe ser mayor a 0.';
+    isValid = false;
+  } else if (selectedProductMax.value !== undefined && Number(form.cantidad) > selectedProductMax.value) {
+    errors.cantidad = `No hay suficiente stock. Máximo disponible: ${selectedProductMax.value}.`;
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+async function submit() {
+  error.value = '';
+
+  if (!validateForm()) {
     return;
   }
 
   isSubmitting.value = true;
-  error.value = '';
 
   try {
     await createMovement({
       producto_id: form.producto_id,
       tipo_movimiento: 'salida_venta',
-      cantidad: form.cantidad,
-      motivo: form.motivo || 'Venta registrada',
+      cantidad: Number(form.cantidad),
+      motivo: form.motivo.trim() || 'Venta registrada',
     });
 
     emit('created');
@@ -252,6 +296,15 @@ async function submit() {
   font-size: 0.75rem;
   color: var(--color-text-muted);
   margin-top: 4px;
+}
+
+.form-input.input-error {
+  border-color: var(--color-danger);
+}
+
+.error-msg {
+  color: var(--color-danger-text);
+  font-size: 0.78rem;
 }
 
 .error-alert {
