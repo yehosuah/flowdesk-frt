@@ -17,9 +17,9 @@
 
       <div class="modal-body">
         <p class="modal-desc">
-          Registra la salida de un producto por concepto de venta.
+          Registra la venta de un producto. El precio, el impuesto y el total se calculan automáticamente.
         </p>
-        
+
         <form @submit.prevent="submit" class="form-grid" novalidate>
           <div class="form-group full-width">
             <label class="form-label">Producto *</label>
@@ -38,7 +38,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Cantidad a descontar *</label>
+            <label class="form-label">Cantidad a vender *</label>
             <input
               v-model.number="form.cantidad"
               type="number"
@@ -52,12 +52,25 @@
             <span v-if="errors.cantidad" class="error-msg">{{ errors.cantidad }}</span>
           </div>
 
-          <div class="form-group full-width">
-            <label class="form-label">Motivo / Notas</label>
-            <textarea v-model="form.motivo" class="form-input" rows="2" placeholder="Ej. Venta en mostrador..."></textarea>
+          <div class="form-group full-width form-group--checkbox">
+            <label class="checkbox-label">
+              <input v-model="form.es_exenta" type="checkbox" class="checkbox-input" />
+              Venta exenta de IVA
+            </label>
+            <span class="checkbox-hint">Márcalo solo si esta venta no debe llevar impuesto.</span>
           </div>
 
-          <div v-if="error" class="error-alert">{{ error }}</div>
+          <TaxBreakdown
+            v-if="selectedProduct && taxRate !== null"
+            class="full-width"
+            title="Resumen de la venta"
+            :subtotal="subtotalPreview"
+            :tax-rate="taxRate"
+            :is-exempt="form.es_exenta"
+          />
+          <p v-else-if="taxConfigError" class="tax-config-error full-width">{{ taxConfigError }}</p>
+
+          <div v-if="error" class="error-alert full-width">{{ error }}</div>
 
           <div class="form-actions full-width">
             <button type="button" class="btn-cancel" @click="$emit('close')" :disabled="isSubmitting">Cancelar</button>
@@ -72,11 +85,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
-import { createMovement } from '@/features/inventorymovement/api';
+import { reactive, ref, computed, onMounted } from 'vue';
+import { createSale, fetchTaxConfiguration } from '@/features/sales/api';
 import type { InventoryProduct } from '@/features/inventory/types';
 import { getApiErrorMessage } from '@/services/apiClient';
 import { useAccessibleModal } from '@/composables/useAccessibleModal';
+import TaxBreakdown from '@/app/components/TaxBreakdown.vue';
 
 const props = defineProps<{
   products: InventoryProduct[];
@@ -93,21 +107,43 @@ function closeModal(): void {
 }
 useAccessibleModal(modalRef, closeModal);
 
-
 const form = reactive({
   producto_id: '',
   cantidad: 1,
-  motivo: '',
+  es_exenta: false,
 });
 
-const selectedProductMax = computed(() => {
-  if (!form.producto_id) return undefined;
-  const prod = props.products.find(p => p.id === form.producto_id);
-  return prod ? prod.cantidad : undefined;
+const selectedProduct = computed(() => props.products.find(p => p.id === form.producto_id) ?? null);
+
+const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
+
+// Vista previa en vivo: se recalcula solo con producto/cantidad, el backend
+// vuelve a calcular todo con autoridad (precio del producto en ese momento,
+// tasa de IVA vigente) al registrar la venta.
+const subtotalPreview = computed(() => {
+  const producto = selectedProduct.value;
+  if (!producto || isBlank(form.cantidad)) return 0;
+  return Number(form.cantidad) * producto.precio;
 });
 
 const isSubmitting = ref(false);
 const error = ref('');
+
+// Tasa de IVA de la empresa (GET /commercial/tax-configuration). No tiene
+// valor por defecto: mientras no llegue, no se muestra el desglose.
+const taxRate = ref<number | null>(null);
+const taxConfigError = ref('');
+
+onMounted(async () => {
+  try {
+    const config = await fetchTaxConfiguration();
+    taxRate.value = Number(config.tasa_impuesto);
+  } catch (err) {
+    // El registro de la venta sigue funcionando aunque falle esta consulta;
+    // el backend calcula el impuesto igual, solo se pierde la vista previa.
+    taxConfigError.value = 'No se pudo cargar la tasa de IVA configurada. El total se calculará al registrar la venta.';
+  }
+});
 
 const errors = reactive({
   producto_id: '',
@@ -130,7 +166,7 @@ function validateForm(): boolean {
   }
 
   if (isBlank(form.cantidad)) {
-    errors.cantidad = 'Ingresa la cantidad a descontar.';
+    errors.cantidad = 'Ingresa la cantidad a vender.';
     isValid = false;
   } else if (Number(form.cantidad) <= 0) {
     errors.cantidad = 'La cantidad debe ser mayor a 0.';
@@ -153,11 +189,9 @@ async function submit() {
   isSubmitting.value = true;
 
   try {
-    await createMovement({
-      producto_id: form.producto_id,
-      tipo_movimiento: 'salida_venta',
-      cantidad: Number(form.cantidad),
-      motivo: form.motivo.trim() || 'Venta registrada',
+    await createSale({
+      items: [{ producto_id: form.producto_id, cantidad: Number(form.cantidad) }],
+      es_exenta: form.es_exenta,
     });
 
     emit('created');
@@ -270,6 +304,42 @@ async function submit() {
   gap: 6px;
 }
 
+.form-group--checkbox {
+  gap: 4px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-structure-base);
+}
+
+.checkbox-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: 24px;
+}
+
+.tax-config-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: 0.82rem;
+}
+
 .form-label {
   font-size: 0.85rem;
   font-weight: 600;
@@ -360,5 +430,16 @@ async function submit() {
 .btn-submit:disabled, .btn-cancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    margin: 0 12px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
 }
 </style>

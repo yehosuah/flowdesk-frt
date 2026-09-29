@@ -8,8 +8,16 @@
         <dd>Q {{ formatMoney(subtotal) }}</dd>
       </div>
 
+      <div v-if="descuento > 0" class="tax-breakdown__line">
+        <dt>Descuento</dt>
+        <dd>- Q {{ formatMoney(descuento) }}</dd>
+      </div>
+
       <div class="tax-breakdown__line">
-        <dt>IVA ({{ taxRatePercent }}%)</dt>
+        <dt>
+          <span v-if="isExempt" class="tax-breakdown__exempt-badge">Exenta de IVA</span>
+          <span v-else>IVA ({{ taxRatePercent }}%)</span>
+        </dt>
         <dd>Q {{ formatMoney(impuesto) }}</dd>
       </div>
     </dl>
@@ -27,23 +35,30 @@ import { computed } from 'vue';
 /**
  * Desglose tributario de una venta (subtotal, IVA, total).
  *
- * Solo necesita el subtotal: el IVA y el total se calculan acá mismo con la
- * tasa fija de Guatemala (12%), para que ningún componente que lo use tenga
- * que repetir esa cuenta. `taxRate` existe como prop (no como literal suelto
- * en el cálculo) por si alguna vez hay que mostrar una venta histórica con
- * una tasa distinta, pero su valor por defecto es siempre 12%.
+ * `taxRate` y `isExempt` NO tienen valores por defecto propios del negocio:
+ * la tasa de IVA es configurable por empresa (GET /commercial/tax-configuration,
+ * tabla configuracion_tributaria del backend) y `es_exenta` es una decisión por
+ * venta — ambos deben venir siempre de quien use este componente, nunca
+ * asumirse acá. El monto de impuesto y el total se calculan igual que el
+ * backend (app/services/commercial.py::create_sale): impuesto = 0 si está
+ * exenta, si no subtotal × tasa/100; total = subtotal - descuento + impuesto.
  */
 const props = withDefaults(
   defineProps<{
-    /** Suma de los subtotales de cada línea de la venta, antes de impuestos. */
+    /** Suma de (cantidad × precio unitario) de cada línea de la venta. */
     subtotal: number;
-    /** Tasa de IVA a aplicar sobre el subtotal (0.12 = 12%). */
-    taxRate?: number;
+    /** Tasa de IVA de la empresa, en porcentaje (12 = 12%), no en fracción. */
+    taxRate: number;
+    /** Descuento aplicado a la venta. Se resta del subtotal antes del total. */
+    descuento?: number;
+    /** Si la venta está exenta de IVA: el impuesto es 0 y se rotula distinto. */
+    isExempt?: boolean;
     /** Título opcional, p. ej. "Resumen de la venta". */
     title?: string;
   }>(),
   {
-    taxRate: 0.12,
+    descuento: 0,
+    isExempt: false,
     title: '',
   },
 );
@@ -56,9 +71,11 @@ function formatMoney(value: number): string {
   return Number.isFinite(value) ? value.toFixed(2) : '0.00';
 }
 
-const taxRatePercent = computed(() => Math.round(props.taxRate * 100));
-const impuesto = computed(() => round2(props.subtotal * props.taxRate));
-const total = computed(() => round2(props.subtotal + impuesto.value));
+const taxRatePercent = computed(() => round2(props.taxRate));
+const impuesto = computed(() =>
+  props.isExempt ? 0 : round2(props.subtotal * (props.taxRate / 100)),
+);
+const total = computed(() => round2(props.subtotal - props.descuento + impuesto.value));
 
 defineExpose({ impuesto, total });
 </script>
@@ -105,6 +122,18 @@ defineExpose({ impuesto, total });
   font-variant-numeric: tabular-nums;
 }
 
+.tax-breakdown__exempt-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .tax-breakdown__total {
   display: flex;
   align-items: center;
@@ -120,5 +149,20 @@ defineExpose({ impuesto, total });
 
 .tax-breakdown__total span:last-child {
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 420px) {
+  .tax-breakdown {
+    padding: 14px;
+  }
+
+  .tax-breakdown__line dt,
+  .tax-breakdown__line dd {
+    font-size: 0.82rem;
+  }
+
+  .tax-breakdown__total {
+    font-size: 0.95rem;
+  }
 }
 </style>
