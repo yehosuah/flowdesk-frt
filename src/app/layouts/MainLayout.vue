@@ -488,11 +488,18 @@ async function cerrarSesion(): Promise<void> {
 
     background: var(--color-structure-base);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
     font-size: 24px;
     line-height: 1;
 
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .mobile-menu-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar {
@@ -640,3 +647,4 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
+
