@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <div class="header-content">
@@ -110,7 +110,7 @@
       </aside>
 
       <main class="detail-panel card">
-        <EmptyState v-if="!selectedClient" title="Ning�n cliente seleccionado" description="Selecciona un cliente de la lista para ver sus detalles."><template #icon><Users :size="48" /></template></EmptyState>
+        <EmptyState v-if="!selectedClient" title="Ningún cliente seleccionado" description="Selecciona un cliente de la lista para ver sus detalles."><template #icon><Users :size="48" /></template></EmptyState>
 
         <div v-else class="detail-content">
           <div class="detail-header">
@@ -128,7 +128,7 @@
             <div class="detail-actions">
               <button
                 class="btn-icon-action"
-                title="Editar información"
+                title="Editar informaciÃ³n"
                 @click="openEditModal(selectedClient)"
               >
                 <Pencil :size="18" />
@@ -138,7 +138,7 @@
           </div>
 
           <section class="detail-section">
-            <h3 class="section-title">Información de Contacto</h3>
+            <h3 class="section-title">InformaciÃ³n de Contacto</h3>
 
             <div class="contact-card">
               <div class="contact-row">
@@ -255,7 +255,7 @@ function openEditModal(cli: Client) {
 }
 
 function onModalSaved(saved: Client) {
-  // Selecciona el cliente recién creado/editado para que quede visible
+  // Selecciona el cliente reciÃ©n creado/editado para que quede visible
   // de inmediato en el panel de detalle (antes se quedaba en el que
   // estuviera seleccionado previamente, o en ninguno).
   selectedClient.value = saved;
@@ -265,11 +265,11 @@ function onModalSaved(saved: Client) {
 
 function onStatusChanged(updated: Client) {
   // Actualiza en memoria (panel de detalle + fila en la lista) sin volver a
-  // pedir la lista todavía: si el cliente activado/desactivado deja de
-  // cumplir el filtro actual (p. ej. "Activos"), un fetchData() aquí lo
-  // saca de la lista y salta la selección a otro cliente mientras el modal
+  // pedir la lista todavÃ­a: si el cliente activado/desactivado deja de
+  // cumplir el filtro actual (p. ej. "Activos"), un fetchData() aquÃ­ lo
+  // saca de la lista y salta la selecciÃ³n a otro cliente mientras el modal
   // sigue abierto, lo cual es confuso. La lista se reconcilia con el
-  // filtro recién al cerrar el modal, en onModalClose().
+  // filtro reciÃ©n al cerrar el modal, en onModalClose().
   clientToEdit.value = updated;
   selectedClient.value = updated;
 
@@ -430,7 +430,7 @@ onMounted(() => {
 }
 
 .filter-select::after {
-  content: '⌄';
+  content: 'âŒ„';
   position: absolute;
   right: 12px;
   top: 50%;
@@ -841,5 +841,6 @@ onMounted(() => {
 .mb-2 {
   margin-bottom: 4px;
 }
+
 
 
