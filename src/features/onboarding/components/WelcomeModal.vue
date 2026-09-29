@@ -52,6 +52,7 @@
 
 <script setup lang="ts">
 import { Modal, Button } from '@/app/components/ui';
+import { Package, Users, BarChart3, Sparkles } from 'lucide-vue-next';
 
 defineProps<{
   modelValue: boolean;
@@ -119,4 +120,7 @@ defineEmits<{
   font-size: 0.85rem;
   color: var(--color-text-muted, #6b7280);
 }
+.icon-primary { color: var(--color-structure-base, #3b82f6); }
 </style>
+
+
