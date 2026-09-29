@@ -1,4 +1,4 @@
-import apiClient from '@/services/apiClient';
+import { apiClient } from '@/services/apiClient';
 import type { Task, TaskCreate, TaskUpdate, TaskStatusUpdate } from './types';
 
 export async function fetchTasks(estado?: string, prioridad?: string, search?: string): Promise<Task[]> {
@@ -50,3 +50,4 @@ export async function deleteTask(id: string): Promise<void> {
     auth: true,
   });
 }
+

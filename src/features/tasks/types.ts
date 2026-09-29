@@ -11,3 +11,8 @@ export interface Task {
   status: TaskStatus;
   dueDate: string;
 }
+export type TaskCreate = Omit<Task, 'id'>;
+export type TaskUpdate = Partial<TaskCreate>;
+export interface TaskStatusUpdate {
+  estado: string;
+}
