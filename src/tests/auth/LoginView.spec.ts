@@ -1,7 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import LoginView from "@/features/auth/views/LoginView.vue";
+
+const mocks = vi.hoisted(() => ({
+  loginWithPassword: vi.fn(),
+  routerPush: vi.fn(),
+  setSession: vi.fn(),
+  clearSession: vi.fn(),
+  isValidRole: vi.fn(),
+  resolveHomeByRole: vi.fn(),
+  getApiErrorMessage: vi.fn(),
+  routeQuery: {} as Record<string, string>,
+}));
 
 // Mock
 vi.mock("vue-router", () => ({
@@ -9,21 +20,21 @@ vi.mock("vue-router", () => ({
     template: "<a><slot /></a>",
   },
   useRouter: () => ({
-    push: vi.fn(),
+    push: mocks.routerPush,
   }),
   useRoute: () => ({
-    query: {},
+    query: mocks.routeQuery,
   }),
 }));
 
 vi.mock("@/features/auth/api", () => ({
-  loginWithPassword: vi.fn(),
+  loginWithPassword: mocks.loginWithPassword,
 }));
 
 vi.mock("@/stores/app.store", () => ({
   appStore: {
-    setSession: vi.fn(),
-    clearSession: vi.fn(),
+    setSession: mocks.setSession,
+    clearSession: mocks.clearSession,
     roleName: {
       value: "admin",
     },
@@ -31,16 +42,25 @@ vi.mock("@/stores/app.store", () => ({
 }));
 
 vi.mock("@/utils/roles", () => ({
-  resolveHomeByRole: vi.fn(() => "/inventory"),
-  isValidRole: vi.fn(() => true),
+  resolveHomeByRole: mocks.resolveHomeByRole,
+  isValidRole: mocks.isValidRole,
 }));
 
 vi.mock("@/services/apiClient", () => ({
-  getApiErrorMessage: vi.fn(() => "Error"),
+  getApiErrorMessage: mocks.getApiErrorMessage,
 }));
 
 
 describe("LoginView", () => {
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mocks.isValidRole.mockReturnValue(true);
+    mocks.resolveHomeByRole.mockReturnValue("/inventory");
+    mocks.getApiErrorMessage.mockReturnValue("Error");
+    mocks.routeQuery = {};
+  });
 
   it("renderiza correctamente el formulario de login", () => {
     const wrapper = mount(LoginView);
@@ -129,6 +149,92 @@ describe("LoginView", () => {
     await toggleButton.trigger("click");
 
     expect(wrapper.find("#password").attributes("type")).toBe("password");
+  });
+
+  it("inicia sesión correctamente y redirige según el rol", async () => {
+    const tokenResponse = {
+      access_token: "token-prueba",
+      token_type: "bearer",
+    };
+
+    mocks.loginWithPassword.mockResolvedValue(tokenResponse);
+
+    const wrapper = mount(LoginView);
+
+    await wrapper.find("#email").setValue("USUARIO@CORREO.COM");
+    await wrapper.find("#password").setValue("123456");
+
+    await wrapper.find("form").trigger("submit.prevent");
+    await nextTick();
+
+    expect(mocks.loginWithPassword).toHaveBeenCalledWith({
+      email: "usuario@correo.com",
+      password: "123456",
+    });
+
+    expect(mocks.setSession).toHaveBeenCalledWith(tokenResponse);
+    expect(mocks.resolveHomeByRole).toHaveBeenCalledWith("admin");
+    expect(mocks.routerPush).toHaveBeenCalledWith("/inventory");
+  });
+
+  it("muestra el error cuando el inicio de sesión falla", async () => {
+    mocks.loginWithPassword.mockRejectedValue(new Error("Credenciales incorrectas"));
+    mocks.getApiErrorMessage.mockReturnValue("Credenciales incorrectas");
+
+    const wrapper = mount(LoginView);
+
+    await wrapper.find("#email").setValue("usuario@correo.com");
+    await wrapper.find("#password").setValue("123456");
+
+    await wrapper.find("form").trigger("submit.prevent");
+    await nextTick();
+
+    expect(wrapper.text()).toContain("Credenciales incorrectas");
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.routerPush).not.toHaveBeenCalled();
+  });
+
+  it("limpia la sesión cuando el usuario tiene un rol inválido", async () => {
+    const tokenResponse = {
+      access_token: "token-prueba",
+      token_type: "bearer",
+    };
+
+    mocks.loginWithPassword.mockResolvedValue(tokenResponse);
+    mocks.isValidRole.mockReturnValue(false);
+
+    const wrapper = mount(LoginView);
+
+    await wrapper.find("#email").setValue("usuario@correo.com");
+    await wrapper.find("#password").setValue("123456");
+
+    await wrapper.find("form").trigger("submit.prevent");
+    await nextTick();
+
+    expect(mocks.setSession).toHaveBeenCalledWith(tokenResponse);
+    expect(mocks.clearSession).toHaveBeenCalled();
+    expect(mocks.routerPush).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Tu cuenta no tiene un rol");
+  });
+
+  it("redirige a la ruta solicitada después del inicio de sesión", async () => {
+    const tokenResponse = {
+      access_token: "token-prueba",
+      token_type: "bearer",
+    };
+
+    mocks.routeQuery.redirect = "/profile";
+    mocks.loginWithPassword.mockResolvedValue(tokenResponse);
+
+    const wrapper = mount(LoginView);
+
+    await wrapper.find("#email").setValue("usuario@correo.com");
+    await wrapper.find("#password").setValue("123456");
+
+    await wrapper.find("form").trigger("submit.prevent");
+    await nextTick();
+
+    expect(mocks.routerPush).toHaveBeenCalledWith("/profile");
   });
 
 });
