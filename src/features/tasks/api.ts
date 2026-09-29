@@ -24,7 +24,7 @@ export async function createTask(data: TaskCreate): Promise<Task> {
   return apiClient.request<Task>('/api/v1/tasks', {
     method: 'POST',
     auth: true,
-    data,
+    body: data,
   });
 }
 
@@ -32,7 +32,7 @@ export async function updateTask(id: string, data: TaskUpdate): Promise<Task> {
   return apiClient.request<Task>(`/api/v1/tasks/${id}`, {
     method: 'PUT',
     auth: true,
-    data,
+    body: data,
   });
 }
 
@@ -40,7 +40,7 @@ export async function updateTaskStatus(id: string, estado: string): Promise<Task
   return apiClient.request<Task>(`/api/v1/tasks/${id}/status`, {
     method: 'PATCH',
     auth: true,
-    data: { estado },
+    body: { estado },
   });
 }
 
@@ -50,4 +50,5 @@ export async function deleteTask(id: string): Promise<void> {
     auth: true,
   });
 }
+
 
