@@ -1,7 +1,7 @@
 <template>
   <Modal 
     :model-value="modelValue" 
-    title="¡Bienvenido a FlowDesk! 🚀" 
+    title="¡Bienvenido a FlowDesk!" 
     @update:model-value="$emit('update:modelValue', $event)"
     @close="$emit('close')"
   >
@@ -12,21 +12,21 @@
       
       <div class="welcome-features">
         <div class="feature-item">
-          <div class="feature-icon">📦</div>
+          <div class="feature-icon"><Package :size="24" class="icon-primary" /></div>
           <div class="feature-text">
             <strong>Control Total</strong>
             <span>Gestiona entradas y salidas al instante.</span>
           </div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">👥</div>
+          <div class="feature-icon"><Users :size="24" class="icon-primary" /></div>
           <div class="feature-text">
             <strong>Tus Clientes</strong>
             <span>Directorio y seguimiento de tus mejores compradores.</span>
           </div>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon"><BarChart3 :size="24" class="icon-primary" /></div>
           <div class="feature-text">
             <strong>Análisis Inteligente</strong>
             <span>Métricas clave para hacer crecer tu negocio.</span>
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { Modal, Button } from '@/app/components/ui';
-import { Package, Users, BarChart3, Sparkles } from 'lucide-vue-next';
+import { Package, Users, BarChart3 } from 'lucide-vue-next';
 
 defineProps<{
   modelValue: boolean;
@@ -122,5 +122,3 @@ defineEmits<{
 }
 .icon-primary { color: var(--color-structure-base, #3b82f6); }
 </style>
-
-
