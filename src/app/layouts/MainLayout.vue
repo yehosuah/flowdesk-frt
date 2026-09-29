@@ -46,6 +46,16 @@
       <button
         class="sidebar__logout"
         type="button"
+        @click="resetOnboarding"
+        style="padding-bottom: 4px;"
+      >
+        <HelpCircle :size="18" class="sidebar__icon" />
+        <span class="sidebar__label">Ver Tutorial</span>
+      </button>
+
+      <button
+        class="sidebar__logout"
+        type="button"
         @click="cerrarSesion"
       >
         <LogOut :size="18" class="sidebar__icon" />
@@ -68,7 +78,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
 import { computed, ref, watch } from 'vue';
-import { Menu, LogOut } from 'lucide-vue-next';
+import { Menu, LogOut, HelpCircle } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
 import WelcomeModal from '@/features/onboarding/components/WelcomeModal.vue';
@@ -77,7 +87,7 @@ import { useOnboarding } from '@/features/onboarding/composables/useOnboarding';
 const router = useRouter();
 const sidebarOpen = ref(false);
 const { canAccessRoute } = useAuth();
-const { isWelcomeVisible, skipTour, startTour } = useOnboarding();
+const { isWelcomeVisible, skipTour, startTour, resetOnboarding } = useOnboarding();
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
@@ -650,6 +660,7 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
+
 
 
 
