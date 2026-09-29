@@ -411,14 +411,12 @@ function formatDate(
 .table-container {
   width: 100%;
   max-width: 100%;
-
   background: var(--color-bg-surface);
-
   border-radius: 12px;
-
   box-shadow: var(--shadow-card);
-
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .emp-table {
@@ -456,8 +454,8 @@ function formatDate(
 }
 
 .emp-table tbody tr:last-child {
-  border-bottom: none;
-}
+    margin-bottom: 0;
+  }
 
 .emp-table tbody tr:hover {
   background: var(--color-bg-subtle);
@@ -682,7 +680,10 @@ function formatDate(
   }
 
   .table-container {
-    overflow: hidden;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
   }
 
   .emp-table,
@@ -698,18 +699,18 @@ function formatDate(
 
   .emp-table tbody tr {
     display: block;
-
     width: 100%;
-
     box-sizing: border-box;
-
     padding: 14px 16px;
-
-    border-bottom: 1px solid var(--color-bg-border);
+    margin-bottom: 12px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-bg-border);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   }
 
   .emp-table tbody tr:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
   }
 
   .emp-table tbody tr:hover {
@@ -904,3 +905,4 @@ function formatDate(
   }
 }
 </style>
+

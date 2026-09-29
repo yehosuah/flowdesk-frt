@@ -73,8 +73,13 @@
           </div>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
+        <div v-if="isLoading" class="loading-state-skeletons">
+          <div v-for="i in 5" :key="i" class="skeleton-item">
+            <div class="skeleton-content">
+              <Skeleton width="120px" height="16px" class="mb-2" />
+              <Skeleton width="200px" height="12px" />
+            </div>
+          </div>
         </div>
 
         <ul v-else-if="clients.length > 0" class="client-list">
@@ -101,17 +106,11 @@
           </li>
         </ul>
 
-        <div v-else class="empty-state">
-          No hay clientes encontrados.
-        </div>
+        <EmptyState v-else description="No hay clientes encontrados." />
       </aside>
 
       <main class="detail-panel card">
-        <div v-if="!selectedClient" class="empty-detail">
-          <Users :size="48" class="empty-icon" />
-          <h3>Ning√∫n cliente seleccionado</h3>
-          <p>Selecciona un cliente de la lista para ver sus detalles.</p>
-        </div>
+        <EmptyState v-if="!selectedClient" title="Ning˙n cliente seleccionado" description="Selecciona un cliente de la lista para ver sus detalles."><template #icon><Users :size="48" /></template></EmptyState>
 
         <div v-else class="detail-content">
           <div class="detail-header">
@@ -178,6 +177,7 @@ import { Search, Phone, Mail, Pencil, MapPin, Users } from 'lucide-vue-next';
 import { fetchClients, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
+import { Skeleton, EmptyState, Alert } from '@/app/components/ui';
 
 const clients = ref<Client[]>([]);
 const isLoading = ref(true);
@@ -773,7 +773,7 @@ onMounted(() => {
   }
 
   .client-list {
-    max-height: 240px;
+    max-height: 50vh;
   }
 
   .client-desc {
@@ -824,3 +824,22 @@ onMounted(() => {
   }
 }
 </style>
+.loading-state-skeletons {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mb-2 {
+  margin-bottom: 4px;
+}
+
+

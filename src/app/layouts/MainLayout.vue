@@ -6,14 +6,16 @@
       aria-label="Abrir menú"
       @click="toggleSidebar"
     >
-      ☰
+      <Menu :size="24" />
     </button>
 
-    <div
-      v-if="sidebarOpen"
-      class="sidebar-overlay"
-      @click="closeSidebar"
-    />
+    <Transition name="fade">
+      <div
+        v-if="sidebarOpen"
+        class="sidebar-overlay"
+        @click="closeSidebar"
+      />
+    </Transition>
 
     <aside
       class="sidebar"
@@ -46,7 +48,7 @@
         type="button"
         @click="cerrarSesion"
       >
-        <span class="sidebar__icon" v-html="iconLogout" />
+        <LogOut :size="18" class="sidebar__icon" />
         <span class="sidebar__label">Cerrar sesión</span>
       </button>
     </aside>
@@ -69,7 +71,8 @@
 
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { Menu, LogOut } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
 import ChatWidget from '@/features/chatbot/components/ChatWidget.vue';
@@ -97,6 +100,12 @@ function openChat(): void {
 function closeChat(): void {
   chatOpen.value = false;
 }
+
+watch(sidebarOpen, (isOpen) => {
+  if (window.innerWidth <= 1000) {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+});
 
 const navItems = [
   {
@@ -251,14 +260,6 @@ const navItems = [
 const visibleNavItems = computed(() =>
   navItems.filter((item) => canAccessRoute(item.name)),
 );
-
-const iconLogout = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-  fill="none" stroke="currentColor" stroke-width="2"
-  stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-  <polyline points="16 17 21 12 16 7"/>
-  <line x1="21" y1="12" x2="9" y2="12"/>
-</svg>`;
 
 async function cerrarSesion(): Promise<void> {
   closeSidebar();
@@ -506,11 +507,18 @@ async function cerrarSesion(): Promise<void> {
 
     background: var(--color-structure-base);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
     font-size: 24px;
     line-height: 1;
 
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .mobile-menu-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar {
@@ -635,11 +643,9 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__link {
-    gap: 9px;
-
-    padding: 7px 9px;
-
-    font-size: 0.76rem;
+    gap: 12px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
   }
 
   .sidebar__logout {
@@ -649,3 +655,17 @@ async function cerrarSesion(): Promise<void> {
   }
 }
 </style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+
+
+
+
