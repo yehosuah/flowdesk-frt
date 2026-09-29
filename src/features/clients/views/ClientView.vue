@@ -106,17 +106,11 @@
           </li>
         </ul>
 
-        <div v-else class="empty-state">
-          No hay clientes encontrados.
-        </div>
+        <EmptyState v-else description="No hay clientes encontrados." />
       </aside>
 
       <main class="detail-panel card">
-        <div v-if="!selectedClient" class="empty-detail">
-          <Users :size="48" class="empty-icon" />
-          <h3>Ning√∫n cliente seleccionado</h3>
-          <p>Selecciona un cliente de la lista para ver sus detalles.</p>
-        </div>
+        <EmptyState v-if="!selectedClient" title="Ning˙n cliente seleccionado" description="Selecciona un cliente de la lista para ver sus detalles."><template #icon><Users :size="48" /></template></EmptyState>
 
         <div v-else class="detail-content">
           <div class="detail-header">
@@ -183,7 +177,7 @@ import { Search, Phone, Mail, Pencil, MapPin, Users } from 'lucide-vue-next';
 import { fetchClients, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
-import { Skeleton } from '@/app/components/ui';
+import { Skeleton, EmptyState, Alert } from '@/app/components/ui';
 
 const clients = ref<Client[]>([]);
 const isLoading = ref(true);
@@ -827,3 +821,4 @@ onMounted(() => {
 .mb-2 {
   margin-bottom: 4px;
 }
+
