@@ -616,11 +616,9 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__link {
-    gap: 9px;
-
-    padding: 7px 9px;
-
-    font-size: 0.76rem;
+    gap: 12px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
   }
 
   .sidebar__logout {
@@ -639,5 +637,6 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
+
 
 
