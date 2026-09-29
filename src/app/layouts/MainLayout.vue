@@ -54,8 +54,16 @@
     <main class="main-layout__content">
       <RouterView />
     </main>
-    <ChatPanel />
-    <ChatWidget />
+
+    <ChatPanel
+      v-if="chatOpen"
+      @close="closeChat"
+    />
+
+    <ChatWidget
+      v-else
+      @open="openChat"
+    />
   </div>
 </template>
 
@@ -70,6 +78,7 @@ import ChatPanel from '@/features/chatbot/components/ChatPanel.vue';
 const router = useRouter();
 
 const sidebarOpen = ref(false);
+const chatOpen = ref(false);
 
 const { canAccessRoute } = useAuth();
 
@@ -79,6 +88,14 @@ function toggleSidebar(): void {
 
 function closeSidebar(): void {
   sidebarOpen.value = false;
+}
+
+function openChat(): void {
+  chatOpen.value = true;
+}
+
+function closeChat(): void {
+  chatOpen.value = false;
 }
 
 const navItems = [

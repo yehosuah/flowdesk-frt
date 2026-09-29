@@ -27,6 +27,7 @@
           <h2 class="chat-panel__title">
             Asistente FlowDesk
           </h2>
+
           <p class="chat-panel__status">
             Asistente inteligente
           </p>
@@ -37,6 +38,7 @@
         class="chat-panel__close"
         type="button"
         aria-label="Cerrar asistente"
+        @click="emit('close')"
       >
         ×
       </button>
@@ -59,6 +61,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             />
+
             <path
               d="M8 9h8M8 13h5"
               stroke="currentColor"
@@ -104,6 +107,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             />
+
             <path
               d="M22 2 11 13"
               stroke="currentColor"
@@ -121,27 +125,27 @@
   </section>
 </template>
 
+<script setup lang="ts">
+const emit = defineEmits<{
+  close: [];
+}>();
+</script>
+
 <style scoped>
 .chat-panel {
   position: fixed;
   right: 24px;
-  bottom: 92px;
-  z-index: 1040;
-
+  bottom: 24px;
+  z-index: 1050;
   display: flex;
   flex-direction: column;
-
   width: min(390px, calc(100vw - 48px));
-  height: min(560px, calc(100vh - 130px));
-
+  height: min(560px, calc(100vh - 48px));
   overflow: hidden;
-
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
   border-radius: 16px;
-
   background: var(--color-bg-app);
   color: var(--color-text-primary, inherit);
-
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
 }
 
@@ -149,13 +153,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   flex-shrink: 0;
-
   padding: 16px 18px;
-
   border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
-
   background: var(--color-structure-base);
   color: #fff;
 }
@@ -170,27 +170,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 40px;
   height: 40px;
-
   border-radius: 12px;
-
   background: rgba(255, 255, 255, 0.1);
 }
 
 .chat-panel__title {
   margin: 0;
-
   font-size: 0.95rem;
   font-weight: 700;
 }
 
 .chat-panel__status {
   margin: 3px 0 0;
-
   color: rgba(255, 255, 255, 0.65);
-
   font-size: 0.75rem;
 }
 
@@ -198,22 +192,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 34px;
   height: 34px;
-
   padding: 0;
-
   border: none;
   border-radius: 8px;
-
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
-
   font-family: inherit;
   font-size: 1.6rem;
   line-height: 1;
-
   cursor: pointer;
 }
 
@@ -222,13 +210,15 @@
   color: #fff;
 }
 
+.chat-panel__close:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 .chat-panel__messages {
   flex: 1;
-
   min-height: 0;
-
   padding: 24px 20px;
-
   overflow-y: auto;
 }
 
@@ -236,11 +226,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-
   max-width: 290px;
-
   margin: 54px auto 0;
-
   text-align: center;
 }
 
@@ -248,38 +235,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 58px;
   height: 58px;
-
   margin-bottom: 16px;
-
   border-radius: 18px;
-
   background: var(--color-structure-base);
   color: #fff;
 }
 
 .chat-panel__welcome h3 {
   margin: 0 0 8px;
-
   font-size: 1.05rem;
 }
 
 .chat-panel__welcome p {
   margin: 0;
-
   opacity: 0.7;
-
   font-size: 0.85rem;
   line-height: 1.5;
 }
 
 .chat-panel__footer {
   flex-shrink: 0;
-
   padding: 14px 16px 12px;
-
   border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
 }
 
@@ -287,31 +265,22 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-
   padding: 8px;
-
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.14));
   border-radius: 12px;
-
   background: var(--color-bg-app);
 }
 
 .chat-panel__input {
   flex: 1;
-
   min-height: 24px;
   max-height: 100px;
-
   padding: 5px 6px;
-
   resize: none;
-
   border: none;
   outline: none;
-
   background: transparent;
   color: inherit;
-
   font-family: inherit;
   font-size: 0.86rem;
   line-height: 1.4;
@@ -326,20 +295,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 36px;
   height: 36px;
-
   padding: 0;
-
   border: none;
   border-radius: 10px;
-
   background: var(--color-structure-base);
   color: #fff;
-
   cursor: pointer;
 }
 
@@ -347,11 +310,14 @@
   opacity: 0.9;
 }
 
+.chat-panel__send:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .chat-panel__disclaimer {
   margin: 8px 4px 0;
-
   opacity: 0.5;
-
   font-size: 0.66rem;
   line-height: 1.35;
   text-align: center;
@@ -360,11 +326,9 @@
 @media (max-width: 480px) {
   .chat-panel {
     right: 12px;
-    bottom: 80px;
-
+    bottom: 12px;
     width: calc(100vw - 24px);
-    height: min(520px, calc(100dvh - 100px));
-
+    height: calc(100dvh - 24px);
     border-radius: 14px;
   }
 

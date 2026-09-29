@@ -4,6 +4,7 @@
     type="button"
     aria-label="Abrir asistente de FlowDesk"
     title="Asistente de FlowDesk"
+    @click="emit('open')"
   >
     <svg
       width="26"
@@ -29,6 +30,12 @@
     </svg>
   </button>
 </template>
+
+<script setup lang="ts">
+const emit = defineEmits<{
+  open: [];
+}>();
+</script>
 
 <style scoped>
 .chat-widget {
