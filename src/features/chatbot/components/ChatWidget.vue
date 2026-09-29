@@ -78,10 +78,17 @@ const emit = defineEmits<{
   outline-offset: 3px;
 }
 
+@media (max-width: 768px) {
+  .chat-widget {
+    right: 18px;
+    bottom: 18px;
+  }
+}
+
 @media (max-width: 480px) {
   .chat-widget {
-    right: 16px;
-    bottom: 16px;
+    right: 14px;
+    bottom: 14px;
 
     width: 52px;
     height: 52px;
