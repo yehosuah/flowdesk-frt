@@ -36,25 +36,60 @@
 
         <p v-if="statusFeedback" class="status-feedback">{{ statusFeedback }}</p>
 
-        <form @submit.prevent="submit" class="form-grid">
+        <form @submit.prevent="submit" class="form-grid" novalidate>
           <div class="form-group full-width">
             <label class="form-label">Nombre *</label>
-            <input v-model="form.nombre" type="text" class="form-input" required placeholder="Ej. Juan Pérez" />
+            <input
+              v-model="form.nombre"
+              type="text"
+              class="form-input"
+              :class="{ 'input-error': errors.nombre }"
+              maxlength="100"
+              placeholder="Ej. Juan Pérez"
+              @input="errors.nombre = ''"
+            />
+            <span v-if="errors.nombre" class="error-msg">{{ errors.nombre }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Teléfono</label>
-            <input v-model="form.telefono" type="tel" class="form-input" placeholder="Ej. +502 12345678" />
+            <input
+              v-model="form.telefono"
+              type="tel"
+              class="form-input"
+              :class="{ 'input-error': errors.telefono }"
+              maxlength="20"
+              placeholder="Ej. +502 12345678"
+              @input="errors.telefono = ''"
+            />
+            <span v-if="errors.telefono" class="error-msg">{{ errors.telefono }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Correo Electrónico</label>
-            <input v-model="form.correo" type="email" class="form-input" placeholder="Ej. cliente@correo.com" />
+            <input
+              v-model="form.correo"
+              type="email"
+              class="form-input"
+              :class="{ 'input-error': errors.correo }"
+              maxlength="150"
+              placeholder="Ej. cliente@correo.com"
+              @input="errors.correo = ''"
+            />
+            <span v-if="errors.correo" class="error-msg">{{ errors.correo }}</span>
           </div>
 
           <div class="form-group full-width">
             <label class="form-label">Dirección Física</label>
-            <textarea v-model="form.direccion" class="form-input" rows="2" placeholder="Ej. 5ta Avenida 12-34 Zona 1"></textarea>
+            <textarea
+              v-model="form.direccion"
+              class="form-input"
+              rows="2"
+              maxlength="200"
+              placeholder="Ej. 5ta Avenida 12-34 Zona 1"
+              @input="errors.direccion = ''"
+            ></textarea>
+            <span v-if="errors.direccion" class="error-msg">{{ errors.direccion }}</span>
           </div>
 
           <div v-if="error" class="error-alert full-width">{{ error }}</div>
@@ -128,6 +163,70 @@ const isSubmitting = ref(false);
 const isTogglingStatus = ref(false);
 const error = ref('');
 
+// Límites y formato alineados con app/schemas/commercial.py (backend):
+// nombre max 100, correo max 150, telefono max 20, direccion max 200.
+const NOMBRE_MAX = 100;
+const CORREO_MAX = 150;
+const TELEFONO_MAX = 20;
+const DIRECCION_MAX = 200;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TELEFONO_CHARS_RE = /^[0-9+\-\s()]+$/;
+
+const errors = reactive({
+  nombre: '',
+  correo: '',
+  telefono: '',
+  direccion: '',
+});
+
+function validateForm(): boolean {
+  errors.nombre = '';
+  errors.correo = '';
+  errors.telefono = '';
+  errors.direccion = '';
+
+  let isValid = true;
+
+  const nombre = form.nombre.trim();
+  if (!nombre) {
+    errors.nombre = 'El nombre del cliente es obligatorio.';
+    isValid = false;
+  } else if (nombre.length > NOMBRE_MAX) {
+    errors.nombre = `El nombre no puede superar los ${NOMBRE_MAX} caracteres.`;
+    isValid = false;
+  }
+
+  const correo = form.correo.trim();
+  if (correo) {
+    if (!EMAIL_RE.test(correo)) {
+      errors.correo = 'El correo electrónico no tiene un formato válido.';
+      isValid = false;
+    } else if (correo.length > CORREO_MAX) {
+      errors.correo = `El correo no puede superar los ${CORREO_MAX} caracteres.`;
+      isValid = false;
+    }
+  }
+
+  const telefono = form.telefono.trim();
+  if (telefono) {
+    if (!TELEFONO_CHARS_RE.test(telefono) || !/\d/.test(telefono)) {
+      errors.telefono = 'El teléfono solo puede contener números, espacios y + - ( ).';
+      isValid = false;
+    } else if (telefono.length < 6 || telefono.length > TELEFONO_MAX) {
+      errors.telefono = `El teléfono debe tener entre 6 y ${TELEFONO_MAX} caracteres.`;
+      isValid = false;
+    }
+  }
+
+  const direccion = form.direccion.trim();
+  if (direccion.length > DIRECCION_MAX) {
+    errors.direccion = `La dirección no puede superar los ${DIRECCION_MAX} caracteres.`;
+    isValid = false;
+  }
+
+  return isValid;
+}
+
 // --- Confirmación visual del cambio de estado ---
 const showConfirm = ref(false);
 const confirmError = ref('');
@@ -197,38 +296,21 @@ async function runToggle() {
   }
 }
 
-function validateForm(): string | null {
-  if (!form.nombre.trim()) {
-    return 'El nombre del cliente es obligatorio.';
-  }
-
-  if (form.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo)) {
-    return 'El correo electrónico no tiene un formato válido.';
-  }
-
-  if (form.telefono && !/^[0-9+\-\s()]{6,20}$/.test(form.telefono)) {
-    return 'El teléfono contiene caracteres no válidos o es muy corto/largo.';
-  }
-
-  return null;
-}
-
 async function submit() {
-  const validationError = validateForm();
-  if (validationError) {
-    error.value = validationError;
+  error.value = '';
+
+  if (!validateForm()) {
     return;
   }
 
   isSubmitting.value = true;
-  error.value = '';
 
   try {
     const payload = {
-      nombre: form.nombre,
-      telefono: form.telefono || null,
-      correo: form.correo || null,
-      direccion: form.direccion || null,
+      nombre: form.nombre.trim(),
+      telefono: form.telefono.trim() || null,
+      correo: form.correo.trim().toLowerCase() || null,
+      direccion: form.direccion.trim() || null,
     };
 
     let result: Client;
@@ -406,6 +488,15 @@ async function submit() {
   outline: none;
   border-color: var(--color-structure-base, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.input-error {
+  border-color: var(--color-danger);
+}
+
+.error-msg {
+  color: var(--color-danger-text);
+  font-size: 0.78rem;
 }
 
 .error-alert {

@@ -25,10 +25,19 @@
           Registra un nuevo producto y su cantidad inicial de stock.
         </p>
         
-        <form @submit.prevent="submit" class="form-grid">
+        <form @submit.prevent="submit" class="form-grid" novalidate>
           <div class="form-group full-width">
             <label class="form-label">Nombre del producto *</label>
-            <input v-model="form.nombre" type="text" class="form-input" required placeholder="Ej. Lápiz HB" />
+            <input
+              v-model="form.nombre"
+              type="text"
+              class="form-input"
+              :class="{ 'input-error': errors.nombre }"
+              maxlength="100"
+              placeholder="Ej. Lápiz HB"
+              @input="errors.nombre = ''"
+            />
+            <span v-if="errors.nombre" class="error-msg">{{ errors.nombre }}</span>
           </div>
 
           <div v-if="similarProducts.length > 0" class="warning-alert full-width">
@@ -45,17 +54,42 @@
 
           <div class="form-group">
             <label class="form-label">Precio de Venta (Q) *</label>
-            <input v-model.number="form.precio_venta" type="number" step="0.01" min="0" class="form-input" required />
+            <input
+              v-model.number="form.precio_venta"
+              type="number"
+              step="0.01"
+              min="0"
+              class="form-input"
+              :class="{ 'input-error': errors.precio_venta }"
+              @input="errors.precio_venta = ''"
+            />
+            <span v-if="errors.precio_venta" class="error-msg">{{ errors.precio_venta }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Stock Inicial *</label>
-            <input v-model.number="form.stockInicial" type="number" min="0" class="form-input" required />
+            <input
+              v-model.number="form.stockInicial"
+              type="number"
+              min="0"
+              class="form-input"
+              :class="{ 'input-error': errors.stockInicial }"
+              @input="errors.stockInicial = ''"
+            />
+            <span v-if="errors.stockInicial" class="error-msg">{{ errors.stockInicial }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Stock Mínimo (Alerta) *</label>
-            <input v-model.number="form.stock_minimo" type="number" min="0" class="form-input" required />
+            <input
+              v-model.number="form.stock_minimo"
+              type="number"
+              min="0"
+              class="form-input"
+              :class="{ 'input-error': errors.stock_minimo }"
+              @input="errors.stock_minimo = ''"
+            />
+            <span v-if="errors.stock_minimo" class="error-msg">{{ errors.stock_minimo }}</span>
           </div>
 
           <div class="form-group">
@@ -120,6 +154,16 @@ const form = reactive({
 const isSubmitting = ref(false);
 const error = ref('');
 
+// Límite alineado con app/schemas/inventory.py (backend): ProductCreate.nombre max_length=100
+const NOMBRE_MAX = 100;
+
+const errors = reactive({
+  nombre: '',
+  precio_venta: '',
+  stockInicial: '',
+  stock_minimo: '',
+});
+
 const similarProducts = computed(() => {
   if (form.nombre.length < 3) return [];
   const search = form.nombre.toLowerCase();
@@ -128,14 +172,64 @@ const similarProducts = computed(() => {
     .slice(0, 3); // Solo mostrar los primeros 3 para no saturar
 });
 
+// v-model.number deja el campo como string vacío si se borra, en vez de
+// convertirlo a 0 o NaN: hay que detectarlo con String() antes de comparar.
+function isBlank(value: number | string): boolean {
+  return String(value).trim() === '';
+}
+
+function validateForm(): boolean {
+  errors.nombre = '';
+  errors.precio_venta = '';
+  errors.stockInicial = '';
+  errors.stock_minimo = '';
+
+  let isValid = true;
+
+  const nombre = form.nombre.trim();
+  if (!nombre) {
+    errors.nombre = 'El nombre del producto es obligatorio.';
+    isValid = false;
+  } else if (nombre.length > NOMBRE_MAX) {
+    errors.nombre = `El nombre no puede superar los ${NOMBRE_MAX} caracteres.`;
+    isValid = false;
+  }
+
+  if (isBlank(form.precio_venta)) {
+    errors.precio_venta = 'Ingresa el precio de venta.';
+    isValid = false;
+  } else if (Number(form.precio_venta) < 0) {
+    errors.precio_venta = 'El precio de venta no puede ser negativo.';
+    isValid = false;
+  }
+
+  if (isBlank(form.stockInicial)) {
+    errors.stockInicial = 'Ingresa el stock inicial.';
+    isValid = false;
+  } else if (Number(form.stockInicial) < 0) {
+    errors.stockInicial = 'El stock inicial no puede ser negativo.';
+    isValid = false;
+  }
+
+  if (isBlank(form.stock_minimo)) {
+    errors.stock_minimo = 'Ingresa el stock mínimo de alerta.';
+    isValid = false;
+  } else if (Number(form.stock_minimo) < 0) {
+    errors.stock_minimo = 'El stock mínimo no puede ser negativo.';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
 async function submit() {
-  if (!form.nombre || form.precio_venta < 0 || form.stockInicial < 0 || form.stock_minimo < 0) {
-    error.value = 'Por favor revisa los campos requeridos y que no haya valores negativos.';
+  error.value = '';
+
+  if (!validateForm()) {
     return;
   }
 
   isSubmitting.value = true;
-  error.value = '';
 
   try {
     // Generar SKU automáticamente: PRD-XXXXXX (donde X son los milisegundos finales)
@@ -144,18 +238,18 @@ async function submit() {
     // 1. Crear Producto
     const producto = await createInventoryProduct({
       sku: generatedSku,
-      nombre: form.nombre,
-      descripcion: form.descripcion,
-      precio_venta: form.precio_venta,
-      stock_minimo: form.stock_minimo,
+      nombre: form.nombre.trim(),
+      descripcion: form.descripcion.trim(),
+      precio_venta: Number(form.precio_venta),
+      stock_minimo: Number(form.stock_minimo),
       unidad_medida: form.unidad_medida,
     });
 
-    if (form.stockInicial > 0) {
+    if (Number(form.stockInicial) > 0) {
       await createMovement({
         producto_id: producto.id,
         tipo_movimiento: 'entrada_manual',
-        cantidad: form.stockInicial,
+        cantidad: Number(form.stockInicial),
         motivo: 'Inventario inicial al crear el producto',
       });
     }
@@ -289,6 +383,15 @@ async function submit() {
   outline: none;
   border-color: var(--color-structure-base, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.input-error {
+  border-color: var(--color-danger);
+}
+
+.error-msg {
+  color: var(--color-danger-text);
+  font-size: 0.78rem;
 }
 
 .warning-alert {

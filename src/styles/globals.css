@@ -159,12 +159,11 @@ code {
 }
 
 .form-input.input-error {
-  border-color: var(--color-accent);
-  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
 }
 
 .error-msg {
-  color: var(--color-accent);
+  color: var(--color-danger-text);
   font-size: 0.78rem;
 }
 
