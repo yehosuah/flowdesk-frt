@@ -1,8 +1,5 @@
 <template>
-  <section
-    class="chat-panel"
-    aria-label="Asistente de FlowDesk"
-  >
+  <section class="chat-panel" aria-label="Asistente de FlowDesk">
     <header class="chat-panel__header">
       <div class="chat-panel__identity">
         <div class="chat-panel__avatar">
@@ -24,13 +21,8 @@
         </div>
 
         <div>
-          <h2 class="chat-panel__title">
-            Asistente FlowDesk
-          </h2>
-
-          <p class="chat-panel__status">
-            Asistente inteligente
-          </p>
+          <h2 class="chat-panel__title">Asistente FlowDesk</h2>
+          <p class="chat-panel__status">Asistente inteligente</p>
         </div>
       </div>
 
@@ -67,7 +59,6 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             />
-
             <path
               d="M8 9h8M8 13h5"
               stroke="currentColor"
@@ -92,14 +83,91 @@
           v-for="message in messages"
           :key="message.id"
           class="chat-message"
-          :class="`chat-message--${message.role}`"
+          :class="[
+            `chat-message--${message.role}`,
+            { 'chat-message--error': message.isError },
+          ]"
         >
           <span class="chat-message__author">
             {{ message.role === 'user' ? 'Tú' : 'Asistente FlowDesk' }}
           </span>
 
           <div
-            v-if="message.role === 'assistant'"
+            v-if="message.isError"
+            class="chat-message__bubble chat-error"
+            role="alert"
+          >
+            <div class="chat-error__header">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M12 8v5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <circle
+                  cx="12"
+                  cy="16.5"
+                  r="1"
+                  fill="currentColor"
+                />
+              </svg>
+
+              <strong>No se pudo completar la consulta</strong>
+            </div>
+
+            <p class="chat-error__message">
+              {{ message.content }}
+            </p>
+
+            <button
+              v-if="message.retryContent"
+              class="chat-error__retry"
+              type="button"
+              :disabled="isLoading"
+              @click="retryMessage(message)"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M20 11a8 8 0 1 0 2 5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M20 4v7h-7"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              Reintentar
+            </button>
+          </div>
+
+          <div
+            v-else-if="message.role === 'assistant'"
             class="chat-message__bubble chat-message__content"
             v-html="renderMarkdown(message.content)"
           ></div>
@@ -125,10 +193,7 @@
             <span class="chat-loading__dot"></span>
             <span class="chat-loading__dot"></span>
             <span class="chat-loading__dot"></span>
-
-            <span class="chat-loading__text">
-              Pensando...
-            </span>
+            <span class="chat-loading__text">Pensando...</span>
           </div>
         </div>
       </div>
@@ -167,7 +232,6 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             />
-
             <path
               d="M22 2 11 13"
               stroke="currentColor"
@@ -186,16 +250,15 @@
 </template>
 
 <script setup lang="ts">
-import {
-  nextTick,
-  ref,
-} from 'vue';
-
+import { nextTick, ref } from 'vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 import { sendChatMessage } from '@/features/chatbot/api';
-import { getApiErrorMessage } from '@/services/apiClient';
+import {
+  ApiError,
+  getApiErrorMessage,
+} from '@/services/apiClient';
 
 type ChatRole = 'user' | 'assistant';
 
@@ -203,6 +266,8 @@ interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  isError?: boolean;
+  retryContent?: string;
 }
 
 const emit = defineEmits<{
@@ -245,20 +310,68 @@ function closeChat(): void {
   emit('close');
 }
 
-async function sendMessage(): Promise<void> {
-  const content = messageInput.value.trim();
+function getFriendlyErrorMessage(error: unknown): string {
+  const originalMessage = getApiErrorMessage(error);
+  const normalizedMessage = originalMessage.toLowerCase();
 
-  if (!content || isLoading.value) {
+  if (
+    normalizedMessage.includes('already in progress') ||
+    normalizedMessage.includes('already processing')
+  ) {
+    return 'Ya hay una consulta en proceso. Espera un momento antes de volver a intentarlo.';
+  }
+
+  if (
+    normalizedMessage.includes('no hay una sesión activa') ||
+    normalizedMessage.includes('no hay una sesion activa') ||
+    normalizedMessage.includes('no active session')
+  ) {
+    return 'No hay una sesión activa para completar esta solicitud. Intenta nuevamente.';
+  }
+
+  if (error instanceof ApiError) {
+    if (error.status === 408) {
+      return 'La respuesta está tardando más de lo esperado. Puedes volver a intentarlo.';
+    }
+
+    if (error.status === 0) {
+      return 'No fue posible comunicarse con el asistente. Revisa tu conexión e intenta nuevamente.';
+    }
+
+    if (error.status === 401) {
+      return 'Tu sesión ya no es válida. Inicia sesión nuevamente para continuar.';
+    }
+
+    if (error.status === 429) {
+      return 'El asistente está recibiendo demasiadas solicitudes. Espera un momento antes de reintentar.';
+    }
+
+    if (error.status >= 500) {
+      return 'El asistente no está disponible temporalmente. Intenta nuevamente en unos momentos.';
+    }
+  }
+
+  return originalMessage;
+}
+
+async function requestAssistantResponse(
+  content: string,
+  errorMessage?: ChatMessage,
+): Promise<void> {
+  if (isLoading.value) {
     return;
   }
 
-  messages.value.push({
-    id: `user-${localMessageId++}`,
-    role: 'user',
-    content,
-  });
+  if (errorMessage) {
+    const errorIndex = messages.value.findIndex(
+      (message) => message.id === errorMessage.id,
+    );
 
-  messageInput.value = '';
+    if (errorIndex !== -1) {
+      messages.value.splice(errorIndex, 1);
+    }
+  }
+
   isLoading.value = true;
 
   await scrollToBottom();
@@ -280,12 +393,43 @@ async function sendMessage(): Promise<void> {
     messages.value.push({
       id: `error-${localMessageId++}`,
       role: 'assistant',
-      content: getApiErrorMessage(error),
+      content: getFriendlyErrorMessage(error),
+      isError: true,
+      retryContent: content,
     });
   } finally {
     isLoading.value = false;
     await scrollToBottom();
   }
+}
+
+async function sendMessage(): Promise<void> {
+  const content = messageInput.value.trim();
+
+  if (!content || isLoading.value) {
+    return;
+  }
+
+  messages.value.push({
+    id: `user-${localMessageId++}`,
+    role: 'user',
+    content,
+  });
+
+  messageInput.value = '';
+
+  await requestAssistantResponse(content);
+}
+
+async function retryMessage(message: ChatMessage): Promise<void> {
+  if (!message.retryContent || isLoading.value) {
+    return;
+  }
+
+  await requestAssistantResponse(
+    message.retryContent,
+    message,
+  );
 }
 </script>
 
@@ -295,21 +439,15 @@ async function sendMessage(): Promise<void> {
   right: 24px;
   bottom: 24px;
   z-index: 1050;
-
   display: flex;
   flex-direction: column;
-
   width: min(390px, calc(100vw - 48px));
   height: min(560px, calc(100vh - 48px));
-
   overflow: hidden;
-
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
   border-radius: 16px;
-
   background: var(--color-bg-app);
   color: var(--color-text-primary, inherit);
-
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
 }
 
@@ -317,13 +455,9 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   flex-shrink: 0;
-
   padding: 16px 18px;
-
   border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
-
   background: var(--color-structure-base);
   color: #fff;
 }
@@ -338,27 +472,21 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 40px;
   height: 40px;
-
   border-radius: 12px;
-
   background: rgba(255, 255, 255, 0.1);
 }
 
 .chat-panel__title {
   margin: 0;
-
   font-size: 0.95rem;
   font-weight: 700;
 }
 
 .chat-panel__status {
   margin: 3px 0 0;
-
   color: rgba(255, 255, 255, 0.65);
-
   font-size: 0.75rem;
 }
 
@@ -366,22 +494,16 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 34px;
   height: 34px;
-
   padding: 0;
-
   border: none;
   border-radius: 8px;
-
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
-
   font-family: inherit;
   font-size: 1.6rem;
   line-height: 1;
-
   cursor: pointer;
 }
 
@@ -398,9 +520,7 @@ async function sendMessage(): Promise<void> {
 .chat-panel__messages {
   flex: 1;
   min-height: 0;
-
   padding: 24px 20px;
-
   overflow-y: auto;
 }
 
@@ -408,11 +528,8 @@ async function sendMessage(): Promise<void> {
   display: flex;
   flex-direction: column;
   align-items: center;
-
   max-width: 290px;
-
   margin: 54px auto 0;
-
   text-align: center;
 }
 
@@ -420,29 +537,22 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 58px;
   height: 58px;
-
   margin-bottom: 16px;
-
   border-radius: 18px;
-
   background: var(--color-structure-base);
   color: #fff;
 }
 
 .chat-panel__welcome h3 {
   margin: 0 0 8px;
-
   font-size: 1.05rem;
 }
 
 .chat-panel__welcome p {
   margin: 0;
-
   opacity: 0.7;
-
   font-size: 0.85rem;
   line-height: 1.5;
 }
@@ -456,7 +566,6 @@ async function sendMessage(): Promise<void> {
 .chat-message {
   display: flex;
   flex-direction: column;
-
   max-width: 84%;
 }
 
@@ -472,27 +581,21 @@ async function sendMessage(): Promise<void> {
 
 .chat-message__author {
   margin: 0 5px 5px;
-
   opacity: 0.55;
-
   font-size: 0.68rem;
   font-weight: 600;
 }
 
 .chat-message__bubble {
   padding: 10px 13px;
-
   border-radius: 14px;
-
   font-size: 0.84rem;
   line-height: 1.45;
-
   overflow-wrap: anywhere;
 }
 
 .chat-message--user .chat-message__bubble {
   border-bottom-right-radius: 4px;
-
   background: var(--color-structure-base);
   color: #fff;
 }
@@ -500,11 +603,71 @@ async function sendMessage(): Promise<void> {
 .chat-message--assistant .chat-message__bubble {
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
   border-bottom-left-radius: 4px;
-
   background: rgba(127, 127, 127, 0.12);
 }
 
-/* Markdown */
+.chat-message--error {
+  max-width: 90%;
+}
+
+.chat-message--error .chat-message__bubble {
+  background: rgba(220, 80, 80, 0.08);
+}
+
+.chat-error {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.chat-error__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+}
+
+.chat-error__message {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.chat-error__retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-structure-hover);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.chat-error__retry:hover:not(:disabled) {
+  background: var(--color-structure-hover);
+  color: #fff;
+}
+
+.chat-error__retry:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chat-error__retry:focus-visible {
+  outline: 2px solid var(--color-structure-hover);
+  outline-offset: 2px;
+}
 
 .chat-message__content {
   line-height: 1.5;
@@ -545,7 +708,6 @@ async function sendMessage(): Promise<void> {
 .chat-message__content :deep(h3),
 .chat-message__content :deep(h4) {
   margin: 12px 0 7px;
-
   font-size: 0.92rem;
   font-weight: 700;
   line-height: 1.35;
@@ -561,17 +723,13 @@ async function sendMessage(): Promise<void> {
 .chat-message__content :deep(a) {
   color: var(--color-structure-hover);
   text-decoration: underline;
-
   overflow-wrap: anywhere;
 }
 
 .chat-message__content :deep(code) {
   padding: 2px 4px;
-
   border-radius: 4px;
-
   background: rgba(127, 127, 127, 0.15);
-
   font-family: monospace;
   font-size: 0.8rem;
 }
@@ -579,13 +737,9 @@ async function sendMessage(): Promise<void> {
 .chat-message__content :deep(blockquote) {
   margin: 8px 0;
   padding-left: 10px;
-
   border-left: 3px solid var(--color-structure-hover);
-
   opacity: 0.85;
 }
-
-/* Loading */
 
 .chat-message__bubble--loading {
   display: flex;
@@ -596,12 +750,9 @@ async function sendMessage(): Promise<void> {
 .chat-loading__dot {
   width: 6px;
   height: 6px;
-
   border-radius: 50%;
-
   background: currentColor;
   opacity: 0.35;
-
   animation: chat-loading 1.2s infinite ease-in-out;
 }
 
@@ -615,9 +766,7 @@ async function sendMessage(): Promise<void> {
 
 .chat-loading__text {
   margin-left: 4px;
-
   opacity: 0.65;
-
   font-size: 0.78rem;
 }
 
@@ -635,13 +784,9 @@ async function sendMessage(): Promise<void> {
   }
 }
 
-/* Footer */
-
 .chat-panel__footer {
   flex-shrink: 0;
-
   padding: 14px 16px 12px;
-
   border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
 }
 
@@ -649,31 +794,22 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-
   padding: 8px;
-
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.14));
   border-radius: 12px;
-
   background: var(--color-bg-app);
 }
 
 .chat-panel__input {
   flex: 1;
-
   min-height: 24px;
   max-height: 100px;
-
   padding: 5px 6px;
-
   resize: none;
-
   border: none;
   outline: none;
-
   background: transparent;
   color: inherit;
-
   font-family: inherit;
   font-size: 0.86rem;
   line-height: 1.4;
@@ -693,22 +829,15 @@ async function sendMessage(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 36px;
   height: 36px;
-
   padding: 0;
-
   border: none;
   border-radius: 10px;
-
   background: transparent;
   color: var(--color-structure-hover);
-
   cursor: pointer;
-
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -723,7 +852,6 @@ async function sendMessage(): Promise<void> {
   background: transparent;
   color: var(--color-text-faint);
   opacity: 0.6;
-
   cursor: not-allowed;
 }
 
@@ -734,24 +862,18 @@ async function sendMessage(): Promise<void> {
 
 .chat-panel__disclaimer {
   margin: 8px 4px 0;
-
   opacity: 0.5;
-
   font-size: 0.66rem;
   line-height: 1.35;
   text-align: center;
 }
 
-/* Responsive */
-
 @media (max-width: 480px) {
   .chat-panel {
     right: 12px;
     bottom: 12px;
-
     width: calc(100vw - 24px);
     height: calc(100dvh - 24px);
-
     border-radius: 14px;
   }
 
