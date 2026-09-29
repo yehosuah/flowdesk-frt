@@ -73,8 +73,13 @@
           </div>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
+        <div v-if="isLoading" class="loading-state-skeletons">
+          <div v-for="i in 5" :key="i" class="skeleton-item">
+            <div class="skeleton-content">
+              <Skeleton width="120px" height="16px" class="mb-2" />
+              <Skeleton width="200px" height="12px" />
+            </div>
+          </div>
         </div>
 
         <ul v-else-if="clients.length > 0" class="client-list">
@@ -178,6 +183,7 @@ import { Search, Phone, Mail, Pencil, MapPin, Users } from 'lucide-vue-next';
 import { fetchClients, type Client } from '@/features/clients/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
+import { Skeleton } from '@/app/components/ui';
 
 const clients = ref<Client[]>([]);
 const isLoading = ref(true);
@@ -804,3 +810,20 @@ onMounted(() => {
   }
 }
 </style>
+.loading-state-skeletons {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mb-2 {
+  margin-bottom: 4px;
+}
