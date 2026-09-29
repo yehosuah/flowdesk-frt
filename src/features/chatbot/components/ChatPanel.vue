@@ -38,7 +38,7 @@
         class="chat-panel__close"
         type="button"
         aria-label="Cerrar asistente"
-        @click="emit('close')"
+        @click="closeChat"
       >
         ×
       </button>
@@ -49,7 +49,7 @@
       class="chat-panel__messages"
     >
       <div
-        v-if="messages.length === 0"
+        v-if="messages.length === 0 && !isLoading"
         class="chat-panel__welcome"
       >
         <div class="chat-panel__welcome-icon">
@@ -98,8 +98,37 @@
             {{ message.role === 'user' ? 'Tú' : 'Asistente FlowDesk' }}
           </span>
 
-          <div class="chat-message__bubble">
+          <div
+            v-if="message.role === 'assistant'"
+            class="chat-message__bubble chat-message__content"
+            v-html="renderMarkdown(message.content)"
+          ></div>
+
+          <div
+            v-else
+            class="chat-message__bubble"
+          >
             {{ message.content }}
+          </div>
+        </div>
+
+        <div
+          v-if="isLoading"
+          class="chat-message chat-message--assistant"
+          aria-live="polite"
+        >
+          <span class="chat-message__author">
+            Asistente FlowDesk
+          </span>
+
+          <div class="chat-message__bubble chat-message__bubble--loading">
+            <span class="chat-loading__dot"></span>
+            <span class="chat-loading__dot"></span>
+            <span class="chat-loading__dot"></span>
+
+            <span class="chat-loading__text">
+              Pensando...
+            </span>
           </div>
         </div>
       </div>
@@ -113,6 +142,7 @@
           rows="1"
           placeholder="Escribe tu pregunta..."
           aria-label="Escribe tu pregunta"
+          :disabled="isLoading"
           @keydown.enter.prevent="sendMessage"
         />
 
@@ -120,7 +150,7 @@
           class="chat-panel__send"
           type="button"
           aria-label="Enviar mensaje"
-          :disabled="!messageInput.trim()"
+          :disabled="!messageInput.trim() || isLoading"
           @click="sendMessage"
         >
           <svg
@@ -161,6 +191,9 @@ import {
   ref,
 } from 'vue';
 
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
 import { sendChatMessage } from '@/features/chatbot/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 
@@ -180,8 +213,22 @@ const messageInput = ref('');
 const messages = ref<ChatMessage[]>([]);
 const messagesContainer = ref<HTMLElement | null>(null);
 const conversationId = ref<string | null>(null);
+const isLoading = ref(false);
 
 let localMessageId = 1;
+
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
+
+function renderMarkdown(content: string): string {
+  const html = marked.parse(content, {
+    async: false,
+  });
+
+  return DOMPurify.sanitize(html);
+}
 
 async function scrollToBottom(): Promise<void> {
   await nextTick();
@@ -194,10 +241,14 @@ async function scrollToBottom(): Promise<void> {
     messagesContainer.value.scrollHeight;
 }
 
+function closeChat(): void {
+  emit('close');
+}
+
 async function sendMessage(): Promise<void> {
   const content = messageInput.value.trim();
 
-  if (!content) {
+  if (!content || isLoading.value) {
     return;
   }
 
@@ -208,6 +259,7 @@ async function sendMessage(): Promise<void> {
   });
 
   messageInput.value = '';
+  isLoading.value = true;
 
   await scrollToBottom();
 
@@ -230,9 +282,10 @@ async function sendMessage(): Promise<void> {
       role: 'assistant',
       content: getApiErrorMessage(error),
     });
+  } finally {
+    isLoading.value = false;
+    await scrollToBottom();
   }
-
-  await scrollToBottom();
 }
 </script>
 
@@ -344,7 +397,6 @@ async function sendMessage(): Promise<void> {
 
 .chat-panel__messages {
   flex: 1;
-
   min-height: 0;
 
   padding: 24px 20px;
@@ -452,6 +504,139 @@ async function sendMessage(): Promise<void> {
   background: rgba(127, 127, 127, 0.12);
 }
 
+/* Markdown */
+
+.chat-message__content {
+  line-height: 1.5;
+}
+
+.chat-message__content :deep(p) {
+  margin: 0 0 10px;
+}
+
+.chat-message__content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.chat-message__content :deep(strong) {
+  font-weight: 700;
+}
+
+.chat-message__content :deep(em) {
+  font-style: italic;
+}
+
+.chat-message__content :deep(ul),
+.chat-message__content :deep(ol) {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.chat-message__content :deep(li) {
+  margin: 5px 0;
+}
+
+.chat-message__content :deep(li > p) {
+  margin: 0;
+}
+
+.chat-message__content :deep(h1),
+.chat-message__content :deep(h2),
+.chat-message__content :deep(h3),
+.chat-message__content :deep(h4) {
+  margin: 12px 0 7px;
+
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.chat-message__content :deep(h1:first-child),
+.chat-message__content :deep(h2:first-child),
+.chat-message__content :deep(h3:first-child),
+.chat-message__content :deep(h4:first-child) {
+  margin-top: 0;
+}
+
+.chat-message__content :deep(a) {
+  color: var(--color-structure-hover);
+  text-decoration: underline;
+
+  overflow-wrap: anywhere;
+}
+
+.chat-message__content :deep(code) {
+  padding: 2px 4px;
+
+  border-radius: 4px;
+
+  background: rgba(127, 127, 127, 0.15);
+
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.chat-message__content :deep(blockquote) {
+  margin: 8px 0;
+  padding-left: 10px;
+
+  border-left: 3px solid var(--color-structure-hover);
+
+  opacity: 0.85;
+}
+
+/* Loading */
+
+.chat-message__bubble--loading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chat-loading__dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+  opacity: 0.35;
+
+  animation: chat-loading 1.2s infinite ease-in-out;
+}
+
+.chat-loading__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-loading__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.chat-loading__text {
+  margin-left: 4px;
+
+  opacity: 0.65;
+
+  font-size: 0.78rem;
+}
+
+@keyframes chat-loading {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* Footer */
+
 .chat-panel__footer {
   flex-shrink: 0;
 
@@ -497,6 +682,11 @@ async function sendMessage(): Promise<void> {
 .chat-panel__input::placeholder {
   opacity: 0.55;
   color: inherit;
+}
+
+.chat-panel__input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .chat-panel__send {
@@ -551,6 +741,8 @@ async function sendMessage(): Promise<void> {
   line-height: 1.35;
   text-align: center;
 }
+
+/* Responsive */
 
 @media (max-width: 480px) {
   .chat-panel {

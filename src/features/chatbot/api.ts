@@ -1,5 +1,7 @@
 import { apiClient } from '@/services/apiClient';
 
+const CHAT_REQUEST_TIMEOUT_MS = 60_000;
+
 export interface ChatSource {
   tool: string;
   domain: 'inventory' | 'sales' | 'customers';
@@ -39,6 +41,7 @@ export function sendChatMessage(
       method: 'POST',
       auth: true,
       body,
+      timeoutMs: CHAT_REQUEST_TIMEOUT_MS,
     },
   );
 }
