@@ -753,7 +753,7 @@ onMounted(() => {
   }
 
   .client-list {
-    max-height: 240px;
+    max-height: 50vh;
   }
 
   .client-desc {
@@ -821,4 +821,5 @@ onMounted(() => {
 .mb-2 {
   margin-bottom: 4px;
 }
+
 
