@@ -411,14 +411,12 @@ function formatDate(
 .table-container {
   width: 100%;
   max-width: 100%;
-
   background: var(--color-bg-surface);
-
   border-radius: 12px;
-
   box-shadow: var(--shadow-card);
-
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .emp-table {
@@ -682,7 +680,7 @@ function formatDate(
   }
 
   .table-container {
-    overflow: hidden;
+    overflow-x: auto;
   }
 
   .emp-table,
