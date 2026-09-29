@@ -9,11 +9,13 @@
       <Menu :size="24" />
     </button>
 
-    <div
-      v-if="sidebarOpen"
-      class="sidebar-overlay"
-      @click="closeSidebar"
-    />
+    <Transition name="fade">
+      <div
+        v-if="sidebarOpen"
+        class="sidebar-overlay"
+        @click="closeSidebar"
+      />
+    </Transition>
 
     <aside
       class="sidebar"
@@ -629,3 +631,12 @@ async function cerrarSesion(): Promise<void> {
   }
 }
 </style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
