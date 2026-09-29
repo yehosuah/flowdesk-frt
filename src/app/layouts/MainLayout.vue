@@ -56,6 +56,12 @@
     <main class="main-layout__content">
       <RouterView />
     </main>
+
+    <WelcomeModal
+      v-model="isWelcomeVisible"
+      @skip="skipTour"
+      @startTour="startTour"
+    />
   </div>
 </template>
 
@@ -65,12 +71,13 @@ import { computed, ref, watch } from 'vue';
 import { Menu, LogOut } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
+import WelcomeModal from '@/features/onboarding/components/WelcomeModal.vue';
+import { useOnboarding } from '@/features/onboarding/composables/useOnboarding';
 
 const router = useRouter();
-
 const sidebarOpen = ref(false);
-
 const { canAccessRoute } = useAuth();
+const { isWelcomeVisible, skipTour, startTour } = useOnboarding();
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
@@ -643,6 +650,8 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
+
+
 
 
 
