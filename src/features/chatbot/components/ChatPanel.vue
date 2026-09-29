@@ -161,10 +161,13 @@ import {
   ref,
 } from 'vue';
 
+import { sendChatMessage } from '@/features/chatbot/api';
+import { getApiErrorMessage } from '@/services/apiClient';
+
 type ChatRole = 'user' | 'assistant';
 
 interface ChatMessage {
-  id: number;
+  id: string;
   role: ChatRole;
   content: string;
 }
@@ -176,8 +179,9 @@ const emit = defineEmits<{
 const messageInput = ref('');
 const messages = ref<ChatMessage[]>([]);
 const messagesContainer = ref<HTMLElement | null>(null);
+const conversationId = ref<string | null>(null);
 
-let nextMessageId = 1;
+let localMessageId = 1;
 
 async function scrollToBottom(): Promise<void> {
   await nextTick();
@@ -198,19 +202,35 @@ async function sendMessage(): Promise<void> {
   }
 
   messages.value.push({
-    id: nextMessageId++,
+    id: `user-${localMessageId++}`,
     role: 'user',
     content,
   });
 
   messageInput.value = '';
 
-  messages.value.push({
-    id: nextMessageId++,
-    role: 'assistant',
-    content:
-      'He recibido tu mensaje. Pronto podré responder utilizando la información de FlowDesk.',
-  });
+  await scrollToBottom();
+
+  try {
+    const response = await sendChatMessage(
+      content,
+      conversationId.value,
+    );
+
+    conversationId.value = response.conversation_id;
+
+    messages.value.push({
+      id: response.message_id,
+      role: 'assistant',
+      content: response.answer,
+    });
+  } catch (error) {
+    messages.value.push({
+      id: `error-${localMessageId++}`,
+      role: 'assistant',
+      content: getApiErrorMessage(error),
+    });
+  }
 
   await scrollToBottom();
 }
