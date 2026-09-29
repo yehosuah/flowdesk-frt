@@ -56,12 +56,12 @@
     </main>
 
     <ChatPanel
-      v-if="chatOpen"
+      v-show="chatOpen"
       @close="closeChat"
     />
 
     <ChatWidget
-      v-else
+      v-show="!chatOpen"
       @open="openChat"
     />
   </div>

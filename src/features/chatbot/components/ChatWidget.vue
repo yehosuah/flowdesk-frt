@@ -57,7 +57,7 @@ const emit = defineEmits<{
   border-radius: 50%;
 
   background: var(--color-structure-base);
-  color: #fff;
+  color: var(--color-text-on-structure);
 
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
 
