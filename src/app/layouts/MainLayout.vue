@@ -6,7 +6,7 @@
       aria-label="Abrir menú"
       @click="toggleSidebar"
     >
-      ☰
+      <Menu :size="24" />
     </button>
 
     <div
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
 import { computed, ref } from 'vue';
+import { Menu } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
 
