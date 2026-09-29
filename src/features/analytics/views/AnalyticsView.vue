@@ -13,9 +13,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn-filter" @click="showFilters = true">
+        <Button variant="secondary" @click="showFilters = true">
           <Filter :size="16" /> Filtros Avanzados
-        </button>
+        </Button>
         <div class="period-selector">
           <button
             v-for="opt in periodOptions"
@@ -30,10 +30,13 @@
       </div>
     </div>
 
-    <div v-if="globalError" class="alert alert-error" style="margin-bottom:20px;">
-      <span>{{ globalError }}</span>
-      <button class="alert-close" @click="globalError = ''">✕</button>
-    </div>
+    <Alert 
+      v-if="globalError" 
+      variant="danger" 
+      :message="globalError" 
+      dismissible 
+      @close="globalError = ''" 
+    />
 
     <!-- TAB INVENTARIO -->
     <div v-if="activeTab === 'inventory'" class="tab-content">
@@ -274,37 +277,36 @@
       />
     </div>
 
-    <!-- ADVANCED FILTERS DRAWER -->
-    <div class="drawer-overlay" :class="{ 'drawer-overlay--open': showFilters }" @click="showFilters = false"></div>
-    <div class="drawer-panel" :class="{ 'drawer-panel--open': showFilters }">
-      <div class="drawer-header">
-        <h3>Filtros Avanzados</h3>
-        <button class="drawer-close" @click="showFilters = false"><X :size="20" /></button>
-      </div>
-      <div class="drawer-body">
-        <div class="filter-group">
-          <label>Rango de Fechas</label>
-          <div class="date-inputs">
-            <input type="date" class="filter-input" v-model="filterStartDate" />
-            <span>a</span>
-            <input type="date" class="filter-input" v-model="filterEndDate" />
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Métricas Visibles (KPIs)</label>
-          <div class="checkbox-group">
-            <label v-for="card in metricCards" :key="'cb-'+card.key" class="checkbox-label">
-              <input type="checkbox" :value="card.key" v-model="visibleKpis" />
-              {{ card.label }}
-            </label>
-          </div>
+    <!-- ADVANCED FILTERS MODAL -->
+    <Modal 
+      :model-value="showFilters" 
+      title="Filtros Avanzados" 
+      @update:model-value="showFilters = $event"
+      @close="showFilters = false"
+    >
+      <div class="filter-group">
+        <label>Rango de Fechas</label>
+        <div class="date-inputs">
+          <input type="date" class="filter-input" v-model="filterStartDate" />
+          <span>a</span>
+          <input type="date" class="filter-input" v-model="filterEndDate" />
         </div>
       </div>
-      <div class="drawer-footer">
-        <button class="btn-clear" @click="clearFilters">Limpiar</button>
-        <button class="btn-apply" @click="applyFilters">Aplicar Filtros</button>
+      <div class="filter-group">
+        <label>Métricas Visibles (KPIs)</label>
+        <div class="checkbox-group">
+          <label v-for="card in metricCards" :key="'cb-'+card.key" class="checkbox-label">
+            <input type="checkbox" :value="card.key" v-model="visibleKpis" />
+            {{ card.label }}
+          </label>
+        </div>
       </div>
-    </div>
+
+      <template #footer>
+        <Button variant="ghost" @click="clearFilters">Limpiar</Button>
+        <Button variant="primary" @click="applyFilters">Aplicar Filtros</Button>
+      </template>
+    </Modal>
 
   </div>
 </template>
@@ -313,6 +315,7 @@
 import AiInsightsCard from '@/features/analytics/components/AiInsightsCard.vue';
 import { computed, ref, onMounted } from 'vue';
 import { Filter, ArrowUpRight, ArrowDownRight, AlertTriangle, X } from 'lucide-vue-next';
+import { Modal, Button, Alert } from '@/app/components/ui';
 import { Line, Doughnut, Bar } from 'vue-chartjs';
 import {
   Chart as ChartJS,
