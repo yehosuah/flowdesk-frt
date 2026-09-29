@@ -905,6 +905,13 @@ onMounted(loadAll);
     max-width: 100%;
   }
 
+  .table-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
   .drawer-header,
   .drawer-body,
   .drawer-footer {
@@ -1279,7 +1286,9 @@ onMounted(loadAll);
   border-bottom: 1px solid var(--color-bg-border);
   transition: background 0.12s;
 }
-.products-table tbody tr:last-child { border-bottom: none; }
+.products-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
 .products-table tbody tr:hover { background: var(--color-bg-subtle); }
 .products-table td {
   padding: 12px 16px;
@@ -1666,12 +1675,16 @@ onMounted(loadAll);
     display: block;
     width: 100%;
     box-sizing: border-box;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--color-bg-border);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-bg-border);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   }
 
   .products-table tbody tr:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
   }
 
   .products-table tbody tr:hover {

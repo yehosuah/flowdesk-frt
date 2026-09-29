@@ -842,8 +842,8 @@ const productosStockBajo =
 
 
 .inventory-table tbody tr:last-child {
-  border-bottom: none;
-}
+      margin-bottom: 0;
+    }
 
 
 .inventory-table td {
@@ -1375,11 +1375,10 @@ const productosStockBajo =
   .table-container {
       width: 100%;
       max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid var(--color-bg-border);
-      border-radius: 12px;
+      overflow: hidden;
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
 
 
@@ -1406,21 +1405,21 @@ const productosStockBajo =
 
 
   .inventory-table tbody tr {
-    display: block;
-
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 14px 16px;
-
-    border-bottom: 1px solid var(--color-bg-border);
-  }
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-bg-border);
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
 
 
   .inventory-table tbody tr:last-child {
-    border-bottom: none;
-  }
+      margin-bottom: 0;
+    }
 
 
   /*
@@ -1697,3 +1696,4 @@ const productosStockBajo =
   }
 }
 </style>
+

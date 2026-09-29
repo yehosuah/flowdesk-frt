@@ -162,9 +162,9 @@
                 </thead>
                 <tbody>
                   <tr v-for="p in supplierProducts" :key="p.product_id">
-                    <td class="td-sku">{{ p.product_sku }}</td>
-                    <td class="font-medium">{{ p.product_name }}</td>
-                    <td>Q{{ Number(p.quotation).toFixed(2) }}</td>
+                    <td class="td-sku" data-label="SKU">{{ p.product_sku }}</td>
+                    <td class="font-medium" data-label="Producto">{{ p.product_name }}</td>
+                    <td data-label="Precio de Compra">Q{{ Number(p.quotation).toFixed(2) }}</td>
                   </tr>
                   <tr v-if="supplierProducts.length === 0">
                     <td colspan="3" class="empty-state" style="padding: 24px; text-align: center;">Este proveedor aún no tiene productos asociados.</td>
@@ -914,65 +914,22 @@ onMounted(() => {
   }
 
   .page-title {
-    font-size: 1.6rem;
-  }
-
-  .page-subtitle {
-    font-size: .88rem;
-    line-height: 1.4;
-  }
-
-  .btn-add {
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: center;
-    padding: 10px 14px;
-  }
-
-  .split-layout {
-    gap: 16px;
-  }
-
-  .detail-panel {
-    padding: 20px 16px;
-  }
-
-  .detail-header {
-    margin-bottom: 24px;
-    padding-bottom: 18px;
-  }
-
-  .detail-name {
-    font-size: 1.25rem;
-  }
-
-  .section-title {
-    font-size: 1rem;
-  }
-
-  .contact-card {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .contact-row {
-    font-size: .85rem;
-  }
-
-  .mt-4 {
     margin-top: 24px;
   }
 
-  .dummy-table {
-    font-size: .78rem;
+  .dummy-table tbody tr {
+    padding: 12px 14px;
   }
 
-  .dummy-table th,
   .dummy-table td {
-    padding: 9px 10px;
+    padding: 6px 0;
+    font-size: .8rem;
+  }
+
+  .dummy-table td::before {
+    font-size: .75rem;
   }
 }
-
 @media (max-width: 480px) {
   .page-container {
     padding: 18px 14px;
@@ -990,70 +947,29 @@ onMounted(() => {
     padding: 13px 12px;
   }
 
-  .supplier-item.active {
-    padding-left: 8px;
-  }
-
-  .supplier-name {
-    font-size: .85rem;
-  }
-
-  .detail-panel {
-    padding: 16px 14px;
-  }
-
   .detail-header {
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .detail-name {
-    min-width: 0;
-    font-size: 1.1rem;
-    overflow-wrap: anywhere;
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
-  .btn-icon-action {
-    flex-shrink: 0;
-    padding: 7px 11px;
-    font-size: .78rem;
+  .dummy-table tbody tr {
+    padding: 10px 12px;
   }
 
-  .section-title {
-    font-size: .9rem;
-  }
-
-  .contact-card {
-    padding: 14px;
-  }
-
-  .contact-row {
-    gap: 9px;
-    font-size: .78rem;
-  }
-
-  .dummy-table {
-    font-size: .7rem;
-  }
-
-  .dummy-table th,
   .dummy-table td {
-    padding: 8px 8px;
+    gap: 12px;
+    padding: 5px 0;
+    font-size: .75rem;
   }
 
-  .dummy-table th:nth-child(1),
-  .dummy-table td:nth-child(1) {
-    width: 25%;
-  }
-
-  .dummy-table th:nth-child(2),
-  .dummy-table td:nth-child(2) {
-    width: 45%;
-  }
-
-  .dummy-table th:nth-child(3),
-  .dummy-table td:nth-child(3) {
-    width: 30%;
+  .dummy-table td::before {
+    flex-basis: 45%;
+    font-size: .7rem;
   }
 
   .td-sku {
@@ -1061,3 +977,6 @@ onMounted(() => {
   }
 }
 </style>
+
+
+
