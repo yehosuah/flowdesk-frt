@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Menu, LogOut } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
@@ -79,6 +79,12 @@ function toggleSidebar(): void {
 function closeSidebar(): void {
   sidebarOpen.value = false;
 }
+
+watch(sidebarOpen, (isOpen) => {
+  if (window.innerWidth <= 1000) {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+});
 
 const navItems = [
   {
@@ -637,6 +643,7 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
+
 
 
 
