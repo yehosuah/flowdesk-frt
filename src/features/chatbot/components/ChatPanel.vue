@@ -44,8 +44,14 @@
       </button>
     </header>
 
-    <div class="chat-panel__messages">
-      <div class="chat-panel__welcome">
+    <div
+      ref="messagesContainer"
+      class="chat-panel__messages"
+    >
+      <div
+        v-if="messages.length === 0"
+        class="chat-panel__welcome"
+      >
         <div class="chat-panel__welcome-icon">
           <svg
             width="28"
@@ -77,21 +83,45 @@
           Pregúntame sobre la información de tu negocio y te ayudaré a encontrar respuestas.
         </p>
       </div>
+
+      <div
+        v-else
+        class="chat-panel__conversation"
+      >
+        <div
+          v-for="message in messages"
+          :key="message.id"
+          class="chat-message"
+          :class="`chat-message--${message.role}`"
+        >
+          <span class="chat-message__author">
+            {{ message.role === 'user' ? 'Tú' : 'Asistente FlowDesk' }}
+          </span>
+
+          <div class="chat-message__bubble">
+            {{ message.content }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer class="chat-panel__footer">
       <div class="chat-panel__input-wrapper">
         <textarea
+          v-model="messageInput"
           class="chat-panel__input"
           rows="1"
           placeholder="Escribe tu pregunta..."
           aria-label="Escribe tu pregunta"
+          @keydown.enter.prevent="sendMessage"
         />
 
         <button
           class="chat-panel__send"
           type="button"
           aria-label="Enviar mensaje"
+          :disabled="!messageInput.trim()"
+          @click="sendMessage"
         >
           <svg
             width="20"
@@ -126,9 +156,64 @@
 </template>
 
 <script setup lang="ts">
+import {
+  nextTick,
+  ref,
+} from 'vue';
+
+type ChatRole = 'user' | 'assistant';
+
+interface ChatMessage {
+  id: number;
+  role: ChatRole;
+  content: string;
+}
+
 const emit = defineEmits<{
   close: [];
 }>();
+
+const messageInput = ref('');
+const messages = ref<ChatMessage[]>([]);
+const messagesContainer = ref<HTMLElement | null>(null);
+
+let nextMessageId = 1;
+
+async function scrollToBottom(): Promise<void> {
+  await nextTick();
+
+  if (!messagesContainer.value) {
+    return;
+  }
+
+  messagesContainer.value.scrollTop =
+    messagesContainer.value.scrollHeight;
+}
+
+async function sendMessage(): Promise<void> {
+  const content = messageInput.value.trim();
+
+  if (!content) {
+    return;
+  }
+
+  messages.value.push({
+    id: nextMessageId++,
+    role: 'user',
+    content,
+  });
+
+  messageInput.value = '';
+
+  messages.value.push({
+    id: nextMessageId++,
+    role: 'assistant',
+    content:
+      'He recibido tu mensaje. Pronto podré responder utilizando la información de FlowDesk.',
+  });
+
+  await scrollToBottom();
+}
 </script>
 
 <style scoped>
@@ -255,6 +340,55 @@ const emit = defineEmits<{
   line-height: 1.5;
 }
 
+.chat-panel__conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 84%;
+}
+
+.chat-message--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-message--assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.chat-message__author {
+  margin: 0 5px 5px;
+  opacity: 0.55;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.chat-message__bubble {
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.chat-message--user .chat-message__bubble {
+  border-bottom-right-radius: 4px;
+  background: var(--color-structure-base);
+  color: #fff;
+}
+
+.chat-message--assistant .chat-message__bubble {
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  border-bottom-left-radius: 4px;
+  background: rgba(127, 127, 127, 0.12);
+}
+
 .chat-panel__footer {
   flex-shrink: 0;
   padding: 14px 16px 12px;
@@ -306,8 +440,13 @@ const emit = defineEmits<{
   cursor: pointer;
 }
 
-.chat-panel__send:hover {
+.chat-panel__send:hover:not(:disabled) {
   opacity: 0.9;
+}
+
+.chat-panel__send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .chat-panel__send:focus-visible {
