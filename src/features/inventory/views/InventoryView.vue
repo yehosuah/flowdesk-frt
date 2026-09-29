@@ -794,14 +794,12 @@ const productosStockBajo =
 
 .table-container {
   width: 100%;
-
   background: var(--color-bg-surface);
-
   border-radius: 12px;
-
   box-shadow: var(--shadow-card);
-
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 
@@ -1375,16 +1373,14 @@ const productosStockBajo =
   /* Contenedor productos */
 
   .table-container {
-    width: 100%;
-
-    max-width: 100%;
-
-    overflow: hidden;
-
-    border: 1px solid var(--color-bg-border);
-
-    border-radius: 12px;
-  }
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--color-bg-border);
+      border-radius: 12px;
+    }
 
 
   /* =========================
