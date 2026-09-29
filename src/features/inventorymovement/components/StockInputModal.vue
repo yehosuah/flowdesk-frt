@@ -20,20 +20,34 @@
           Agrega nuevo inventario a un producto existente (reabastecimiento).
         </p>
         
-        <form @submit.prevent="submit" class="form-grid">
+        <form @submit.prevent="submit" class="form-grid" novalidate>
           <div class="form-group full-width">
             <label class="form-label">Producto *</label>
-            <select v-model="form.producto_id" class="form-input" required>
+            <select
+              v-model="form.producto_id"
+              class="form-input"
+              :class="{ 'input-error': errors.producto_id }"
+              @change="errors.producto_id = ''"
+            >
               <option value="" disabled>Selecciona un producto...</option>
               <option v-for="prod in products" :key="prod.id" :value="prod.id">
                 {{ prod.nombre }} (Stock actual: {{ prod.cantidad }})
               </option>
             </select>
+            <span v-if="errors.producto_id" class="error-msg">{{ errors.producto_id }}</span>
           </div>
 
           <div class="form-group">
             <label class="form-label">Cantidad a ingresar *</label>
-            <input v-model.number="form.cantidad" type="number" min="1" class="form-input" required />
+            <input
+              v-model.number="form.cantidad"
+              type="number"
+              min="1"
+              class="form-input"
+              :class="{ 'input-error': errors.cantidad }"
+              @input="errors.cantidad = ''"
+            />
+            <span v-if="errors.cantidad" class="error-msg">{{ errors.cantidad }}</span>
           </div>
 
           <div class="form-group full-width">
@@ -87,21 +101,52 @@ const form = reactive({
 const isSubmitting = ref(false);
 const error = ref('');
 
+const errors = reactive({
+  producto_id: '',
+  cantidad: '',
+});
+
+function isBlank(value: number | string): boolean {
+  return String(value).trim() === '';
+}
+
+function validateForm(): boolean {
+  errors.producto_id = '';
+  errors.cantidad = '';
+
+  let isValid = true;
+
+  if (!form.producto_id) {
+    errors.producto_id = 'Selecciona un producto.';
+    isValid = false;
+  }
+
+  if (isBlank(form.cantidad)) {
+    errors.cantidad = 'Ingresa la cantidad a ingresar.';
+    isValid = false;
+  } else if (Number(form.cantidad) <= 0) {
+    errors.cantidad = 'La cantidad debe ser mayor a 0.';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
 async function submit() {
-  if (!form.producto_id || form.cantidad <= 0) {
-    error.value = 'Por favor selecciona un producto e ingresa una cantidad válida.';
+  error.value = '';
+
+  if (!validateForm()) {
     return;
   }
 
   isSubmitting.value = true;
-  error.value = '';
 
   try {
     await createMovement({
       producto_id: form.producto_id,
       tipo_movimiento: 'entrada_compra',
-      cantidad: form.cantidad,
-      motivo: form.motivo || 'Ingreso de stock (Compra)',
+      cantidad: Number(form.cantidad),
+      motivo: form.motivo.trim() || 'Ingreso de stock (Compra)',
     });
 
     emit('created');
@@ -234,6 +279,15 @@ async function submit() {
   outline: none;
   border-color: var(--color-structure-base, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.input-error {
+  border-color: var(--color-danger);
+}
+
+.error-msg {
+  color: var(--color-danger-text);
+  font-size: 0.78rem;
 }
 
 .error-alert {

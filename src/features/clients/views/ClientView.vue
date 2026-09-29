@@ -165,7 +165,7 @@
     <ClientModal
       v-if="showModal"
       :client="clientToEdit"
-      @close="showModal = false"
+      @close="onModalClose"
       @saved="onModalSaved"
       @status-changed="onStatusChanged"
     />
@@ -254,13 +254,33 @@ function openEditModal(cli: Client) {
   showModal.value = true;
 }
 
-function onModalSaved() {
+function onModalSaved(saved: Client) {
+  // Selecciona el cliente recién creado/editado para que quede visible
+  // de inmediato en el panel de detalle (antes se quedaba en el que
+  // estuviera seleccionado previamente, o en ninguno).
+  selectedClient.value = saved;
   showModal.value = false;
   fetchData();
 }
 
 function onStatusChanged(updated: Client) {
+  // Actualiza en memoria (panel de detalle + fila en la lista) sin volver a
+  // pedir la lista todavía: si el cliente activado/desactivado deja de
+  // cumplir el filtro actual (p. ej. "Activos"), un fetchData() aquí lo
+  // saca de la lista y salta la selección a otro cliente mientras el modal
+  // sigue abierto, lo cual es confuso. La lista se reconcilia con el
+  // filtro recién al cerrar el modal, en onModalClose().
   clientToEdit.value = updated;
+  selectedClient.value = updated;
+
+  const idx = clients.value.findIndex((client) => client.id === updated.id);
+  if (idx !== -1) {
+    clients.value[idx] = updated;
+  }
+}
+
+function onModalClose() {
+  showModal.value = false;
   fetchData();
 }
 

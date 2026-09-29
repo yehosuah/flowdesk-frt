@@ -182,7 +182,7 @@
     <SupplierModal
       v-if="showModal"
       :supplier="supplierToEdit"
-      @close="showModal = false"
+      @close="onModalClose"
       @saved="onModalSaved"
       @status-changed="onStatusChanged"
     />
@@ -282,8 +282,16 @@ function selectSupplier(sup: Supplier) {
 
 
 function onStatusChanged(updated: Supplier) {
+  // Igual que en Clientes: actualiza en memoria sin refrescar la lista
+  // todavía, para no saltar la selección a otro proveedor mientras el
+  // modal sigue abierto si el filtro actual ya no incluye a este.
   supplierToEdit.value = updated;
-  fetchData();
+  selectedSupplier.value = updated;
+
+  const idx = suppliers.value.findIndex((sup) => sup.id === updated.id);
+  if (idx !== -1) {
+    suppliers.value[idx] = updated;
+  }
 }
 
 function openCreateModal() {
@@ -296,9 +304,16 @@ function openEditModal(sup: Supplier) {
   showModal.value = true;
 }
 
-function onModalSaved() {
+function onModalSaved(saved: Supplier) {
+  // Selecciona el proveedor recién creado/editado para verlo de inmediato.
+  selectedSupplier.value = saved;
   showModal.value = false;
-  fetchData(); 
+  fetchData();
+}
+
+function onModalClose() {
+  showModal.value = false;
+  fetchData();
 }
 
 onMounted(() => {
