@@ -54,6 +54,8 @@
     <main class="main-layout__content">
       <RouterView />
     </main>
+
+    <ChatWidget />
   </div>
 </template>
 
@@ -62,6 +64,7 @@ import { RouterLink, useRouter } from 'vue-router';
 import { computed, ref } from 'vue';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
+import ChatWidget from '@/features/chatbot/components/ChatWidget.vue';
 
 const router = useRouter();
 
