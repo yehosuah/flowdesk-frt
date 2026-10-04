@@ -35,7 +35,7 @@ vi.mock('vue-chartjs', () => ({
   },
 }));
 
-describe('AnalyticsView - estados vacíos', () => {
+describe('AnalyticsView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -73,53 +73,125 @@ describe('AnalyticsView - estados vacíos', () => {
 
   async function mountView() {
     const wrapper = mount(AnalyticsView);
+
     await flushPromises();
 
     return wrapper;
   }
 
-  it('muestra estado vacío cuando no existen movimientos en el período', async () => {
-    const wrapper = await mountView();
+  describe('estados vacíos', () => {
+    it('muestra estado vacío cuando no existen movimientos en el período', async () => {
+      const wrapper = await mountView();
 
-    expect(wrapper.text()).toContain(
-      'No hay movimientos en este período.',
-    );
+      expect(wrapper.text()).toContain(
+        'No hay movimientos en este período.',
+      );
+    });
+
+    it('muestra estado vacío cuando no existen movimientos recientes', async () => {
+      const wrapper = await mountView();
+
+      expect(wrapper.text()).toContain(
+        'No hay movimientos recientes.',
+      );
+    });
+
+    it('muestra estado vacío cuando no existen productos para analizar', async () => {
+      const wrapper = await mountView();
+
+      expect(wrapper.text()).toContain('Sin datos.');
+    });
+
+    it('muestra estado vacío cuando no existen alertas de reabastecimiento', async () => {
+      const wrapper = await mountView();
+
+      expect(wrapper.text()).toContain('No hay alertas.');
+    });
+
+    it('muestra estado vacío cuando no existe stock muerto', async () => {
+      const wrapper = await mountView();
+
+      const productsTab = wrapper
+        .findAll('.tab-btn')
+        .find((tab) => tab.text() === 'Productos');
+
+      expect(productsTab).toBeDefined();
+
+      await productsTab!.trigger('click');
+
+      expect(wrapper.text()).toContain(
+        'No hay stock muerto detectado.',
+      );
+    });
   });
 
-  it('muestra estado vacío cuando no existen movimientos recientes', async () => {
-    const wrapper = await mountView();
+  describe('manejo de errores', () => {
+    it('muestra un error global cuando falla la carga de métricas', async () => {
+      vi.mocked(fetchMetrics).mockRejectedValue(
+        new Error('Error al cargar métricas'),
+      );
 
-    expect(wrapper.text()).toContain(
-      'No hay movimientos recientes.',
-    );
-  });
+      const wrapper = await mountView();
 
-  it('muestra estado vacío cuando no existen productos para analizar', async () => {
-    const wrapper = await mountView();
+      expect(wrapper.text()).toContain(
+        'Error al cargar los datos',
+      );
+    });
 
-    expect(wrapper.text()).toContain('Sin datos.');
-  });
+    it('muestra un error cuando falla la carga de tendencias', async () => {
+      vi.mocked(fetchTrend).mockRejectedValue(
+        new Error('Error al cargar tendencias'),
+      );
 
-  it('muestra estado vacío cuando no existen alertas de reabastecimiento', async () => {
-    const wrapper = await mountView();
+      const wrapper = await mountView();
 
-    expect(wrapper.text()).toContain('No hay alertas.');
-  });
+      expect(
+        wrapper.find('.chart-empty--error').exists(),
+      ).toBe(true);
 
-  it('muestra estado vacío cuando no existe stock muerto', async () => {
-    const wrapper = await mountView();
+      expect(wrapper.text()).toContain(
+        'Error al cargar los datos',
+      );
+    });
 
-    const tabs = wrapper.findAll('.tab-btn');
-    const productsTab = tabs.find(
-      (tab) => tab.text() === 'Productos',
-    );
+    it('muestra un error cuando falla la carga de productos', async () => {
+      vi.mocked(fetchProductAnalytics).mockRejectedValue(
+        new Error('Error al cargar productos'),
+      );
 
-    expect(productsTab).toBeDefined();
+      const wrapper = await mountView();
 
-    await productsTab!.trigger('click');
+      expect(
+        wrapper.find('.table-empty--error').exists(),
+      ).toBe(true);
 
-    expect(wrapper.text()).toContain(
-      'No hay stock muerto detectado.',
-    );
+      expect(wrapper.text()).toContain(
+        'Error al cargar los datos',
+      );
+    });
+
+    it('mantiene un estado vacío si falla la carga del historial', async () => {
+      vi.mocked(fetchHistory).mockRejectedValue(
+        new Error('Error al cargar historial'),
+      );
+
+      const wrapper = await mountView();
+
+      expect(wrapper.text()).toContain(
+        'No hay movimientos recientes.',
+      );
+    });
+
+    it('mantiene un estado vacío si falla la carga de alertas', async () => {
+      vi.mocked(fetchAlerts).mockRejectedValue(
+        new Error('Error al cargar alertas'),
+      );
+
+      const wrapper = await mountView();
+
+      expect(wrapper.text()).toContain(
+        'No hay alertas.',
+      );
+    });
   });
 });
