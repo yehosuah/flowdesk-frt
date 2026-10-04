@@ -132,7 +132,7 @@ describe('Flujo comercial completo: Clientes', () => {
     await flushPromises();
     expect(wrapper.text()).toContain('Desactivar cliente');
 
-    await wrapper.find('.confirm-btn--danger').trigger('click');
+    await wrapper.find('.btn-danger').trigger('click');
     await flushPromises();
 
     expect(toggleClientStatus).toHaveBeenCalledWith('1', false);
@@ -165,7 +165,7 @@ describe('Flujo comercial completo: Clientes', () => {
     await wrapper.find('.btn-status-toggle').trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.confirm-box').exists()).toBe(false);
+    expect(wrapper.find('.confirm-actions').exists()).toBe(false);
     expect(toggleClientStatus).toHaveBeenCalledWith('1', true);
     expect(wrapper.find('.detail-title-row .status-dot--active').exists()).toBe(true);
   });
@@ -182,12 +182,12 @@ describe('Flujo comercial completo: Clientes', () => {
     await wrapper.find('.btn-icon-action').trigger('click');
     await wrapper.find('.btn-status-toggle').trigger('click');
     await flushPromises();
-    await wrapper.find('.confirm-btn--danger').trigger('click');
+    await wrapper.find('.btn-danger').trigger('click');
     await flushPromises();
 
     expect(wrapper.text()).toContain('El cliente tiene ventas asociadas');
     // El diálogo de confirmación sigue abierto y el estado no cambió.
-    expect(wrapper.find('.confirm-box').exists()).toBe(true);
+    expect(wrapper.find('.confirm-actions').exists()).toBe(true);
     expect(wrapper.find('.status-pill--active').exists()).toBe(true);
   });
 });
