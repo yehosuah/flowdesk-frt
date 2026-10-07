@@ -69,6 +69,9 @@
             :is-exempt="form.es_exenta"
           />
           <p v-else-if="taxConfigError" class="tax-config-error full-width">{{ taxConfigError }}</p>
+          <p v-if="isTemporaryTaxRate" class="tax-config-warning full-width">
+            Vista previa temporal al 12%. El backend todavía puede registrar la venta con IVA 0%.
+          </p>
 
           <div v-if="error" class="error-alert full-width">{{ error }}</div>
 
@@ -129,15 +132,20 @@ const subtotalPreview = computed(() => {
 const isSubmitting = ref(false);
 const error = ref('');
 
-// Tasa de IVA de la empresa (GET /commercial/tax-configuration). No tiene
-// valor por defecto: mientras no llegue, no se muestra el desglose.
+// Fallback temporal solo para la vista previa mientras se corrige el backend.
+const TEMPORARY_TAX_RATE_FALLBACK = 12;
 const taxRate = ref<number | null>(null);
 const taxConfigError = ref('');
+const isTemporaryTaxRate = ref(false);
 
 onMounted(async () => {
   try {
     const config = await fetchTaxConfiguration();
-    taxRate.value = Number(config.tasa_impuesto);
+    const configuredRate = Number(config.tasa_impuesto);
+    isTemporaryTaxRate.value = configuredRate === 0;
+    taxRate.value = isTemporaryTaxRate.value
+      ? TEMPORARY_TAX_RATE_FALLBACK
+      : configuredRate;
   } catch (err) {
     // El registro de la venta sigue funcionando aunque falle esta consulta;
     // el backend calcula el impuesto igual, solo se pierde la vista previa.
@@ -332,6 +340,15 @@ async function submit() {
 }
 
 .tax-config-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: 0.82rem;
+}
+
+.tax-config-warning {
   margin: 0;
   padding: 10px 12px;
   border-radius: 8px;

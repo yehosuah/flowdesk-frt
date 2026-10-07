@@ -40,5 +40,5 @@ export interface Sale {
 }
 
 export interface TaxConfiguration {
-  tasa_impuesto: number;
+  tasa_impuesto: number | string;
 }

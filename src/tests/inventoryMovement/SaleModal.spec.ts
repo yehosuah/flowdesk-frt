@@ -89,6 +89,21 @@ describe('SaleModal — desglose de impuestos', () => {
     expect(wrapper.text()).toContain('Q 150.00');
   });
 
+  it('usa temporalmente IVA del 12% en la vista previa cuando la configuración devuelve 0', async () => {
+    vi.mocked(fetchTaxConfiguration).mockResolvedValue({ tasa_impuesto: '0' });
+
+    const wrapper = createWrapper();
+    await flushPromises();
+    await wrapper.find('select').setValue('p1');
+    await wrapper.find('input[type="number"]').setValue(1);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('IVA (12%)');
+    expect(wrapper.text()).toContain('Q 12.00');
+    expect(wrapper.text()).toContain('Vista previa temporal al 12%');
+    expect(wrapper.text()).toContain('registrar la venta con IVA 0%');
+  });
+
   it('venta exenta: el desglose muestra impuesto en 0 sin pedirlo al backend', async () => {
     const wrapper = createWrapper();
     await flushPromises();
