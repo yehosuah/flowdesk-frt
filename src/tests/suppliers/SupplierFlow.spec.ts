@@ -146,7 +146,7 @@ describe('Flujo comercial completo: Proveedores', () => {
     await flushPromises();
     expect(wrapper.text()).toContain('Desactivar proveedor');
 
-    await wrapper.find('.confirm-btn--danger').trigger('click');
+    await wrapper.find('.btn-danger').trigger('click');
     await flushPromises();
 
     expect(toggleSupplierStatus).toHaveBeenCalledWith('1', false);
@@ -176,7 +176,7 @@ describe('Flujo comercial completo: Proveedores', () => {
     await wrapper.find('.btn-status-toggle').trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.confirm-box').exists()).toBe(false);
+    expect(wrapper.find('.confirm-actions').exists()).toBe(false);
     expect(toggleSupplierStatus).toHaveBeenCalledWith('1', true);
     expect(wrapper.find('.detail-title-row .status-dot--active').exists()).toBe(true);
   });
