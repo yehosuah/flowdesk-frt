@@ -75,7 +75,7 @@ const taxRatePercent = computed(() => round2(props.taxRate));
 const impuesto = computed(() =>
   props.isExempt ? 0 : round2(props.subtotal * (props.taxRate / 100)),
 );
-const total = computed(() => round2(props.subtotal - props.descuento + impuesto.value));
+const total = computed(() => round2(props.subtotal + props.descuento + impuesto.value));
 
 defineExpose({ impuesto, total });
 </script>
