@@ -7,7 +7,7 @@
   >
     <div class="welcome-content">
       <p class="welcome-text">
-        Estamos emocionados de tenerte aquí. FlowDesk está diseñado para ayudarte a gestionar tu inventario, clientes y ventas de la forma más sencilla posible.
+        Nos alegra verte aquí. Empecemos a organizar tu negocio. FlowDesk está diseñado para ayudarte a gestionar tu inventario, clientes y ventas de la forma más sencilla posible.
       </p>
       
       <div class="welcome-features">
