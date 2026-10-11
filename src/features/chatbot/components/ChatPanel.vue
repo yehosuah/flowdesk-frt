@@ -426,10 +426,10 @@ async function retryMessage(message: ChatMessage): Promise<void> {
     return;
   }
 
-  await requestAssistantResponse(
-    message.retryContent,
-    message,
-  );
+  //await requestAssistantResponse(
+    //message.retryContent,
+    //message,
+  //);
 }
 </script>
 
