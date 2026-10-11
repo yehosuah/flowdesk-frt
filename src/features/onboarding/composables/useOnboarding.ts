@@ -36,56 +36,9 @@ export function useOnboarding() {
     isWelcomeVisible.value = false;
     completeOnboarding(); // Mark as complete, can be reset from profile menu using resetOnboarding()
 
+    const isMobile = window.innerWidth <= 1000;
+
     const tourConfig = {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-      showProgress: true,
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Anterior',
-      doneBtnText: 'Finalizar',
-      steps: [
-        { 
-          popover: { 
-            title: '�Vamos a empezar!', 
-            description: 'Te dar� un recorrido r�pido por tu panel principal.',
-            side: 'left',
-            align: 'start'
-          }
-        },
-        { 
-          element: '.sidebar__nav', 
-          popover: { 
-            title: 'Navegaci�n', 
-            description: 'Desde aqu� puedes acceder a todas las secciones: Inventario, Clientes, Reportes y m�s.', 
-            side: 'right', 
-            align: 'start' 
-          }
-        },
-        { 
-          element: '.header-actions', 
-          popover: { 
-            title: 'Opciones R�pidas', 
-            description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
-            side: 'bottom', 
-            align: 'end' 
-          }
-        },
-        { 
-          element: '.main-layout__content', 
-          popover: { 
-            title: '�rea de Trabajo', 
-            description: 'Aqu� ver�s toda la informaci�n detallada de la secci�n que elijas. �Explora a tu ritmo!', 
-            side: 'top', 
-            align: 'center' 
-          }
-        }
-      ]
-    };
-    const driverObj = driver(tourConfig);
->>>>>>> 26938adfa9f207cc88bc902e4fccd83b122fe9eb
->>>>>>> 07040b4f2eca133c0b8e11a1220be7e4794a9049
       showProgress: true,
       progressText: 'Paso {{current}} de {{total}}',
       nextBtnText: 'Siguiente Paso',
@@ -96,44 +49,46 @@ export function useOnboarding() {
       steps: [
         { 
           popover: { 
-            title: '¡Vamos a empezar!', 
-            description: 'Te daré un recorrido rápido por tu panel principal.',
+            title: '¡Bienvenido al Recorrido!', 
+            description: 'Vamos a conocer las herramientas principales que harán crecer tu negocio.',
             side: 'left',
             align: 'start'
           }
         },
         { 
-          element: '.sidebar', // Secuencia rediseñada
+          element: isMobile ? '.header__hamburger' : '.sidebar',
           popover: { 
-            title: 'Navegación', 
-            description: 'Desde aquí puedes acceder a todas las secciones: Inventario, Clientes, Reportes y más.', 
-            side: 'right', 
+            title: 'Tu Panel de Navegación', 
+            description: isMobile 
+                ? 'Toca este botón para abrir el menú principal. Aquí encontrarás acceso al Inventario, Clientes, Reportes y configuración.'
+                : 'Este es tu menú principal. Desde aquí accederás rápidamente al Inventario, Clientes, Reportes y configuración.', 
+            side: isMobile ? 'bottom' : 'right', 
             align: 'start' 
           }
         },
         { 
-          element: '.chat-widget-btn',
-          popover: {
-            title: 'Asistente IA',
-            description: 'Usa nuestro chatbot para resolver dudas al instante.',
-            side: 'left',
-            align: 'start'
-          }
-        },
-        {
           element: '.header-actions', 
           popover: { 
-            title: 'Opciones Rápidas', 
-            description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
+            title: 'Acciones Rápidas', 
+            description: 'Aquí puedes buscar cualquier producto rápidamente, ver notificaciones importantes y acceder a tu perfil.', 
             side: 'bottom', 
             align: 'end' 
           }
         },
         { 
+          element: '.chat-widget-btn',
+          popover: {
+            title: 'Asistente de Inteligencia Artificial',
+            description: '¿Tienes dudas o necesitas ayuda? Nuestro Chatbot IA está disponible 24/7 para asistirte con el sistema.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        { 
           element: '.main-layout__content', 
           popover: { 
-            title: 'Área de Trabajo', 
-            description: 'Aquí verás toda la información detallada de la sección que elijas. ¡Explora a tu ritmo!', 
+            title: 'Tu Área de Trabajo', 
+            description: 'Esta es la zona principal donde visualizarás tus tablas, gráficos y formularios interactivos. ¡Todo a un solo clic de distancia!', 
             side: 'top', 
             align: 'center' 
           }
@@ -143,7 +98,6 @@ export function useOnboarding() {
     
     const driverObj = driver(tourConfig);
 
-    // Small delay to ensure modal is closed and DOM is ready
     setTimeout(() => {
       driverObj.drive();
     }, 300);
