@@ -34,7 +34,7 @@ export function useOnboarding() {
 
   function startTour() {
     isWelcomeVisible.value = false;
-    completeOnboarding(); // Mark as complete since they started it
+    completeOnboarding(); // Mark as complete, can be reset from profile menu using resetOnboarding()
 
     const tourConfig = {
       showProgress: true,
