@@ -137,7 +137,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
       skipMissingElement: true,
       showButtons: ['next', 'previous', 'close'],
       steps: tourSteps,
-      onDestroyStarted: () => {
+      onDestroyed: () => {
         if (isMobile) {
           options?.closeSidebar?.();
         }
