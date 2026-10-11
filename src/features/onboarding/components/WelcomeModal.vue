@@ -67,6 +67,9 @@ defineEmits<{
 </script>
 
 <style scoped>
+@media (max-width: 600px) {
+  .welcome-features { flex-direction: column; }
+}
 .welcome-content {
   padding: 10px 0;
 }
