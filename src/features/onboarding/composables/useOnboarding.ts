@@ -37,6 +37,52 @@ export function useOnboarding() {
     completeOnboarding(); // Mark as complete, can be reset from profile menu using resetOnboarding()
 
     const tourConfig = {
+<<<<<<< HEAD
+=======
+      showProgress: true,
+      nextBtnText: 'Siguiente',
+      prevBtnText: 'Anterior',
+      doneBtnText: 'Finalizar',
+      steps: [
+        { 
+          popover: { 
+            title: '¡Vamos a empezar!', 
+            description: 'Te daré un recorrido rápido por tu panel principal.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        { 
+          element: '.sidebar__nav', 
+          popover: { 
+            title: 'Navegación', 
+            description: 'Desde aquí puedes acceder a todas las secciones: Inventario, Clientes, Reportes y más.', 
+            side: 'right', 
+            align: 'start' 
+          }
+        },
+        { 
+          element: '.header-actions', 
+          popover: { 
+            title: 'Opciones Rápidas', 
+            description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
+            side: 'bottom', 
+            align: 'end' 
+          }
+        },
+        { 
+          element: '.main-layout__content', 
+          popover: { 
+            title: 'Área de Trabajo', 
+            description: 'Aquí verás toda la información detallada de la sección que elijas. ¡Explora a tu ritmo!', 
+            side: 'top', 
+            align: 'center' 
+          }
+        }
+      ]
+    };
+    const driverObj = driver(tourConfig);
+>>>>>>> 26938adfa9f207cc88bc902e4fccd83b122fe9eb
       showProgress: true,
       progressText: 'Paso {{current}} de {{total}}',
       nextBtnText: 'Siguiente Paso',
@@ -105,3 +151,4 @@ export function useOnboarding() {
     resetOnboarding
   };
 }
+
