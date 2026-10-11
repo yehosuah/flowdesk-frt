@@ -1,7 +1,7 @@
 <template>
   <Modal 
     :model-value="modelValue" 
-    title="¡Bienvenido a FlowDesk!" 
+    title="Bienvenido a tu nuevo Workspace de FlowDesk!" 
     @update:model-value="$emit('update:modelValue', $event)"
     @close="$emit('close')"
   >
