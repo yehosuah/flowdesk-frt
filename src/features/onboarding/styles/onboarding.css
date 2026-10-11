@@ -1,0 +1,111 @@
+/* Estilos personalizados para el tour de Driver.js en FlowDesk */
+.driver-popover {
+  background-color: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: inherit;
+  max-width: 380px;
+  z-index: 100000;
+}
+
+.driver-popover-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.driver-popover-description {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #475569;
+  margin-bottom: 16px;
+}
+
+.driver-popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.driver-popover-navigation-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.driver-popover-prev-btn {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #e2e8f0 !important;
+}
+
+.driver-popover-next-btn {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.driver-popover-next-btn:hover {
+  opacity: 0.9;
+}
+
+.driver-popover-close-btn {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  transition: color 0.15s ease;
+}
+
+.driver-popover-close-btn:hover {
+  color: #0f172a;
+}
+
+/* Adaptación responsive para celulares y tablets */
+@media (max-width: 1000px) {
+  .driver-popover {
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px !important;
+    padding: 14px 16px !important;
+  }
+
+  .driver-popover-title {
+    font-size: 0.98rem !important;
+  }
+
+  .driver-popover-description {
+    font-size: 0.84rem !important;
+  }
+
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    padding: 5px 10px !important;
+    font-size: 0.78rem !important;
+  }
+}
