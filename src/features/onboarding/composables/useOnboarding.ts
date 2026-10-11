@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import '../styles/onboarding.css';
@@ -8,10 +9,17 @@ const ONBOARDING_KEY = 'flowdesk_has_seen_onboarding';
 export interface UseOnboardingOptions {
   openSidebar?: () => void;
   closeSidebar?: () => void;
+  navigateToInventory?: () => Promise<void> | void;
 }
 
 export function useOnboarding(options?: UseOnboardingOptions) {
   const isWelcomeVisible = ref(false);
+  let router: ReturnType<typeof useRouter> | null = null;
+  try {
+    router = useRouter();
+  } catch {
+    // En entornos donde vue-router no esté disponible
+  }
 
   onMounted(() => {
     checkOnboardingStatus();
@@ -39,11 +47,18 @@ export function useOnboarding(options?: UseOnboardingOptions) {
     isWelcomeVisible.value = true;
   }
 
-  function startTour() {
+  async function startTour() {
     isWelcomeVisible.value = false;
     // En móvil: cerrar el menú lateral para mostrar la pantalla y opciones principales
     options?.closeSidebar?.();
     completeOnboarding();
+
+    // Redirigir a la vista de inventario para que el recorrido coincida con los elementos en pantalla
+    if (options?.navigateToInventory) {
+      await options.navigateToInventory();
+    } else if (router && router.currentRoute.value.name !== 'inventory') {
+      await router.push({ name: 'inventory' });
+    }
 
     const isMobile = window.innerWidth <= 1000;
     const navSelector = isMobile ? '.mobile-menu-button' : '.sidebar';
@@ -146,7 +161,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
 
     setTimeout(() => {
       driverObj.drive();
-    }, 300);
+    }, 350);
   }
 
   return {

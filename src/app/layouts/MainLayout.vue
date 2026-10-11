@@ -104,7 +104,12 @@ const chatOpen = ref(false);
 const { canAccessRoute } = useAuth();
 const { isWelcomeVisible, skipTour, startTour, resetOnboarding } = useOnboarding({
   openSidebar: () => { sidebarOpen.value = true; },
-  closeSidebar: () => { sidebarOpen.value = false; }
+  closeSidebar: () => { sidebarOpen.value = false; },
+  navigateToInventory: async () => {
+    if (router.currentRoute.value.name !== 'inventory') {
+      await router.push({ name: 'inventory' });
+    }
+  }
 });
 
 function toggleSidebar(): void {
