@@ -34,6 +34,7 @@
           v-for="item in visibleNavItems"
           :key="item.name"
           :to="item.to"
+          :data-nav-item="item.name"
           class="sidebar__link"
           active-class="sidebar__link--active"
           @click="closeSidebar"
@@ -46,6 +47,7 @@
       <button
         class="sidebar__logout"
         type="button"
+        data-tour="restart-tutorial"
         @click="resetOnboarding"
         style="padding-bottom: 4px;"
       >
@@ -100,7 +102,10 @@ const router = useRouter();
 const sidebarOpen = ref(false);
 const chatOpen = ref(false);
 const { canAccessRoute } = useAuth();
-const { isWelcomeVisible, skipTour, startTour, resetOnboarding } = useOnboarding();
+const { isWelcomeVisible, skipTour, startTour, resetOnboarding } = useOnboarding({
+  openSidebar: () => { sidebarOpen.value = true; },
+  closeSidebar: () => { sidebarOpen.value = false; }
+});
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
