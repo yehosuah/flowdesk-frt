@@ -51,7 +51,7 @@ export function useOnboarding() {
           }
         },
         { 
-          element: '.sidebar__nav', 
+          element: '.sidebar', // Secuencia rediseñada 
           popover: { 
             title: 'Navegación', 
             description: 'Desde aquí puedes acceder a todas las secciones: Inventario, Clientes, Reportes y más.', 
