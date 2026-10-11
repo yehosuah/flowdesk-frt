@@ -60,7 +60,16 @@ export function useOnboarding() {
           }
         },
         { 
-          element: '.header-actions', 
+          element: '.chat-widget-btn',
+        popover: {
+          title: 'Asistente IA',
+          description: 'Usa nuestro chatbot para resolver dudas al instante.',
+          side: 'left',
+          align: 'start'
+        }
+      },
+      {
+        element: '.header-actions', 
           popover: { 
             title: 'Opciones Rápidas', 
             description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
