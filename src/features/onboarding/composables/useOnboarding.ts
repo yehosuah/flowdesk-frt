@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+﻿import { ref, onMounted } from 'vue';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
@@ -54,7 +54,7 @@ export function useOnboarding() {
           }
         },
         { 
-          element: '.sidebar', // Secuencia rediseñada 
+          element: '.sidebar', // Secuencia rediseñada
           popover: { 
             title: 'Navegación', 
             description: 'Desde aquí puedes acceder a todas las secciones: Inventario, Clientes, Reportes y más.', 
@@ -64,15 +64,15 @@ export function useOnboarding() {
         },
         { 
           element: '.chat-widget-btn',
-        popover: {
-          title: 'Asistente IA',
-          description: 'Usa nuestro chatbot para resolver dudas al instante.',
-          side: 'left',
-          align: 'start'
-        }
-      },
-      {
-        element: '.header-actions', 
+          popover: {
+            title: 'Asistente IA',
+            description: 'Usa nuestro chatbot para resolver dudas al instante.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        {
+          element: '.header-actions', 
           popover: { 
             title: 'Opciones Rápidas', 
             description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
@@ -90,7 +90,9 @@ export function useOnboarding() {
           }
         }
       ]
-    });
+    };
+    
+    const driverObj = driver(tourConfig);
 
     // Small delay to ensure modal is closed and DOM is ready
     setTimeout(() => {
