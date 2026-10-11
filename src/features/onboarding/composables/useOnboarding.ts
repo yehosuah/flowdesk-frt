@@ -42,6 +42,8 @@ export function useOnboarding() {
       nextBtnText: 'Siguiente Paso',
       prevBtnText: 'Paso Anterior',
       doneBtnText: 'Finalizar',
+      allowClose: true,
+      showButtons: ['next', 'previous', 'close'],
       steps: [
         { 
           popover: { 
