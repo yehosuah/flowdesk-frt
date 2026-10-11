@@ -36,7 +36,7 @@ export function useOnboarding() {
     isWelcomeVisible.value = false;
     completeOnboarding(); // Mark as complete since they started it
 
-    const driverObj = driver({
+    const tourConfig = {
       showProgress: true,
       nextBtnText: 'Siguiente',
       prevBtnText: 'Anterior',
