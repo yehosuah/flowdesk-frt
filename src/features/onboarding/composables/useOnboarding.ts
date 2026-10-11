@@ -39,8 +39,8 @@ export function useOnboarding() {
     const tourConfig = {
       showProgress: true,
       progressText: 'Paso {{current}} de {{total}}',
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Anterior',
+      nextBtnText: 'Siguiente Paso',
+      prevBtnText: 'Paso Anterior',
       doneBtnText: 'Finalizar',
       steps: [
         { 
