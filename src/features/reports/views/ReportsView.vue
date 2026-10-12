@@ -69,6 +69,30 @@
             </details>
           </div>
 
+          <div
+            v-if="form.type === 'purchase_book'"
+            class="filtro-group"
+          >
+            <label class="filtros-sub" for="purchase-tax-regime">
+              Régimen Tributario
+            </label>
+            <select
+              id="purchase-tax-regime"
+              v-model="form.regime"
+              class="custom-select__trigger"
+            >
+              <option
+                v-for="option in taxRegimeOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <div v-if="form.type === 'purchase_book'" class="filtros-divider"></div>
+
           <div class="filtros-divider"></div>
 
           <div class="filtro-group">
@@ -536,6 +560,7 @@ import {
 } from 'vue';
 
 import { CalendarDays } from 'lucide-vue-next';
+import type { TaxReportRegime } from '@/features/reports/utils/purchaseReportParams';
 
 const COLUMNS_MAP: Record<string, string[]> = {
   current_stock: [
@@ -622,6 +647,11 @@ const commercialReportOptions = [
   },
 ];
 
+const taxRegimeOptions: { value: TaxReportRegime; label: string }[] = [
+  { value: 'SMALL_TAXPAYER', label: 'Pequeño Contribuyente' },
+  { value: 'GENERAL_VAT', label: 'Régimen General del IVA' },
+];
+
 const statusOptions = [
   {
     value: 'all',
@@ -643,6 +673,7 @@ const form = reactive({
   startDate: '',
   endDate: '',
   status: 'all',
+  regime: 'GENERAL_VAT' as TaxReportRegime,
   selectedColumns: [] as string[],
 });
 
