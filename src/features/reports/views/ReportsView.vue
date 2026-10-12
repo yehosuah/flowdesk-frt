@@ -415,6 +415,7 @@
           </div>
 
           <button
+            v-if="form.type !== 'purchase_book'"
             type="submit"
             class="btn-generate"
             :disabled="isLoading || !isFormValid"
@@ -430,7 +431,7 @@
         </form>
 
         <div
-          v-if="hasPreview"
+          v-if="hasPreview || form.type === 'purchase_book'"
           class="export-actions"
         >
           <div class="filtros-divider"></div>
@@ -440,19 +441,33 @@
           </p>
 
           <div class="export-buttons">
-            <button
-              class="btn-export csv"
-              @click="exportCSV"
-            >
-              CSV / Excel
-            </button>
+            <template v-if="form.type === 'purchase_book'">
+              <button
+                type="button"
+                class="btn-export csv"
+                :disabled="!isPurchaseDownloadValid || isDownloadingPurchase"
+                @click="downloadPurchaseWorkbook"
+              >
+                Descargar Excel (.xlsx)
+              </button>
+            </template>
+            <template v-else>
+              <button
+                type="button"
+                class="btn-export csv"
+                @click="exportCSV"
+              >
+                CSV / Excel
+              </button>
 
-            <button
-              class="btn-export pdf"
-              @click="exportPDF"
-            >
-              PDF
-            </button>
+              <button
+                type="button"
+                class="btn-export pdf"
+                @click="exportPDF"
+              >
+                PDF
+              </button>
+            </template>
           </div>
         </div>
       </aside>
@@ -490,8 +505,14 @@
           <h3>Área de Vista Previa</h3>
 
           <p>
-            Ajusta los filtros y presiona "Generar Vista Previa"
-            para previsualizar los datos antes de exportarlos.
+            <template v-if="form.type === 'purchase_book'">
+              Selecciona las fechas y el régimen tributario para descargar
+              el archivo Excel con las hojas Compras, Ventas y Resumen.
+            </template>
+            <template v-else>
+              Ajusta los filtros y presiona "Generar Vista Previa"
+              para previsualizar los datos antes de exportarlos.
+            </template>
           </p>
         </div>
 
@@ -561,6 +582,7 @@ import {
 
 import { CalendarDays } from 'lucide-vue-next';
 import type { TaxReportRegime } from '@/features/reports/utils/purchaseReportParams';
+import { fetchPurchaseReport } from '@/features/reports/api';
 
 const COLUMNS_MAP: Record<string, string[]> = {
   current_stock: [
@@ -677,17 +699,6 @@ const form = reactive({
   selectedColumns: [] as string[],
 });
 
-function buildPurchaseReportParams(
-  regime: 'SMALL_TAXPAYER' | 'GENERAL_VAT',
-): URLSearchParams {
-  return new URLSearchParams({
-    regime,
-    period: 'custom',
-    start_date: form.startDate,
-    end_date: form.endDate,
-  });
-}
-
 const reportTypeDropdown =
   ref<HTMLDetailsElement | null>(null);
 
@@ -786,6 +797,7 @@ const endCalendarCells = computed(() => {
 watch(
   () => form.type,
   () => {
+    hasPreview.value = false;
     form.selectedColumns = [
       ...availableColumns.value,
     ];
@@ -1123,6 +1135,14 @@ const isFormValid = computed(() => {
   return true;
 });
 
+const isPurchaseDownloadValid = computed(() =>
+  form.type === 'purchase_book' &&
+  Boolean(form.startDate && form.endDate) &&
+  !dateError.value,
+);
+
+const isDownloadingPurchase = ref(false);
+
 const isLoading = ref(false);
 const hasPreview = ref(false);
 
@@ -1265,6 +1285,51 @@ async function generatePreview() {
 }
 
 import { appStore } from '@/stores/app.store';
+
+async function downloadPurchaseWorkbook() {
+  if (!isPurchaseDownloadValid.value || isDownloadingPurchase.value) return;
+
+  const token = appStore.state.session?.accessToken;
+  if (!token) {
+    alert('No hay sesión activa.');
+    return;
+  }
+
+  isDownloadingPurchase.value = true;
+  try {
+    const response = await fetchPurchaseReport(
+      token,
+      form.regime,
+      form.startDate,
+      form.endDate,
+    );
+    if (!response.ok) {
+      throw new Error(`Error al descargar el reporte: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `reporte_tributario_${form.startDate}_${form.endDate}.xlsx`;
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+      }
+    } finally {
+      window.URL.revokeObjectURL(url);
+    }
+  } catch (error) {
+    console.error('Error al descargar el Libro de Compras:', error);
+    alert('No se pudo descargar el reporte tributario.');
+  } finally {
+    isDownloadingPurchase.value = false;
+  }
+}
+
 
 async function downloadReport(format: 'csv' | 'pdf') {
   let endpoint = '';
@@ -1838,6 +1903,11 @@ function exportPDF() {
   color: var(--color-text-secondary);
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn-export:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
 
 .preview-content {
