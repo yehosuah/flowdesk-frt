@@ -11,14 +11,26 @@
 
     <main class="tax-dashboard-content">
       <div class="tax-dashboard-body">
-        <!-- Contenido principal del dashboard -->
+        <TaxMetricCards :metrics="metrics" />
       </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-// Vista principal del Dashboard Tributario
+import { ref } from 'vue';
+import TaxMetricCards from '../components/TaxMetricCards.vue';
+import type { TaxPeriodMetrics } from '../types';
+
+const metrics = ref<TaxPeriodMetrics>({
+  tax_debit: 0,
+  tax_credit: 0,
+  net_tax: 0,
+  tax_payable: 0,
+  carry_forward: 0,
+  withholding_tax: 0,
+  input_documents_count: 0,
+});
 </script>
 
 <style scoped>
