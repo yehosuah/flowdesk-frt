@@ -265,4 +265,31 @@ function formatCurrency(amount: number | undefined | null): string {
 .text-success {
   color: #16a34a !important;
 }
+
+@media (max-width: 768px) {
+  .tax-metrics-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .metric-card {
+    padding: 16px;
+  }
+
+  .metric-card__value {
+    font-size: 1.35rem;
+  }
+
+  .metric-card__value--large {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tax-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
 </style>
+

@@ -27,3 +27,4 @@ export interface TaxPeriodFilter {
   year: number;
   month: number; // 1-12, or 0 for entire year
 }
+

@@ -231,4 +231,42 @@ onMounted(() => {
 .empty-icon-custom {
   color: var(--color-text-secondary, #94a3b8);
 }
+
+@media (max-width: 768px) {
+  .tax-dashboard-page {
+    padding: 16px 20px;
+  }
+
+  .tax-title {
+    font-size: 1.5rem;
+  }
+
+  .tax-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .tax-metrics-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tax-dashboard-page {
+    padding: 12px 14px;
+  }
+
+  .tax-title {
+    font-size: 1.35rem;
+  }
+
+  .tax-metrics-skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .empty-state-wrapper {
+    padding: 32px 16px;
+  }
+}
 </style>
