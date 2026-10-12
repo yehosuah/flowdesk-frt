@@ -17,19 +17,41 @@
         </option>
       </select>
     </div>
+
+    <div class="filter-group">
+      <label for="year-select" class="filter-label">
+        <Clock :size="16" class="filter-icon" />
+        <span>Año:</span>
+      </label>
+      <select
+        id="year-select"
+        :value="year"
+        class="filter-select"
+        @change="$emit('update:year', Number(($event.target as HTMLSelectElement).value))"
+      >
+        <option v-for="y in years" :key="y" :value="y">
+          {{ y }}
+        </option>
+      </select>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Calendar } from 'lucide-vue-next';
+import { Calendar, Clock } from 'lucide-vue-next';
 
 defineProps<{
   month: number;
+  year: number;
 }>();
 
 defineEmits<{
   (e: 'update:month', value: number): void;
+  (e: 'update:year', value: number): void;
 }>();
+
+const currentYear = new Date().getFullYear();
+const years = [currentYear + 1, currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 
 const months = [
   { value: 1, label: 'Enero' },
