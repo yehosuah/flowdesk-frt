@@ -147,9 +147,92 @@ describe('SaleModal — desglose de impuestos', () => {
     expect(createSale).toHaveBeenCalledWith({
       items: [{ producto_id: 'p1', cantidad: 2 }],
       es_exenta: false,
+      tasa_impuesto: 12,
     });
     expect(wrapper.emitted('created')).toBeTruthy();
     expect(wrapper.emitted('close')).toBeTruthy();
+  });
+
+  it('permite modificar el porcentaje de IVA de la venta y recalcula en vivo', async () => {
+    vi.mocked(createSale).mockResolvedValue({
+      id: 'v1',
+      usuario_id: 'u1',
+      cliente_id: null,
+      consumidor_final: true,
+      cliente_nombre: null,
+      fecha: '2026-01-01',
+      subtotal: 200,
+      descuento: 0,
+      impuesto: 10,
+      tasa_impuesto: 5,
+      es_exenta: false,
+      total: 210,
+      estado: 'completada',
+      items: [],
+    });
+
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.find('select').setValue('p1');
+    const numberInputs = wrapper.findAll('input[type="number"]');
+    // primer input es cantidad
+    await numberInputs[0].setValue(2);
+    await flushPromises();
+
+    // segundo input es la tasa de IVA (#sale-tax-rate)
+    const taxRateInput = wrapper.find('#sale-tax-rate');
+    expect(taxRateInput.exists()).toBe(true);
+    await taxRateInput.setValue(5);
+    await flushPromises();
+
+    // Con tasa modificada al 5%: Subtotal 200 x 5% = IVA 10.00, Total 210.00
+    expect(wrapper.text()).toContain('IVA (5%)');
+    expect(wrapper.text()).toContain('Q 10.00');
+    expect(wrapper.text()).toContain('Q 210.00');
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(createSale).toHaveBeenCalledWith({
+      items: [{ producto_id: 'p1', cantidad: 2 }],
+      es_exenta: false,
+      tasa_impuesto: 5,
+    });
+  });
+
+  it('permite usar los chips de acceso rápido para cambiar la tasa de IVA', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.find('select').setValue('p1');
+    await flushPromises();
+
+    const presets = wrapper.findAll('.preset-chip');
+    expect(presets.length).toBe(3);
+
+    // Click en chip 5%
+    await presets[1].trigger('click');
+    await flushPromises();
+    expect((wrapper.find('#sale-tax-rate').element as HTMLInputElement).value).toBe('5');
+
+    // Click en chip 0%
+    await presets[2].trigger('click');
+    await flushPromises();
+    expect((wrapper.find('#sale-tax-rate').element as HTMLInputElement).value).toBe('0');
+  });
+
+  it('valida que el porcentaje de IVA esté en el rango permitido (0-100%)', async () => {
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    await wrapper.find('select').setValue('p1');
+    await wrapper.find('#sale-tax-rate').setValue(150);
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('El porcentaje de IVA debe estar entre 0% y 100%.');
+    expect(createSale).not.toHaveBeenCalled();
   });
 
   it('si falla la consulta de la tasa de IVA, la venta se puede registrar igual', async () => {
@@ -175,16 +258,17 @@ describe('SaleModal — desglose de impuestos', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('No se pudo cargar la tasa de IVA');
-    expect(wrapper.text()).not.toContain('Resumen de la venta');
 
     await wrapper.find('select').setValue('p1');
-    await wrapper.find('input[type="number"]').setValue(1);
+    const numberInputs = wrapper.findAll('input[type="number"]');
+    await numberInputs[0].setValue(1);
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 
     expect(createSale).toHaveBeenCalledWith({
       items: [{ producto_id: 'p1', cantidad: 1 }],
       es_exenta: false,
+      tasa_impuesto: 12,
     });
   });
 });
