@@ -1,5 +1,12 @@
 <template>
   <section class="auth-card">
+    <div class="auth-nav-top">
+      <RouterLink to="/" class="back-home-btn" title="Volver a la página principal">
+        <ArrowLeft :size="16" />
+        <span>Volver al inicio</span>
+      </RouterLink>
+    </div>
+
     <div class="auth-brand">
       <img src="../../../logo/logo-blanco.png" alt="FlowDesk Logo" class="auth-brand__logo" />
     </div>
@@ -72,6 +79,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { ArrowLeft } from 'lucide-vue-next';
 
 import { loginWithPassword } from '@/features/auth/api';
 import type { LoginRequest } from '@/features/auth/types';
@@ -168,6 +176,30 @@ async function submitLogin(): Promise<void> {
 }
 </script>
 <style scoped>
+  .auth-nav-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-secondary, #64748b);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+
+  .back-home-btn:hover {
+    color: var(--color-structure-hover, #2563eb);
+    background-color: var(--color-bg-subtle, #f1f5f9);
+  }
+
   .extra-links {
     margin-top: 16px;
     display: flex;

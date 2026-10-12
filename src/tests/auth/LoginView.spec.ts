@@ -76,6 +76,8 @@ describe("LoginView", () => {
 
     expect(wrapper.text()).toContain("Registrar empresa");
     expect(wrapper.text()).toContain("¿Olvidaste tu contraseña?");
+    expect(wrapper.text()).toContain("Volver al inicio");
+    expect(wrapper.find(".back-home-btn").exists()).toBe(true);
   });
 
   it("muestra errores cuando el formulario está vacío", async () => {
