@@ -1,0 +1,50 @@
+name: FlowDesk frontend tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Prepare evidence directory
+        run: mkdir -p reports
+      - name: Install locked dependencies
+        id: install
+        run: npm ci
+      - name: Component integration tests
+        run: |
+          set -o pipefail
+          npm run test:integration:ci 2>&1 | tee reports/integration.log
+      - name: Regression tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          npm run test:regression:ci 2>&1 | tee reports/regression.log
+      - name: Complete suite and coverage
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          npm run test:ci 2>&1 | tee reports/suite.log
+      - name: Summarize evidence
+        if: always()
+        run: python3 scripts/ci_summary.py
+      - name: Preserve reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/
+          retention-days: 90
+          if-no-files-found: error
