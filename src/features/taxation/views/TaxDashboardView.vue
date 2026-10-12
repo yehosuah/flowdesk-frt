@@ -17,7 +17,20 @@
         @update:year="selectedYear = $event"
       />
 
-      <div class="tax-dashboard-body">
+      <div v-if="isLoading" class="tax-metrics-skeleton-grid">
+        <div v-for="i in 7" :key="i" class="metric-card-skeleton">
+          <div class="skeleton-header">
+            <Skeleton width="55%" height="16px" />
+            <Skeleton width="36px" height="36px" />
+          </div>
+          <div class="skeleton-body">
+            <Skeleton width="75%" height="28px" />
+            <Skeleton width="90%" height="14px" />
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="tax-dashboard-body">
         <TaxMetricCards :metrics="metrics" />
       </div>
     </main>
@@ -26,6 +39,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import { Skeleton } from '@/app/components/ui';
 import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
 import { fetchTaxPeriodMetrics } from '../api';
@@ -33,6 +47,7 @@ import type { TaxPeriodMetrics } from '../types';
 
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
 const selectedYear = ref<number>(new Date().getFullYear());
+const isLoading = ref<boolean>(true);
 
 const metrics = ref<TaxPeriodMetrics>({
   tax_debit: 0,
@@ -45,6 +60,7 @@ const metrics = ref<TaxPeriodMetrics>({
 });
 
 async function loadMetrics() {
+  isLoading.value = true;
   const year = selectedYear.value;
   const month = selectedMonth.value;
 
@@ -69,6 +85,8 @@ async function loadMetrics() {
     metrics.value = data;
   } catch (error) {
     console.error('Error al cargar métricas tributarias:', error);
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -110,5 +128,35 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.tax-metrics-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.metric-card-skeleton {
+  background: var(--color-bg-surface, #ffffff);
+  border: 1px solid var(--color-bg-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>
