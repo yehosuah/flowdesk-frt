@@ -10,6 +10,11 @@
     </header>
 
     <main class="tax-dashboard-content">
+      <TaxFiltersBar
+        :month="selectedMonth"
+        @update:month="selectedMonth = $event"
+      />
+
       <div class="tax-dashboard-body">
         <TaxMetricCards :metrics="metrics" />
       </div>
@@ -19,8 +24,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
 import type { TaxPeriodMetrics } from '../types';
+
+const selectedMonth = ref<number>(new Date().getMonth() + 1);
 
 const metrics = ref<TaxPeriodMetrics>({
   tax_debit: 0,
