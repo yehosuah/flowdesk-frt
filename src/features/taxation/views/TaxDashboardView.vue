@@ -17,6 +17,21 @@
         @update:year="selectedYear = $event"
       />
 
+      <!-- Estado de Error -->
+      <Alert
+        v-if="errorMessage"
+        variant="danger"
+        title="Error al consultar métricas fiscales"
+        :message="errorMessage"
+      >
+        <div class="error-action">
+          <Button variant="secondary" size="sm" @click="loadMetrics">
+            Reintentar
+          </Button>
+        </div>
+      </Alert>
+
+      <!-- Estado de Carga -->
       <div v-if="isLoading" class="tax-metrics-skeleton-grid">
         <div v-for="i in 7" :key="i" class="metric-card-skeleton">
           <div class="skeleton-header">
@@ -30,6 +45,24 @@
         </div>
       </div>
 
+      <!-- Estado Vacío -->
+      <div v-else-if="isEmpty" class="empty-state-wrapper">
+        <EmptyState
+          title="Sin movimientos fiscales registrados"
+          description="No se registraron transacciones comerciales ni documentos tributarios en el período seleccionado."
+        >
+          <template #icon>
+            <FileQuestion :size="48" class="empty-icon-custom" />
+          </template>
+          <template #action>
+            <Button variant="secondary" size="sm" @click="resetToCurrentPeriod">
+              Ver período actual
+            </Button>
+          </template>
+        </EmptyState>
+      </div>
+
+      <!-- Dashboard con Datos -->
       <div v-else class="tax-dashboard-body">
         <TaxMetricCards :metrics="metrics" />
       </div>
@@ -38,8 +71,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import { Skeleton } from '@/app/components/ui';
+import { ref, computed, onMounted, watch } from 'vue';
+import { Skeleton, Alert, EmptyState, Button } from '@/app/components/ui';
+import { FileQuestion } from 'lucide-vue-next';
 import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
 import { fetchTaxPeriodMetrics } from '../api';
@@ -48,6 +82,7 @@ import type { TaxPeriodMetrics } from '../types';
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
 const selectedYear = ref<number>(new Date().getFullYear());
 const isLoading = ref<boolean>(true);
+const errorMessage = ref<string | null>(null);
 
 const metrics = ref<TaxPeriodMetrics>({
   tax_debit: 0,
@@ -59,8 +94,25 @@ const metrics = ref<TaxPeriodMetrics>({
   input_documents_count: 0,
 });
 
+const isEmpty = computed(() => {
+  return (
+    !isLoading.value &&
+    !errorMessage.value &&
+    metrics.value.input_documents_count === 0 &&
+    metrics.value.tax_debit === 0 &&
+    metrics.value.tax_credit === 0 &&
+    metrics.value.tax_payable === 0
+  );
+});
+
+function resetToCurrentPeriod() {
+  selectedMonth.value = new Date().getMonth() + 1;
+  selectedYear.value = new Date().getFullYear();
+}
+
 async function loadMetrics() {
   isLoading.value = true;
+  errorMessage.value = null;
   const year = selectedYear.value;
   const month = selectedMonth.value;
 
@@ -85,6 +137,7 @@ async function loadMetrics() {
     metrics.value = data;
   } catch (error) {
     console.error('Error al cargar métricas tributarias:', error);
+    errorMessage.value = error instanceof Error ? error.message : 'No se pudo conectar con el servicio de cálculo tributario.';
   } finally {
     isLoading.value = false;
   }
@@ -158,5 +211,24 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.error-action {
+  margin-top: 12px;
+}
+
+.empty-state-wrapper {
+  background: var(--color-bg-surface, #ffffff);
+  border: 1px solid var(--color-bg-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 48px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.empty-icon-custom {
+  color: var(--color-text-secondary, #94a3b8);
 }
 </style>
