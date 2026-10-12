@@ -25,9 +25,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
+import { fetchTaxPeriodMetrics } from '../api';
 import type { TaxPeriodMetrics } from '../types';
 
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
@@ -41,6 +42,42 @@ const metrics = ref<TaxPeriodMetrics>({
   carry_forward: 0,
   withholding_tax: 0,
   input_documents_count: 0,
+});
+
+async function loadMetrics() {
+  const year = selectedYear.value;
+  const month = selectedMonth.value;
+
+  let startDate: string;
+  let endDate: string;
+
+  if (month > 0) {
+    const padMonth = String(month).padStart(2, '0');
+    const lastDay = new Date(year, month, 0).getDate();
+    startDate = `${year}-${padMonth}-01`;
+    endDate = `${year}-${padMonth}-${String(lastDay).padStart(2, '0')}`;
+  } else {
+    startDate = `${year}-01-01`;
+    endDate = `${year}-12-31`;
+  }
+
+  try {
+    const data = await fetchTaxPeriodMetrics({
+      start_date: startDate,
+      end_date: endDate,
+    });
+    metrics.value = data;
+  } catch (error) {
+    console.error('Error al cargar métricas tributarias:', error);
+  }
+}
+
+watch([selectedMonth, selectedYear], () => {
+  loadMetrics();
+});
+
+onMounted(() => {
+  loadMetrics();
 });
 </script>
 
