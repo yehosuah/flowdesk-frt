@@ -573,6 +573,15 @@ const COLUMNS_MAP: Record<string, string[]> = {
     'Vendedor',
   ],
 
+  purchase_book: [
+    'No.',
+    'Fecha',
+    'Número Factura',
+    'NIT Proveedor',
+    'Nombre Proveedor',
+    'Total Compra',
+  ],
+
   clients_list: [
     'ID',
     'Cliente',
@@ -606,6 +615,10 @@ const commercialReportOptions = [
   {
     value: 'clients_list',
     label: 'Directorio de Clientes',
+  },
+  {
+    value: 'purchase_book',
+    label: 'Libro de Compras',
   },
 ];
 
@@ -1078,6 +1091,7 @@ const previewData = reactive({
 
 function getReportTitle() {
   const titles: Record<string, string> = {
+    purchase_book: 'Libro de Compras',
     current_stock:
       'Stock Actual Valorado',
 
