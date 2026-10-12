@@ -471,6 +471,18 @@
               </button>
             </template>
           </div>
+          <div
+            v-if="form.type === 'purchase_book' && purchaseDownloadError"
+            class="purchase-success-notice"
+          >
+            <Alert
+              variant="danger"
+              title="Error al descargar"
+              :message="purchaseDownloadError"
+              :dismissible="true"
+              @close="purchaseDownloadError = ''"
+            />
+          </div>
           <div v-if="form.type === 'purchase_book' && purchaseDownloadSuccess" class="purchase-success-notice">
             <Alert
               variant="success"
@@ -594,6 +606,7 @@ import {
 import { CalendarDays } from 'lucide-vue-next';
 import type { TaxReportRegime } from '@/features/reports/utils/purchaseReportParams';
 import { fetchPurchaseReport } from '@/features/reports/api';
+import { getPurchaseReportErrorMessage } from '@/features/reports/utils/purchaseReportErrors';
 import Alert from '@/app/components/ui/Alert.vue';
 
 const COLUMNS_MAP: Record<string, string[]> = {
@@ -1155,6 +1168,7 @@ const isPurchaseDownloadValid = computed(() =>
 
 const isDownloadingPurchase = ref(false);
 const purchaseDownloadSuccess = ref(false);
+const purchaseDownloadError = ref('');
 
 const isLoading = ref(false);
 const hasPreview = ref(false);
@@ -1303,14 +1317,17 @@ async function downloadPurchaseWorkbook() {
   if (!isPurchaseDownloadValid.value || isDownloadingPurchase.value) return;
 
   purchaseDownloadSuccess.value = false;
+  purchaseDownloadError.value = '';
 
   const token = appStore.state.session?.accessToken;
+
   if (!token) {
-    alert('No hay sesión activa.');
+    purchaseDownloadError.value = getPurchaseReportErrorMessage('NO_SESSION');
     return;
   }
 
   isDownloadingPurchase.value = true;
+
   try {
     const response = await fetchPurchaseReport(
       token,
@@ -1318,17 +1335,31 @@ async function downloadPurchaseWorkbook() {
       form.startDate,
       form.endDate,
     );
+
     if (!response.ok) {
-      throw new Error(`Error al descargar el reporte: ${response.status}`);
+      purchaseDownloadError.value =
+        getPurchaseReportErrorMessage(response.status);
+      return;
     }
 
     const blob = await response.blob();
+
+    if (blob.size === 0) {
+      purchaseDownloadError.value =
+        getPurchaseReportErrorMessage('EMPTY_FILE');
+      return;
+    }
+
     const url = window.URL.createObjectURL(blob);
+
     try {
       const link = document.createElement('a');
       link.href = url;
-      link.download = `reporte_tributario_${form.startDate}_${form.endDate}.xlsx`;
+      link.download =
+        `reporte_tributario_${form.startDate}_${form.endDate}.xlsx`;
+
       document.body.appendChild(link);
+
       try {
         link.click();
         purchaseDownloadSuccess.value = true;
@@ -1340,13 +1371,14 @@ async function downloadPurchaseWorkbook() {
     }
   } catch (error) {
     console.error('Error al descargar el Libro de Compras:', error);
+
     purchaseDownloadSuccess.value = false;
-    alert('No se pudo descargar el reporte tributario.');
+    purchaseDownloadError.value =
+      getPurchaseReportErrorMessage('NETWORK');
   } finally {
     isDownloadingPurchase.value = false;
   }
 }
-
 
 async function downloadReport(format: 'csv' | 'pdf') {
   let endpoint = '';
