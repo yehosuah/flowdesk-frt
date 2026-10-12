@@ -646,6 +646,17 @@ const form = reactive({
   selectedColumns: [] as string[],
 });
 
+function buildPurchaseReportParams(
+  regime: 'SMALL_TAXPAYER' | 'GENERAL_VAT',
+): URLSearchParams {
+  return new URLSearchParams({
+    regime,
+    period: 'custom',
+    start_date: form.startDate,
+    end_date: form.endDate,
+  });
+}
+
 const reportTypeDropdown =
   ref<HTMLDetailsElement | null>(null);
 
