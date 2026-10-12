@@ -446,9 +446,16 @@
                 type="button"
                 class="btn-export csv"
                 :disabled="!isPurchaseDownloadValid || isDownloadingPurchase"
+                :aria-busy="isDownloadingPurchase"
                 @click="downloadPurchaseWorkbook"
               >
-                Descargar Excel (.xlsx)
+                <span v-if="isDownloadingPurchase">
+                  Generando Excel...
+                </span>
+
+                <span v-else>
+                  Descargar Excel (.xlsx)
+                </span>
               </button>
             </template>
             <template v-else>
