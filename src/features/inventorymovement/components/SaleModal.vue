@@ -60,12 +60,67 @@
             <span class="checkbox-hint">Márcalo solo si esta venta no debe llevar impuesto.</span>
           </div>
 
+          <div class="form-group full-width">
+            <div class="tax-rate-header">
+              <label class="form-label" for="sale-tax-rate">Porcentaje de IVA (%) *</label>
+              <div v-if="!form.es_exenta" class="tax-presets">
+                <button
+                  type="button"
+                  class="preset-chip"
+                  :class="{ 'preset-chip--active': form.tasa_iva === 12 }"
+                  @click="setTaxRate(12)"
+                >
+                  12% (General)
+                </button>
+                <button
+                  type="button"
+                  class="preset-chip"
+                  :class="{ 'preset-chip--active': form.tasa_iva === 5 }"
+                  @click="setTaxRate(5)"
+                >
+                  5% (Pequeño Contribuyente)
+                </button>
+                <button
+                  type="button"
+                  class="preset-chip"
+                  :class="{ 'preset-chip--active': form.tasa_iva === 0 }"
+                  @click="setTaxRate(0)"
+                >
+                  0%
+                </button>
+              </div>
+            </div>
+            <div class="input-suffix-wrapper">
+              <input
+                id="sale-tax-rate"
+                v-model.number="form.tasa_iva"
+                type="number"
+                min="0"
+                max="100"
+                step="any"
+                class="form-input"
+                :class="{ 'input-error': errors.tasa_iva }"
+                :disabled="form.es_exenta"
+                placeholder="12"
+                @input="errors.tasa_iva = ''"
+              />
+              <span class="input-suffix">%</span>
+            </div>
+            <span v-if="form.es_exenta" class="field-hint">
+              Deshabilitado porque la venta fue marcada como exenta de IVA.
+            </span>
+            <span v-else-if="errors.tasa_iva" class="error-msg">{{ errors.tasa_iva }}</span>
+            <span v-else class="field-hint">
+              Puedes ajustar el porcentaje de IVA para esta venta específica.
+            </span>
+          </div>
+
           <TaxBreakdown
-            v-if="selectedProduct && taxRate !== null"
+            v-if="selectedProduct && effectiveTaxRate !== null"
             class="full-width"
             title="Resumen de la venta"
             :subtotal="subtotalPreview"
-            :tax-rate="taxRate"
+            :tax-rate="effectiveTaxRate"
             :is-exempt="form.es_exenta"
           />
           <p v-else-if="taxConfigError" class="tax-config-error full-width">{{ taxConfigError }}</p>
@@ -114,15 +169,29 @@ const form = reactive({
   producto_id: '',
   cantidad: 1,
   es_exenta: false,
+  tasa_iva: 12,
 });
 
+const defaultTaxRate = ref<number>(12);
 const selectedProduct = computed(() => props.products.find(p => p.id === form.producto_id) ?? null);
 
 const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
 
-// Vista previa en vivo: se recalcula solo con producto/cantidad, el backend
-// vuelve a calcular todo con autoridad (precio del producto en ese momento,
-// tasa de IVA vigente) al registrar la venta.
+// Tasa de impuesto efectiva usada en el cálculo en vivo:
+// Si la venta está marcada como exenta, el IVA es 0%.
+// Si no, se utiliza la tasa configurada o personalizada para esta venta.
+const effectiveTaxRate = computed(() => {
+  if (form.es_exenta) return 0;
+  if (isBlank(form.tasa_iva)) return 0;
+  return Number(form.tasa_iva);
+});
+
+function setTaxRate(value: number): void {
+  form.tasa_iva = value;
+  errors.tasa_iva = '';
+}
+
+// Vista previa en vivo: se recalcula con producto/cantidad y tasa de IVA elegida.
 const subtotalPreview = computed(() => {
   const producto = selectedProduct.value;
   if (!producto || isBlank(form.cantidad)) return 0;
@@ -143,19 +212,25 @@ onMounted(async () => {
     const config = await fetchTaxConfiguration();
     const configuredRate = Number(config.tasa_impuesto);
     isTemporaryTaxRate.value = configuredRate === 0;
-    taxRate.value = isTemporaryTaxRate.value
+    const resolvedRate = isTemporaryTaxRate.value
       ? TEMPORARY_TAX_RATE_FALLBACK
       : configuredRate;
+    taxRate.value = resolvedRate;
+    defaultTaxRate.value = resolvedRate;
+    form.tasa_iva = resolvedRate;
   } catch (err) {
-    // El registro de la venta sigue funcionando aunque falle esta consulta;
-    // el backend calcula el impuesto igual, solo se pierde la vista previa.
-    taxConfigError.value = 'No se pudo cargar la tasa de IVA configurada. El total se calculará al registrar la venta.';
+    // Si falla la consulta de la configuración, se permite editar manualmente.
+    taxConfigError.value = 'No se pudo cargar la tasa de IVA configurada. Puedes ingresar el porcentaje manualmente.';
+    taxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
+    defaultTaxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
+    form.tasa_iva = TEMPORARY_TAX_RATE_FALLBACK;
   }
 });
 
 const errors = reactive({
   producto_id: '',
   cantidad: '',
+  tasa_iva: '',
 });
 
 function isBlank(value: number | string): boolean {
@@ -165,6 +240,7 @@ function isBlank(value: number | string): boolean {
 function validateForm(): boolean {
   errors.producto_id = '';
   errors.cantidad = '';
+  errors.tasa_iva = '';
 
   let isValid = true;
 
@@ -184,6 +260,16 @@ function validateForm(): boolean {
     isValid = false;
   }
 
+  if (!form.es_exenta) {
+    if (isBlank(form.tasa_iva)) {
+      errors.tasa_iva = 'Ingresa el porcentaje de IVA.';
+      isValid = false;
+    } else if (Number(form.tasa_iva) < 0 || Number(form.tasa_iva) > 100) {
+      errors.tasa_iva = 'El porcentaje de IVA debe estar entre 0% y 100%.';
+      isValid = false;
+    }
+  }
+
   return isValid;
 }
 
@@ -200,6 +286,7 @@ async function submit() {
     await createSale({
       items: [{ producto_id: form.producto_id, cantidad: Number(form.cantidad) }],
       es_exenta: form.es_exenta,
+      tasa_impuesto: form.es_exenta ? 0 : Number(form.tasa_iva),
     });
 
     emit('created');
@@ -377,6 +464,70 @@ async function submit() {
   outline: none;
   border-color: var(--color-warning);
   box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+.tax-rate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tax-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.preset-chip {
+  background: var(--color-bg-subtle, #f1f5f9);
+  border: 1px solid var(--color-bg-border, #cbd5e1);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #475569);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-chip:hover {
+  background: var(--color-bg-hover, #e2e8f0);
+  color: var(--color-heading, #0f172a);
+}
+
+.preset-chip--active {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.input-suffix-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-suffix-wrapper .form-input {
+  padding-right: 32px;
+  width: 100%;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #94a3b8);
+  pointer-events: none;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748b);
+  margin-top: 2px;
 }
 
 .stock-hint {

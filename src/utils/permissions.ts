@@ -22,6 +22,7 @@ export type Permission =
   | 'clients.edit'
   | 'clients.setStatus'
   | 'reports.view'
+  | 'taxes.view'
   | 'accounts.manage';
 
 const OPERATIONAL: AppRole[] = ['admin', 'manager', 'employee'];
@@ -55,6 +56,7 @@ const PERMISSIONS: Record<Permission, AppRole[]> = {
 
   
   'reports.view': ADMIN_ONLY,
+  'taxes.view': ADMIN_MANAGER,
 
   'accounts.manage': ['superadmin'],
 };
@@ -69,6 +71,7 @@ export const ROUTE_PERMISSION: Record<string, Permission> = {
   suppliers: 'suppliers.view',
   clients: 'clients.view',
   reports: 'reports.view',
+  'tax-dashboard': 'taxes.view',
   superAdmin: 'accounts.manage',
 };
 

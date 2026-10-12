@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
 import { computed, ref, watch } from 'vue';
-import { Menu, LogOut, HelpCircle, Package, ArrowRightLeft, ClipboardList, Calendar, Shield, BarChart3, Users, Truck, UserCircle, FileText, User } from 'lucide-vue-next';
+import { Menu, LogOut, HelpCircle, Package, ArrowRightLeft, ClipboardList, Calendar, Shield, BarChart3, Users, Truck, UserCircle, FileText, User, Receipt } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
 import ChatWidget from '@/features/chatbot/components/ChatWidget.vue';
@@ -145,6 +145,7 @@ const navItems = [
   { name: 'suppliers', label: 'Proveedores', to: { name: 'suppliers' }, icon: Truck },
   { name: 'clients', label: 'Clientes', to: { name: 'clients' }, icon: UserCircle },
   { name: 'reports', label: 'Reportes', to: { name: 'reports' }, icon: FileText },
+  { name: 'tax-dashboard', label: 'Dashboard Tributario', to: { name: 'tax-dashboard' }, icon: Receipt },
   { name: 'profile', label: 'Mi Perfil', to: { name: 'profile' }, icon: User },
 ];
 

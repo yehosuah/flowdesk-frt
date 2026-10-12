@@ -12,6 +12,7 @@ export interface SaleCreatePayload {
   items: SaleItemCreate[];
   descuento?: number;
   es_exenta?: boolean;
+  tasa_impuesto?: number;
 }
 
 export interface SaleItem {
