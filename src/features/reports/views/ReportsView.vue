@@ -449,13 +449,8 @@
                 :aria-busy="isDownloadingPurchase"
                 @click="downloadPurchaseWorkbook"
               >
-                <span v-if="isDownloadingPurchase">
-                  Generando Excel...
-                </span>
-
-                <span v-else>
-                  Descargar Excel (.xlsx)
-                </span>
+                <span v-if="isDownloadingPurchase">Generando Excel...</span>
+                <span v-else>Descargar Excel (.xlsx)</span>
               </button>
             </template>
             <template v-else>
@@ -475,6 +470,15 @@
                 PDF
               </button>
             </template>
+          </div>
+          <div v-if="form.type === 'purchase_book' && purchaseDownloadSuccess" class="purchase-success-notice">
+            <Alert
+              variant="success"
+              title="Descarga iniciada"
+              message="El Libro de Compras se generó correctamente y la descarga del archivo Excel ha comenzado."
+              :dismissible="true"
+              @close="purchaseDownloadSuccess = false"
+            />
           </div>
         </div>
       </aside>
@@ -590,6 +594,7 @@ import {
 import { CalendarDays } from 'lucide-vue-next';
 import type { TaxReportRegime } from '@/features/reports/utils/purchaseReportParams';
 import { fetchPurchaseReport } from '@/features/reports/api';
+import Alert from '@/app/components/ui/Alert.vue';
 
 const COLUMNS_MAP: Record<string, string[]> = {
   current_stock: [
@@ -1149,6 +1154,7 @@ const isPurchaseDownloadValid = computed(() =>
 );
 
 const isDownloadingPurchase = ref(false);
+const purchaseDownloadSuccess = ref(false);
 
 const isLoading = ref(false);
 const hasPreview = ref(false);
@@ -1296,6 +1302,8 @@ import { appStore } from '@/stores/app.store';
 async function downloadPurchaseWorkbook() {
   if (!isPurchaseDownloadValid.value || isDownloadingPurchase.value) return;
 
+  purchaseDownloadSuccess.value = false;
+
   const token = appStore.state.session?.accessToken;
   if (!token) {
     alert('No hay sesión activa.');
@@ -1323,6 +1331,7 @@ async function downloadPurchaseWorkbook() {
       document.body.appendChild(link);
       try {
         link.click();
+        purchaseDownloadSuccess.value = true;
       } finally {
         link.remove();
       }
@@ -1331,6 +1340,7 @@ async function downloadPurchaseWorkbook() {
     }
   } catch (error) {
     console.error('Error al descargar el Libro de Compras:', error);
+    purchaseDownloadSuccess.value = false;
     alert('No se pudo descargar el reporte tributario.');
   } finally {
     isDownloadingPurchase.value = false;
@@ -1892,6 +1902,25 @@ function exportPDF() {
 
 .export-title {
   margin-bottom: 8px;
+}
+
+.purchase-success-notice {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.purchase-success-notice :deep(.alert) {
+  padding: 10px;
+  margin-bottom: 0;
+  gap: 6px;
+}
+
+.purchase-success-notice :deep(.alert-title) {
+  font-size: .8rem;
+}
+
+.purchase-success-notice :deep(.alert-message) {
+  font-size: .75rem;
 }
 
 .export-buttons {
