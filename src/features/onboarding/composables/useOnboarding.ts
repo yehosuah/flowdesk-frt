@@ -1,11 +1,25 @@
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import '../styles/onboarding.css';
 
 const ONBOARDING_KEY = 'flowdesk_has_seen_onboarding';
 
-export function useOnboarding() {
+export interface UseOnboardingOptions {
+  openSidebar?: () => void;
+  closeSidebar?: () => void;
+  navigateToInventory?: () => Promise<void> | void;
+}
+
+export function useOnboarding(options?: UseOnboardingOptions) {
   const isWelcomeVisible = ref(false);
+  let router: ReturnType<typeof useRouter> | null = null;
+  try {
+    router = useRouter();
+  } catch {
+    // En entornos donde vue-router no esté disponible
+  }
 
   onMounted(() => {
     checkOnboardingStatus();
@@ -20,6 +34,7 @@ export function useOnboarding() {
 
   function skipTour() {
     isWelcomeVisible.value = false;
+    options?.closeSidebar?.();
     completeOnboarding();
   }
 
@@ -32,58 +47,121 @@ export function useOnboarding() {
     isWelcomeVisible.value = true;
   }
 
-  function startTour() {
+  async function startTour() {
     isWelcomeVisible.value = false;
-    completeOnboarding(); // Mark as complete since they started it
+    // En móvil: cerrar el menú lateral para mostrar la pantalla y opciones principales
+    options?.closeSidebar?.();
+    completeOnboarding();
+
+    // Redirigir a la vista de inventario para que el recorrido coincida con los elementos en pantalla
+    if (options?.navigateToInventory) {
+      await options.navigateToInventory();
+    } else if (router && router.currentRoute.value.name !== 'inventory') {
+      await router.push({ name: 'inventory' });
+    }
+
+    const isMobile = window.innerWidth <= 1000;
+    const navSelector = isMobile ? '.mobile-menu-button' : '.sidebar';
+    const headerSelector = isMobile ? '.mobile-header' : '.desktop-header';
+    const restartSelector = isMobile ? '.mobile-menu-button' : '[data-tour="restart-tutorial"]';
+
+    const tourSteps = [
+      {
+        popover: {
+          title: '¡Bienvenido a tu Espacio de Trabajo!',
+          description: 'Vamos a guiarte sección por sección a través de las herramientas principales de FlowDesk para que conozcas la estructura de cada área.',
+          side: 'bottom' as const,
+          align: 'center' as const
+        }
+      },
+      {
+        element: navSelector,
+        popover: {
+          title: isMobile ? 'Sección 1: Menú Principal' : 'Sección 1: Panel Lateral de Módulos',
+          description: isMobile
+            ? 'Desde este botón despliegas tu menú de módulos cuando necesites cambiar de área: Inventario, Movimientos de almacén, Tareas del equipo, Calendario, Análisis y Clientes.'
+            : 'Tu barra de navegación central: desde aquí accedes a Inventario, Movimientos con cálculo de impuestos, Tareas y flujos de trabajo, Calendario, Análisis con KPIs y Directorio de Clientes.',
+          side: isMobile ? 'bottom' as const : 'right' as const,
+          align: 'start' as const
+        }
+      },
+      {
+        element: headerSelector,
+        popover: {
+          title: 'Sección 2: Módulo Activo',
+          description: 'En la parte superior siempre tendrás la referencia del módulo en el que estás posicionado y su propósito operativo (en este momento, tu vista de Inventario).',
+          side: 'bottom' as const,
+          align: isMobile ? 'center' as const : 'start' as const
+        }
+      },
+      {
+        element: '.filtros-panel',
+        popover: {
+          title: 'Sección 3: Panel de Filtros',
+          description: 'Esta sección te permite personalizar las columnas que deseas ver (ID, precio, existencias) y filtrar por Estado (Activo/Inactivo) o condición de Stock (Normal, Bajo o Agotado).',
+          side: isMobile ? 'bottom' as const : 'left' as const,
+          align: 'start' as const
+        }
+      },
+      {
+        element: '.table-container',
+        popover: {
+          title: 'Sección 4: Catálogo y Existencias',
+          description: 'Tu área de trabajo central: consulta tus productos registrados con existencias en tiempo real y alertas visuales automáticas para artículos con stock crítico.',
+          side: isMobile ? 'top' as const : 'top' as const,
+          align: 'center' as const
+        }
+      },
+      {
+        element: '.chat-widget-btn',
+        popover: {
+          title: 'Sección 5: Asistente IA 24/7',
+          description: 'Siempre visible en la esquina inferior: un asistente con inteligencia artificial preparado para resolver dudas y ayudarte a operar en cualquier pantalla.',
+          side: isMobile ? 'top' as const : 'left' as const,
+          align: isMobile ? 'end' as const : 'end' as const
+        }
+      },
+      {
+        element: restartSelector,
+        popover: {
+          title: 'Sección 6: Repetir Tutorial',
+          description: isMobile
+            ? 'Si en cualquier momento deseas repasar estas secciones o capacitar a alguien de tu equipo, abre el menú y selecciona "Ver Tutorial" en la parte inferior.'
+            : 'Siempre podrás reactivar este recorrido guiado pulsando la opción "Ver Tutorial" en la barra lateral.',
+          side: isMobile ? 'bottom' as const : 'right' as const,
+          align: 'start' as const
+        }
+      },
+      {
+        popover: {
+          title: '¡Todo Listo para Comenzar!',
+          description: 'Has completado el recorrido guiado por todas las secciones clave de FlowDesk. ¡Mucho éxito administrando tu negocio!',
+          side: 'bottom' as const,
+          align: 'center' as const
+        }
+      }
+    ];
 
     const driverObj = driver({
       showProgress: true,
+      progressText: 'Paso {{current}} de {{total}}',
       nextBtnText: 'Siguiente',
       prevBtnText: 'Anterior',
-      doneBtnText: 'Finalizar',
-      steps: [
-        { 
-          popover: { 
-            title: '¡Vamos a empezar!', 
-            description: 'Te daré un recorrido rápido por tu panel principal.',
-            side: 'left',
-            align: 'start'
-          }
-        },
-        { 
-          element: '.sidebar__nav', 
-          popover: { 
-            title: 'Navegación', 
-            description: 'Desde aquí puedes acceder a todas las secciones: Inventario, Clientes, Reportes y más.', 
-            side: 'right', 
-            align: 'start' 
-          }
-        },
-        { 
-          element: '.header-actions', 
-          popover: { 
-            title: 'Opciones Rápidas', 
-            description: 'Busca productos, revisa notificaciones o accede a tu perfil.', 
-            side: 'bottom', 
-            align: 'end' 
-          }
-        },
-        { 
-          element: '.main-layout__content', 
-          popover: { 
-            title: 'Área de Trabajo', 
-            description: 'Aquí verás toda la información detallada de la sección que elijas. ¡Explora a tu ritmo!', 
-            side: 'top', 
-            align: 'center' 
-          }
+      doneBtnText: '¡Comenzar!',
+      allowClose: true,
+      skipMissingElement: true,
+      showButtons: ['next', 'previous', 'close'],
+      steps: tourSteps,
+      onDestroyed: () => {
+        if (isMobile) {
+          options?.closeSidebar?.();
         }
-      ]
+      }
     });
 
-    // Small delay to ensure modal is closed and DOM is ready
     setTimeout(() => {
       driverObj.drive();
-    }, 300);
+    }, 350);
   }
 
   return {

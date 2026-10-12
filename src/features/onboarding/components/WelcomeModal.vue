@@ -1,13 +1,13 @@
 <template>
   <Modal 
     :model-value="modelValue" 
-    title="¡Bienvenido a FlowDesk!" 
+    title="Bienvenido a tu nuevo Workspace de FlowDesk!" 
     @update:model-value="$emit('update:modelValue', $event)"
     @close="$emit('close')"
   >
     <div class="welcome-content">
       <p class="welcome-text">
-        Estamos emocionados de tenerte aquí. FlowDesk está diseñado para ayudarte a gestionar tu inventario, clientes y ventas de la forma más sencilla posible.
+        Nos alegra verte aquí. Empecemos a organizar tu negocio. FlowDesk está diseñado para ayudarte a gestionar tu inventario, clientes y ventas de la forma más sencilla posible.
       </p>
       
       <div class="welcome-features">
@@ -67,6 +67,9 @@ defineEmits<{
 </script>
 
 <style scoped>
+@media (max-width: 600px) {
+  .welcome-features { flex-direction: column; }
+}
 .welcome-content {
   padding: 10px 0;
 }

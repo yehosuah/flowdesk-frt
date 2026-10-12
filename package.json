@@ -10,11 +10,14 @@
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:ci": "vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=reports/suite.xml --coverage.reportsDirectory=reports/coverage",
+    "test:integration:ci": "vitest run src/tests/clients/ClientFlow.spec.ts src/tests/suppliers/SupplierFlow.spec.ts --reporter=default --reporter=junit --outputFile.junit=reports/integration.xml",
+    "test:regression:ci": "vitest run src/tests/core/TaxBreakdown.spec.ts src/tests/core/permissions.spec.ts src/tests/core/authStorage.spec.ts --reporter=default --reporter=junit --outputFile.junit=reports/regression.xml"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
-"dompurify": "^3.4.16",
+    "dompurify": "^3.4.16",
     "driver.js": "^1.8.0",
     "lucide-vue-next": "^0.469.0",
     "marked": "^18.0.14",
@@ -37,4 +40,3 @@
     "vue-tsc": "^2.1.10"
   }
 }
-
