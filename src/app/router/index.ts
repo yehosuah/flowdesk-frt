@@ -22,6 +22,7 @@ import InventoryView from '@/features/inventory/views/InventoryView.vue';
 import ClientView from '@/features/clients/views/ClientView.vue';
 import ProfileView from '@/features/profile/views/ProfileView.vue';
 import ReportsView from '@/features/reports/views/ReportsView.vue';
+import TaxDashboardView from '@/features/taxation/views/TaxDashboardView.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -224,6 +225,16 @@ const routes: RouteRecordRaw[] = [
           // Backend: GET /reports/* -> require_role("admin"). Matriz: src/utils/permissions.ts
           requiresRole: ['admin'],
           title: 'Reportes',
+        },
+      },
+      {
+        path: 'taxes',
+        name: 'tax-dashboard',
+        component: TaxDashboardView,
+        meta: {
+          requiresAuth: true,
+          requiresRole: ['admin', 'manager'],
+          title: 'Dashboard Tributario',
         },
       },
       //Se agregan nuevas features al menú principal aquí, como movimiento, análisis, clientes, etc.
