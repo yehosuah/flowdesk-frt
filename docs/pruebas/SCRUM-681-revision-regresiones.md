@@ -18,19 +18,23 @@ Se ejecutaron las siguientes verificaciones:
 
 ## 2. Resultados
 
+**Fecha de verificación:** 13 de octubre de 2026.
+
+
 | Verificación | Resultado |
 |---|---|
-| Archivos de pruebas | 42 |
-| Pruebas ejecutadas | 279 |
-| Pruebas exitosas | 279 |
+| Archivos de pruebas | 45 |
+| Pruebas ejecutadas | 299 |
+| Pruebas exitosas | 299 |
 | Pruebas fallidas | 0 |
 | Verificación TypeScript | Exitosa |
 | Compilación de producción | Exitosa |
+| Cobertura de líneas | 55.90% |
 | Regresiones detectadas por la suite | 0 |
 
 ## 3. Análisis de resultados
 
-Las 279 pruebas automatizadas finalizaron correctamente.
+Las 299 pruebas automatizadas finalizaron correctamente.
 
 No se identificaron fallos de regresión mediante las pruebas ejecutadas, por lo que no fue necesario realizar correcciones de código.
 
@@ -41,8 +45,8 @@ La compilación presentó una advertencia relacionada con el tamaño de algunos 
 ## 4. Limitaciones
 
 - Los resultados corresponden únicamente a las funcionalidades cubiertas por la suite actual.
-- Las pruebas de notificaciones, alertas y Toast permanecen pendientes de la implementación correspondiente.
-- Será necesario repetir las verificaciones cuando se integren nuevas funcionalidades.
+- Las pruebas de notificaciones, alertas de bajo stock y Toast fueron integradas y aprobadas.
+- Será necesario repetir las verificaciones cuando se integren nuevas funcionalidades o cambios importantes.
 
 ## 5. Conclusión
 
@@ -50,7 +54,7 @@ Durante la revisión de SCRUM-681 no se detectaron regresiones mediante la suite
 
 Por lo tanto, no se requirieron modificaciones correctivas al código del frontend.
 
-Se recomienda ejecutar nuevamente la suite después de integrar las funcionalidades pendientes del Sprint 9.
+Se recomienda continuar ejecutando la suite automatizada después de futuras modificaciones.
 
 ## Evidencia relacionada
 
