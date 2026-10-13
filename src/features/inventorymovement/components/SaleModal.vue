@@ -311,13 +311,17 @@ async function submit() {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal {
   background: var(--color-bg-surface);
   border-radius: 16px;
   width: 100%;
-  max-width: 450px;
+  max-width: 480px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -332,8 +336,9 @@ async function submit() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 16px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid var(--color-bg-border);
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -374,6 +379,27 @@ async function submit() {
 
 .modal-body {
   padding: 24px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--color-bg-border);
+  border-radius: 9999px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-faint);
 }
 
 .modal-desc {
@@ -558,7 +584,8 @@ async function submit() {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 20px;
+  padding-bottom: 4px;
 }
 
 .btn-cancel {
@@ -601,13 +628,22 @@ async function submit() {
 }
 
 @media (max-width: 480px) {
+  .modal-backdrop {
+    padding: 12px;
+  }
+
   .modal {
     max-width: 100%;
-    margin: 0 12px;
+    max-height: calc(100vh - 24px);
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 16px 18px 14px;
   }
 
   .modal-body {
-    padding: 18px;
+    padding: 16px 18px;
   }
 }
 </style>
