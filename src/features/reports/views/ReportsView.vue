@@ -608,6 +608,9 @@ import type { TaxReportRegime } from '@/features/reports/utils/purchaseReportPar
 import { fetchPurchaseReport } from '@/features/reports/api';
 import { getPurchaseReportErrorMessage } from '@/features/reports/utils/purchaseReportErrors';
 import Alert from '@/app/components/ui/Alert.vue';
+import { useToast } from '@/composables/useToast';
+
+const toast = useToast();
 
 const COLUMNS_MAP: Record<string, string[]> = {
   current_stock: [
@@ -1389,25 +1392,25 @@ async function downloadReport(format: 'csv' | 'pdf') {
   }
   
   if (!endpoint) {
-    alert("Este reporte aún no está disponible en el servidor (Ej. módulo comercial).");
+    toast.error('Este reporte aún no está disponible en el servidor (Ej. módulo comercial).');
     return;
   }
-  
+
   const token = appStore.state.session?.accessToken;
   if (!token) {
-    alert("No hay sesión activa.");
+    toast.error('No hay sesión activa.');
     return;
   }
   try {
     const response = await fetch(endpoint, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    
+
     if (!response.ok) {
         if (response.status === 401) throw new Error("No autorizado (401). Tu sesión expiró o no tienes rol de admin.");
         throw new Error(`Error al descargar: ${response.status}`);
     }
-    
+
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1417,8 +1420,9 @@ async function downloadReport(format: 'csv' | 'pdf') {
     a.click();
     window.URL.revokeObjectURL(url);
     a.remove();
+    toast.success('Reporte generado y descargado correctamente.');
   } catch (e) {
-    alert("Ocurrió un error al descargar el reporte.");
+    toast.error('Ocurrió un error al descargar el reporte.');
   }
 }
 
