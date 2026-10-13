@@ -7,6 +7,7 @@
       @click="toggleSidebar"
     >
       <Menu :size="24" />
+      <span v-if="alertCount > 0" class="mobile-menu-button__badge" aria-hidden="true"></span>
     </button>
 
     <Transition name="fade">
@@ -30,18 +31,20 @@
       </div>
 
       <nav class="sidebar__nav">
-        <RouterLink
-          v-for="item in visibleNavItems"
-          :key="item.name"
-          :to="item.to"
-          :data-nav-item="item.name"
-          class="sidebar__link"
-          active-class="sidebar__link--active"
-          @click="closeSidebar"
-        >
-          <component :is="item.icon" :size="18" class="sidebar__icon" />
-          <span class="sidebar__label">{{ item.label }}</span>
-        </RouterLink>
+        <template v-for="item in visibleNavItems" :key="item.name">
+          <NotificationBell v-if="item.name === 'profile'" @navigate="closeSidebar" />
+
+          <RouterLink
+            :to="item.to"
+            :data-nav-item="item.name"
+            class="sidebar__link"
+            active-class="sidebar__link--active"
+            @click="closeSidebar"
+          >
+            <component :is="item.icon" :size="18" class="sidebar__icon" />
+            <span class="sidebar__label">{{ item.label }}</span>
+          </RouterLink>
+        </template>
       </nav>
 
       <button
@@ -97,11 +100,16 @@ import ChatWidget from '@/features/chatbot/components/ChatWidget.vue';
 import ChatPanel from '@/features/chatbot/components/ChatPanel.vue';
 import WelcomeModal from '@/features/onboarding/components/WelcomeModal.vue';
 import { useOnboarding } from '@/features/onboarding/composables/useOnboarding';
+import NotificationBell from '@/features/notifications/components/NotificationBell.vue';
+import { useInventoryAlerts } from '@/features/notifications/useInventoryAlerts';
 
 const router = useRouter();
 const sidebarOpen = ref(false);
 const chatOpen = ref(false);
 const { canAccessRoute } = useAuth();
+// Mismo conteo que usa la campana del sidebar, para el puntito del botón ☰
+// en mobile (el sidebar está oculto ahí hasta que se abre).
+const { count: alertCount } = useInventoryAlerts();
 const { isWelcomeVisible, skipTour, startTour, resetOnboarding } = useOnboarding({
   openSidebar: () => { sidebarOpen.value = true; },
   closeSidebar: () => { sidebarOpen.value = false; },
@@ -413,6 +421,20 @@ async function cerrarSesion(): Promise<void> {
   .mobile-menu-button:active {
     transform: scale(0.95);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-menu-button__badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+
+    width: 11px;
+    height: 11px;
+
+    border-radius: 50%;
+    border: 2px solid var(--color-bg-app);
+
+    background: var(--color-danger);
   }
 
   .sidebar {
