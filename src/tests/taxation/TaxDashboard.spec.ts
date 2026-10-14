@@ -98,6 +98,34 @@ describe('TaxDashboardView', () => {
     expect(wrapper.text()).toContain('Crédito fiscal acumulado a favor del contribuyente');
     expect(wrapper.find('.tax-summary-callout--credit').exists()).toBe(true);
   });
+
+  it('permite abrir el modal de perfil fiscal desde el botón del encabezado', async () => {
+    vi.mocked(fetchTaxPeriodMetrics).mockResolvedValue(mockMetrics);
+    const wrapper = mount(TaxDashboardView);
+    await flushPromises();
+
+    expect(wrapper.find('.profile-modal').exists()).toBe(false);
+
+    const profileBtn = wrapper.findAll('button').find((b) => b.text().includes('Perfil Fiscal'));
+    expect(profileBtn).toBeDefined();
+    await profileBtn!.trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('.profile-modal').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Perfil Tributario de la Empresa');
+  });
+
+  it('muestra opción directa para activar perfil tributario cuando la API devuelve error de perfil inexistente', async () => {
+    vi.mocked(fetchTaxPeriodMetrics).mockRejectedValueOnce(
+      new Error('No tax profile is active for the requested period')
+    );
+
+    const wrapper = mount(TaxDashboardView);
+    await flushPromises();
+
+    expect(wrapper.find('.no-profile-callout').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Activar Perfil Tributario (12%)');
+  });
 });
 
 describe('TaxFiltersBar', () => {

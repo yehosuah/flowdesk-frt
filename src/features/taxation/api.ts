@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/apiClient';
-import type { TaxPeriodMetrics } from './types';
+import type { TaxPeriodMetrics, TaxProfile, TaxProfileResponse } from './types';
 
 export interface TaxPeriodCalculatePayload {
   start_date: string;
@@ -24,4 +24,6 @@ export async function fetchTaxPeriodMetrics(payload: TaxPeriodCalculatePayload):
     },
   });
 }
+
+export * from './profileApi';
 
