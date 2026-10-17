@@ -5,32 +5,36 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
+  const proxyTarget = env.VITE_PROXY_TARGET?.trim();
+
   return {
     plugins: [vue()],
 
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
-  },
 
     server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_PROXY_TARGET || 'http://98.92.232.157',
-          changeOrigin: true,
-        }
-      }
+      proxy: proxyTarget
+        ? {
+            '/api': {
+              target: proxyTarget,
+              changeOrigin: true,
+            },
+          }
+        : {},
     },
 
-  preview: {
-    host: '0.0.0.0',
-    port: 4173,
-  },
+    preview: {
+      host: '0.0.0.0',
+      port: 4173,
+    },
 
     test: {
       globals: true,
-      environment: 'jsdom'
-    }
+      environment: 'jsdom',
+    },
   };
 });
