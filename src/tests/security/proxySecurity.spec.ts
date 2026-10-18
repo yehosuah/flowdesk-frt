@@ -131,4 +131,83 @@ describe('Seguridad del proxy de Netlify', () => {
     expect(result).toMatchObject({ statusCode: 503 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('conserva los parámetros de consulta al reenviar solicitudes', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ products: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const event = {
+      ...createEvent(),
+      queryStringParameters: {
+        page: '2',
+        limit: '10',
+      },
+    };
+
+    await handler(
+      event,
+      {} as Parameters<typeof handler>[1],
+    );
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    const requestedUrl = new URL(
+      fetchMock.mock.calls[0][0] as string,
+    );
+
+    expect(requestedUrl.searchParams.get('page')).toBe('2');
+    expect(requestedUrl.searchParams.get('limit')).toBe('10');
+  });
+
+  it('conserva parámetros de consulta repetidos', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ products: [] }), {
+        status: 200,
+      }),
+    );
+
+    const event = {
+      ...createEvent(),
+      multiValueQueryStringParameters: {
+        status: ['active', 'pending'],
+      },
+    };
+
+    await handler(
+      event,
+      {} as Parameters<typeof handler>[1],
+    );
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    const requestedUrl = new URL(
+      fetchMock.mock.calls[0][0] as string,
+    );
+
+    expect(requestedUrl.searchParams.getAll('status')).toEqual([
+      'active',
+      'pending',
+    ]);
+
+    expect(requestedUrl.hostname).toBe('backend.example.test');
+  });
+
+  it('rechaza rutas con segmentos de navegación inválidos', async () => {
+    const event = {
+      ...createEvent(),
+      path: '/.netlify/functions/proxy/api/%2e%2e/admin',
+    };
+
+    const result = await handler(
+      event,
+      {} as Parameters<typeof handler>[1],
+    );
+
+    expect(result).toMatchObject({ statusCode: 400 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
