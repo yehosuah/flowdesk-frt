@@ -1,171 +1,191 @@
+
 import {
-  describe,
-  it,
-  expect,
   beforeEach,
-} from "vitest";
+  describe,
+  expect,
+  it,
+} from 'vitest';
 
 import {
   createSession,
   isSessionExpired,
   loadStoredSession,
   saveStoredSession,
-} from "@/services/authStorage";
+} from '@/services/authStorage';
 
 import type {
   AuthSession,
-} from "@/features/auth/types";
+  AuthTokenClaims,
+} from '@/features/auth/types';
 
-const STORAGE_KEY =
-  "flowdesk.auth.session";
+const STORAGE_KEY = 'flowdesk.auth.session';
 
-describe("authStorage", () => {
+function createTestToken(
+  claims: object,
+): string {
+  const header = btoa(
+    JSON.stringify({
+      alg: 'HS256',
+      typ: 'JWT',
+    }),
+  );
+
+  const payload = btoa(
+    JSON.stringify(claims),
+  );
+
+  return `${header}.${payload}.firma-simulada`;
+}
+
+function createTestSession(
+  claims: AuthTokenClaims,
+): AuthSession {
+  return {
+    accessToken: createTestToken(claims),
+    tokenType: 'bearer',
+    claims,
+  };
+}
+
+const futureExpiration = () =>
+  Math.floor(Date.now() / 1000) + 3600;
+
+const pastExpiration = () =>
+  Math.floor(Date.now() / 1000) - 3600;
+
+describe('Almacenamiento seguro de sesiones', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("detecta una sesión expirada", () => {
-    const session: AuthSession = {
-      accessToken: "token-expirado",
-      tokenType: "bearer",
-      claims: {
-        sub: "prueba",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) - 3600,
-      },
-    };
+  it('detecta una sesión expirada', () => {
+    const session = createTestSession({
+      sub: 'usuario-prueba',
+      exp: pastExpiration(),
+    });
 
-    expect(
-      isSessionExpired(session),
-    ).toBe(true);
+    expect(isSessionExpired(session)).toBe(true);
   });
 
-  it("mantiene como válida una sesión que no ha expirado", () => {
-    const session: AuthSession = {
-      accessToken: "token-vigente",
-      tokenType: "bearer",
-      claims: {
-        sub: "prueba",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) + 3600,
-      },
-    };
+  it('mantiene como válida una sesión vigente', () => {
+    const session = createTestSession({
+      sub: 'usuario-prueba',
+      role: 'employee',
+      exp: futureExpiration(),
+    });
 
-    expect(
-      isSessionExpired(session),
-    ).toBe(false);
+    expect(isSessionExpired(session)).toBe(false);
   });
 
-  it("no considera expirada una sesión sin claim exp", () => {
-    const session: AuthSession = {
-      accessToken: "token-sin-exp",
-      tokenType: "bearer",
-      claims: {
-        sub: "prueba",
-      },
-    };
+  it('rechaza una sesión sin expiración', () => {
+    const session = createTestSession({
+      sub: 'usuario-prueba',
+    });
 
-    expect(
-      isSessionExpired(session),
-    ).toBe(false);
+    expect(isSessionExpired(session)).toBe(true);
   });
 
-  it("elimina una sesión expirada almacenada", () => {
+  it('rechaza tokens malformados', () => {
     const session: AuthSession = {
-      accessToken: "token-expirado",
-      tokenType: "bearer",
-      claims: {
-        sub: "prueba",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) - 3600,
-      },
+      accessToken: 'token-invalido',
+      tokenType: 'bearer',
+      claims: null,
     };
+
+    expect(isSessionExpired(session)).toBe(true);
+  });
+
+  it('elimina una sesión expirada almacenada', () => {
+    const session = createTestSession({
+      sub: 'usuario-prueba',
+      exp: pastExpiration(),
+    });
 
     saveStoredSession(session);
 
-    expect(
-      loadStoredSession(),
-    ).toBeNull();
-
-    expect(
-      localStorage.getItem(
-        STORAGE_KEY,
-      ),
-    ).toBeNull();
+    expect(loadStoredSession()).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  it("recupera una sesión almacenada que sigue vigente", () => {
-    const session: AuthSession = {
-      accessToken: "token-vigente",
-      tokenType: "bearer",
-      claims: {
-        sub: "prueba",
-        role: "admin",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) + 3600,
-      },
+  it('recupera una sesión vigente desde el JWT', () => {
+    const claims: AuthTokenClaims = {
+      sub: 'usuario-prueba',
+      role: 'admin',
+      company_id: '25',
+      schema_name: 'empresa_demo',
+      exp: futureExpiration(),
     };
+
+    const session = createTestSession(claims);
 
     saveStoredSession(session);
 
-    const storedSession =
-      loadStoredSession();
+    const storedSession = loadStoredSession();
 
-    expect(
-      storedSession,
-    ).not.toBeNull();
-
-    expect(
-      storedSession?.accessToken,
-    ).toBe("token-vigente");
-
-    expect(
-      storedSession?.claims?.role,
-    ).toBe("admin");
+    expect(storedSession).not.toBeNull();
+    expect(storedSession?.claims?.role).toBe('admin');
+    expect(storedSession?.claims?.company_id).toBe('25');
+    expect(storedSession?.claims?.schema_name).toBe('empresa_demo');
   });
 
-  it("crea una sesión a partir de un JWT con exp", () => {
-    const header = btoa(
+  it('ignora claims manipulados en localStorage', () => {
+    const token = createTestToken({
+      sub: 'usuario-prueba',
+      role: 'employee',
+      company_id: '25',
+      exp: futureExpiration(),
+    });
+
+    localStorage.setItem(
+      STORAGE_KEY,
       JSON.stringify({
-        alg: "none",
-        typ: "JWT",
+        accessToken: token,
+        tokenType: 'bearer',
+        claims: {
+          sub: 'usuario-prueba',
+          role: 'superadmin',
+          company_id: '999',
+          exp: futureExpiration(),
+        },
       }),
     );
 
-    const expiration =
-      Math.floor(
-        Date.now() / 1000,
-      ) + 3600;
+    const session = loadStoredSession();
 
-    const payload = btoa(
-      JSON.stringify({
-        sub: "prueba",
-        role: "admin",
-        exp: expiration,
-      }),
-    );
+    expect(session?.claims?.role).toBe('employee');
+    expect(session?.claims?.company_id).toBe('25');
+  });
 
-    const session =
-      createSession({
-        access_token:
-          `${header}.${payload}.firma-falsa`,
-        token_type: "bearer",
-      });
+  it('rechaza un token sin identificador de usuario', () => {
+    const token = createTestToken({
+      role: 'admin',
+      exp: futureExpiration(),
+    });
 
-    expect(
-      session.claims?.exp,
-    ).toBe(expiration);
+    const session = createSession({
+      access_token: token,
+      token_type: 'bearer',
+    });
 
-    expect(
-      session.claims?.role,
-    ).toBe("admin");
+    expect(isSessionExpired(session)).toBe(true);
+  });
+
+  it('crea una sesión desde los claims del JWT', () => {
+    const expiration = futureExpiration();
+
+    const token = createTestToken({
+      sub: 'usuario-prueba',
+      role: 'manager',
+      exp: expiration,
+    });
+
+    const session = createSession({
+      access_token: token,
+      token_type: 'bearer',
+    });
+
+    expect(session.claims?.exp).toBe(expiration);
+    expect(session.claims?.role).toBe('manager');
+    expect(isSessionExpired(session)).toBe(false);
   });
 });
