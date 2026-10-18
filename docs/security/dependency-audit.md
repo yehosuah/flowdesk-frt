@@ -80,3 +80,40 @@ La inspección del árbol de dependencias mediante `npm ls` produjo un error `EL
 La auditoría de dependencias fue realizada y documentada.
 
 **Pendiente:** aplicar y validar las correcciones correspondientes en SCRUM-708.
+
+---
+
+## 7. Verificación de package-lock.json — SCRUM-709
+
+Se verificó la integridad y reproducibilidad de las dependencias del frontend después de la actualización realizada en SCRUM-708.
+
+### Procedimiento realizado
+
+Se ejecutaron los siguientes comandos:
+
+- `npm install --package-lock-only --ignore-scripts`
+- `npm ci`
+- `npm ls vite esbuild @vitejs/plugin-vue vitest`
+- `npm audit`
+- `npm run typecheck`
+- `npx vitest run`
+- `npm run build`
+
+### Resultados obtenidos
+
+| Verificación | Resultado |
+|---|---|
+| Regeneración de package-lock.json | Sin cambios adicionales |
+| Instalación limpia con npm ci | Exitosa |
+| Compatibilidad de dependencias | Sin conflictos reportados |
+| Vulnerabilidades detectadas | 0 |
+| Archivos de pruebas | 47 aprobados |
+| Pruebas automatizadas | 311 aprobadas |
+| Verificación TypeScript | Sin errores |
+| Compilación de producción | Exitosa con Vite 6.4.4 |
+
+### Conclusión
+
+El archivo `package-lock.json` se encuentra sincronizado con `package.json` y permite reproducir la instalación de dependencias mediante `npm ci`.
+
+No fue necesario modificar nuevamente el archivo, ya que la actualización de SCRUM-708 había generado una versión válida y consistente.
