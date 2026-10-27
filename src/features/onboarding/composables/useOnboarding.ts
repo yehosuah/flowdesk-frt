@@ -98,7 +98,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
         }
       },
       {
-        element: '[data-nav-item="inventorymovement"]',
+        element: '[data-nav-item="sales"]',
         popover: {
           title: 'Ventas y movimientos',
           description: 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.',

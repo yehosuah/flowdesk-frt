@@ -6,6 +6,7 @@
       <div class="page-heading-row">
         <h1 class="page-title">Inventario</h1>
         <button class="btn-sales-shortcut" type="button" @click="goToSales">
+          <ShoppingCart :size="16" aria-hidden="true" />
           <span aria-hidden="true">▣</span> Registrar venta
         </button>
       </div>
@@ -24,6 +25,7 @@
           <div class="page-heading-row">
             <h1 class="page-title">Inventario</h1>
             <button class="btn-sales-shortcut" type="button" @click="goToSales">
+              <ShoppingCart :size="16" aria-hidden="true" />
               <span aria-hidden="true">▣</span> Registrar venta
             </button>
           </div>
@@ -293,6 +295,7 @@
 <script setup lang="ts">
 import { useCurrency } from '@/features/currency';
 import { useRouter } from 'vue-router';
+import { ShoppingCart } from 'lucide-vue-next';
 import {
   ref,
   computed,
@@ -1583,6 +1586,7 @@ const productosStockBajo =
 }
 
 .btn-sales-shortcut:hover { filter: brightness(.96); }
+.btn-sales-shortcut > span[aria-hidden="true"] { display: none; }
 .btn-sales-shortcut:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 
 
