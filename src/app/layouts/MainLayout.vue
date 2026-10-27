@@ -264,32 +264,29 @@ async function cerrarSesion(): Promise<void> {
 
 .sidebar__link--sales {
   display: flex;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-weight: 600;
 }
 
-.sidebar__link--sales:hover,
-.sidebar__link--sales.sidebar__link--active {
+.sidebar__link--sales.sidebar__link--active,
+.sidebar__link--sales.sidebar__link--active:hover {
   background: var(--color-pop-honey, #f2b84b);
   color: var(--color-structure-base, #1e293b);
+  border: 1px solid #f8d98b;
 }
 
 /* El sidebar conserva una superficie oscura en el tema claro; el acceso a
    Ventas necesita contraste propio para no desaparecer entre los enlaces. */
 [data-theme='light'] .sidebar__link--sales,
 :root:not([data-theme='dark']) .sidebar__link--sales {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: transparent;
+  border-color: transparent;
+  color: rgba(255, 255, 255, 0.6);
 }
 
-[data-theme='light'] .sidebar__link--sales:hover,
 [data-theme='light'] .sidebar__link--sales.sidebar__link--active,
-:root:not([data-theme='dark']) .sidebar__link--sales:hover,
 :root:not([data-theme='dark']) .sidebar__link--sales.sidebar__link--active {
   background: #ffd978;
+  border-color: #f8d98b;
   color: #111827;
 }
 
