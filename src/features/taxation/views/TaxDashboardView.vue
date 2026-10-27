@@ -26,7 +26,7 @@
         <Button
           variant="secondary"
           size="sm"
-          class="action-btn"
+          class="action-btn profile-action-btn"
           type="button"
           @click="openProfileModal"
         >
@@ -692,6 +692,11 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+}
+
+.profile-action-btn {
+  min-width: 132px;
 }
 
 .spin-icon {
