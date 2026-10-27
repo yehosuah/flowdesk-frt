@@ -343,6 +343,86 @@ async function cerrarSesion(): Promise<void> {
   display: none;
 }
 
+/* Escritorio: barra compacta de iconos que se expande como un menú flotante. */
+@media (min-width: 1001px) {
+  .main-layout {
+    padding-left: 64px;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1200;
+    width: 64px;
+    transition: width 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sidebar:hover,
+  .sidebar:focus-within {
+    width: 280px;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .sidebar__brand {
+    height: 96px;
+    padding: 16px 10px;
+  }
+
+  .sidebar__logo {
+    width: 42px;
+    object-fit: cover;
+    object-position: left center;
+  }
+
+  .sidebar:hover .sidebar__brand,
+  .sidebar:focus-within .sidebar__brand {
+    padding: 20px;
+  }
+
+  .sidebar:hover .sidebar__logo,
+  .sidebar:focus-within .sidebar__logo {
+    width: 150px;
+  }
+
+  .sidebar__nav {
+    padding: 10px 8px;
+  }
+
+  .sidebar__link {
+    justify-content: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sidebar:hover .sidebar__link,
+  .sidebar:focus-within .sidebar__link,
+  .sidebar:hover .sidebar__logout,
+  .sidebar:focus-within .sidebar__logout {
+    justify-content: flex-start;
+  }
+
+  .sidebar__label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.2s ease, opacity 0.15s ease;
+  }
+
+  .sidebar:hover .sidebar__label,
+  .sidebar:focus-within .sidebar__label {
+    max-width: 220px;
+    opacity: 1;
+  }
+
+  .sidebar__logout {
+    justify-content: center;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
 @media (max-height: 850px) and (min-width: 1001px) {
   .sidebar__brand {
     height: 150px;
