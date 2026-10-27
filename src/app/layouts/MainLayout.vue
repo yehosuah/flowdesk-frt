@@ -267,29 +267,6 @@ async function cerrarSesion(): Promise<void> {
   font-weight: 600;
 }
 
-.sidebar__link--sales.sidebar__link--active,
-.sidebar__link--sales.sidebar__link--active:hover {
-  background: var(--color-pop-honey, #f2b84b);
-  color: var(--color-structure-base, #1e293b);
-  border: 1px solid #f8d98b;
-}
-
-/* El sidebar conserva una superficie oscura en el tema claro; el acceso a
-   Ventas necesita contraste propio para no desaparecer entre los enlaces. */
-[data-theme='light'] .sidebar__link--sales,
-:root:not([data-theme='dark']) .sidebar__link--sales {
-  background: transparent;
-  border-color: transparent;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-[data-theme='light'] .sidebar__link--sales.sidebar__link--active,
-:root:not([data-theme='dark']) .sidebar__link--sales.sidebar__link--active {
-  background: #ffd978;
-  border-color: #f8d98b;
-  color: #111827;
-}
-
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
