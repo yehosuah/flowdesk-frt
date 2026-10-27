@@ -217,7 +217,7 @@ const errors = reactive({
   tasa_iva: '',
 });
 
-function isBlank(value: number | string): boolean {
+function isBlank(value: number | string | null): boolean {
   return String(value).trim() === '';
 }
 
