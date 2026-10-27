@@ -263,6 +263,7 @@ async function cerrarSesion(): Promise<void> {
 }
 
 .sidebar__link--sales {
+  display: flex;
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   font-weight: 700;
@@ -273,6 +274,23 @@ async function cerrarSesion(): Promise<void> {
 .sidebar__link--sales.sidebar__link--active {
   background: var(--color-pop-honey, #f2b84b);
   color: var(--color-structure-base, #1e293b);
+}
+
+/* El sidebar conserva una superficie oscura en el tema claro; el acceso a
+   Ventas necesita contraste propio para no desaparecer entre los enlaces. */
+[data-theme='light'] .sidebar__link--sales,
+:root:not([data-theme='dark']) .sidebar__link--sales {
+  background: #f2b84b;
+  border-color: #f8d98b;
+  color: #1e2738;
+}
+
+[data-theme='light'] .sidebar__link--sales:hover,
+[data-theme='light'] .sidebar__link--sales.sidebar__link--active,
+:root:not([data-theme='dark']) .sidebar__link--sales:hover,
+:root:not([data-theme='dark']) .sidebar__link--sales.sidebar__link--active {
+  background: #ffd978;
+  color: #111827;
 }
 
 .sidebar__link:hover {
