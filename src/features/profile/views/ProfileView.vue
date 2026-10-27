@@ -102,6 +102,21 @@
       </section>
 
       <section class="card section-card">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Idioma</h2>
+            <p class="preference-desc">Selecciona el idioma de la interfaz y del tutorial.</p>
+          </div>
+        </div>
+        <label class="form-label" for="profile-locale">Idioma de la interfaz</label>
+        <select id="profile-locale" class="form-input" :value="locale" @change="onLocaleChange">
+          <option v-for="option in LOCALE_OPTIONS" :key="option.code" :value="option.code">
+            {{ option.label }}
+          </option>
+        </select>
+      </section>
+
+      <section class="card section-card">
         <div class="preference-row">
           <div class="preference-info">
             <span class="preference-label">Modo oscuro</span>
@@ -137,9 +152,11 @@ import type { ProfileResponse } from '@/features/profile/types';
 import { getApiErrorMessage } from '@/services/apiClient';
 import { useTheme } from '@/styles/useTheme';
 import { CURRENCY_OPTIONS, useCurrency } from '@/features/currency';
+import { LOCALE_OPTIONS, useLocale } from '@/i18n';
 
 const { theme, toggle: toggleTheme } = useTheme();
 const { currency, setCurrency } = useCurrency();
+const { locale, setLocale } = useLocale();
 const isDark = computed(() => theme.value === 'dark');
 
 interface ProfileFormData {
@@ -161,6 +178,10 @@ const profileErrors = reactive<Record<keyof ProfileFormData, string>>({ username
 
 function onCurrencyChange(event: Event) {
   setCurrency((event.target as HTMLSelectElement).value);
+}
+
+function onLocaleChange(event: Event) {
+  setLocale((event.target as HTMLSelectElement).value as 'es' | 'en');
 }
 
 const hasProfileChanges = computed(() => profileForm.username.trim() !== profile.value?.username);
