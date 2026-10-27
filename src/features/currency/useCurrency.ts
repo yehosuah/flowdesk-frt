@@ -23,9 +23,10 @@ export function useCurrency() {
   const currency = computed(() => findCurrency(selectedCode.value));
   const formatCurrency = (value: number | string | null | undefined): string => {
     const amount = Number(value ?? 0);
-    return new Intl.NumberFormat(currency.value.locale, {
-      style: 'currency', currency: currency.value.code, minimumFractionDigits: 2, maximumFractionDigits: 2,
-    }).format(Number.isFinite(amount) ? amount : 0);
+    // Preserve the application's established display contract: no thousands
+    // grouping and a regular space after the symbol (for example, "Q 1000.00").
+    const safeAmount = Number.isFinite(amount) ? amount : 0;
+    return `${currency.value.symbol} ${safeAmount.toFixed(2)}`;
   };
   return { currency, formatCurrency, setCurrency };
 }
