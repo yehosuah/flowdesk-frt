@@ -187,6 +187,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
       prevBtnText: copy.previous,
       doneBtnText: '¡Comenzar!',
       allowClose: true,
+      allowKeyboardControl: true,
       skipMissingElement: true,
       showButtons: ['next', 'previous', 'close'],
       steps: translatedSteps,
