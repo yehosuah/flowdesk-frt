@@ -118,20 +118,13 @@
 <script setup lang="ts">
 import { ArrowUpRight, ArrowDownLeft, Scale, DollarSign, ShieldCheck, Receipt, FileText } from 'lucide-vue-next';
 import type { TaxPeriodMetrics } from '../types';
+import { useCurrency } from '@/features/currency';
 
 defineProps<{
   metrics: TaxPeriodMetrics;
 }>();
 
-function formatCurrency(amount: number | undefined | null): string {
-  const value = amount ?? 0;
-  return new Intl.NumberFormat('es-GT', {
-    style: 'currency',
-    currency: 'GTQ',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value).replace('GTQ', 'Q');
-}
+const { formatCurrency } = useCurrency();
 </script>
 
 <style scoped>
