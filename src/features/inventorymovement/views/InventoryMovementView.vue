@@ -14,14 +14,15 @@
             <button
               class="btn-add"
               type="button"
-              @click="isDropdownOpen = !isDropdownOpen"
+              @click="handlePrimaryAction"
             >
               <span class="btn-icon">+</span>
-              <span>{{ isSalesModule ? 'Registrar venta' : 'Nuevo Registro' }}</span>
+              <span v-if="isSalesModule">Registrar venta</span>
+              <span v-else>Nuevo Registro</span>
             </button>
 
             <div
-              v-if="isDropdownOpen"
+              v-if="!isSalesModule && isDropdownOpen"
               class="dropdown-menu"
             >
               <button
@@ -40,15 +41,6 @@
                 @click="openModal('stock')"
               >
                 Ingresar Stock
-              </button>
-
-              <button
-                v-if="can('sales.create')"
-                class="dropdown-item"
-                type="button"
-                @click="openModal('sale')"
-              >
-                Registrar Venta
               </button>
 
               <div v-if="!isSalesModule && can('movement.create')" class="dropdown-divider"></div>
@@ -789,7 +781,7 @@ const showSale = ref(false);
 const showAdjustment = ref(false);
 const voidSaleId = ref<string | null>(null);
 
-const canVoidSales = computed(() => can('sales.void'));
+const canVoidSales = computed(() => isSalesModule.value && can('sales.void'));
 
 // Una venta anulada conserva sus salidas; la anulación agrega entradas que la
 // referencian. Con esas entradas sabemos qué ventas ya no se pueden anular.
@@ -826,6 +818,14 @@ function openVoidSale(saleId: string) {
 }
 
 const isDropdownOpen = ref(false);
+
+function handlePrimaryAction() {
+  if (isSalesModule.value) {
+    openModal('sale');
+    return;
+  }
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
 
 function openModal(
   modalName: string

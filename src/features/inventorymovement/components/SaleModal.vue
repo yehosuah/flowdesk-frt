@@ -63,7 +63,7 @@
           <div class="form-group full-width">
             <div class="tax-rate-header">
               <label class="form-label" for="sale-tax-rate">Porcentaje de IVA (%) *</label>
-              <div v-if="!form.es_exenta" class="tax-presets">
+              <div v-if="false" class="tax-presets">
                 <button
                   type="button"
                   class="preset-chip"
@@ -90,7 +90,10 @@
                 </button>
               </div>
             </div>
-            <div class="input-suffix-wrapper">
+            <div class="tax-rate-readonly">
+              {{ form.es_exenta ? 'Exenta' : `${form.tasa_iva}% (configurado por la empresa)` }}
+            </div>
+            <div v-if="false" class="input-suffix-wrapper">
               <input
                 id="sale-tax-rate"
                 v-model.number="form.tasa_iva"
@@ -185,11 +188,6 @@ const effectiveTaxRate = computed(() => {
   if (isBlank(form.tasa_iva)) return 0;
   return Number(form.tasa_iva);
 });
-
-function setTaxRate(value: number): void {
-  form.tasa_iva = value;
-  errors.tasa_iva = '';
-}
 
 // Vista previa en vivo: se recalcula con producto/cantidad y tasa de IVA elegida.
 const subtotalPreview = computed(() => {
@@ -286,7 +284,6 @@ async function submit() {
     await createSale({
       items: [{ producto_id: form.producto_id, cantidad: Number(form.cantidad) }],
       es_exenta: form.es_exenta,
-      tasa_impuesto: form.es_exenta ? 0 : Number(form.tasa_iva),
     });
 
     emit('created');
@@ -301,6 +298,18 @@ async function submit() {
 
 <style scoped>
 /* Reutilizando los estilos base */
+.tax-rate-readonly {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-bg-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--color-bg-subtle, #f8fafc);
+  color: var(--color-text-secondary, #475569);
+  font-weight: 600;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
