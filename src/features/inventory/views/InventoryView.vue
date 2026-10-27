@@ -3,7 +3,12 @@
 
     <!-- Encabezado móvil/tablet -->
     <div class="mobile-header">
-      <h1 class="page-title">Inventario</h1>
+      <div class="page-heading-row">
+        <h1 class="page-title">Inventario</h1>
+        <button class="btn-sales-shortcut" type="button" @click="goToSales">
+          <span aria-hidden="true">▣</span> Registrar venta
+        </button>
+      </div>
       <p class="page-subtitle">
         Consulta los productos disponibles en tu inventario
       </p>
@@ -16,7 +21,12 @@
 
         <!-- Encabezado escritorio -->
         <div class="desktop-header">
-          <h1 class="page-title">Inventario</h1>
+          <div class="page-heading-row">
+            <h1 class="page-title">Inventario</h1>
+            <button class="btn-sales-shortcut" type="button" @click="goToSales">
+              <span aria-hidden="true">▣</span> Registrar venta
+            </button>
+          </div>
           <p class="page-subtitle">
             Consulta los productos disponibles en tu inventario
           </p>
@@ -282,6 +292,7 @@
 
 <script setup lang="ts">
 import { useCurrency } from '@/features/currency';
+import { useRouter } from 'vue-router';
 import {
   ref,
   computed,
@@ -342,6 +353,11 @@ async function onImported() {
 
 
 const { formatCurrency: formatPrice } = useCurrency();
+const router = useRouter();
+
+function goToSales() {
+  router.push({ name: 'sales' });
+}
 
 
 function formatQuantity(
@@ -1542,6 +1558,32 @@ const productosStockBajo =
     display: none;
   }
 }
+
+.page-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.btn-sales-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: var(--color-pop-honey, #f2b84b);
+  color: var(--color-structure-base, #1e293b);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-sales-shortcut:hover { filter: brightness(.96); }
+.btn-sales-shortcut:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 
 
 /* =========================================================
