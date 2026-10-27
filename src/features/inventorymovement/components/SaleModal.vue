@@ -166,7 +166,7 @@ const form = reactive({
   producto_id: '',
   cantidad: 1,
   es_exenta: false,
-  tasa_iva: 12,
+  tasa_iva: null as number | null,
 });
 
 const selectedProduct = computed(() => props.products.find(p => p.id === form.producto_id) ?? null);
@@ -207,7 +207,7 @@ onMounted(async () => {
   } catch (err) {
     taxConfigError.value = 'No se pudo cargar una tasa de IVA válida. La venta no puede registrarse hasta sincronizar la configuración tributaria.';
     taxRate.value = null;
-    form.tasa_iva = '';
+    form.tasa_iva = null;
   }
 });
 
