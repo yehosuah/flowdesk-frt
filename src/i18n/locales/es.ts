@@ -41,20 +41,37 @@ export default {
     logout: 'Cerrar sesión',
   },
 
+
   auth: {
     login: 'Iniciar sesión',
+    loginButton: 'Iniciar Sesión',
+    loggingIn: 'Ingresando...',
     register: 'Registrar empresa',
     email: 'Correo electrónico',
     password: 'Contraseña',
     confirmPassword: 'Confirmar contraseña',
     forgotPassword: 'Olvidé mi contraseña',
+    forgotPasswordLink: '¿Olvidaste tu contraseña?',
     resetPassword: 'Recuperar contraseña',
     setPassword: 'Establecer contraseña',
     welcome: 'Bienvenido',
     logout: 'Cerrar sesión',
+    backHome: 'Volver al inicio',
+    backHomeTitle: 'Volver a la página principal',
+    emailPlaceholder: "correo{'@'}ejemplo.com",
+    passwordPlaceholder: 'Mínimo 6 caracteres',
+    emailRequired: 'El correo es obligatorio.',
+    emailInvalid: 'Ingresa un correo valido.',
+    passwordRequired: 'La contraseña es obligatoria.',
+    passwordMinLength: 'La contraseña debe tener al menos 6 caracteres.',
+    passwordMaxLength: 'La contraseña no puede exceder 20 caracteres.',
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
+    invalidRole: 'Tu cuenta no tiene un rol válido asignado. Contacta al administrador.',
     invalidCredentials: 'Credenciales incorrectas',
     sessionExpired: 'Tu sesión ha expirado',
   },
+
 
   inventory: {
     title: 'Inventario',

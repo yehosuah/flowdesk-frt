@@ -41,20 +41,37 @@ export default {
     logout: 'Log out',
   },
 
+
   auth: {
     login: 'Log in',
+    loginButton: 'Log In',
+    loggingIn: 'Signing in...',
     register: 'Register Company',
     email: 'Email',
     password: 'Password',
     confirmPassword: 'Confirm Password',
     forgotPassword: 'Forgot Password',
+    forgotPasswordLink: 'Forgot your password?',
     resetPassword: 'Reset Password',
     setPassword: 'Set Password',
     welcome: 'Welcome',
     logout: 'Log out',
+    backHome: 'Back to Home',
+    backHomeTitle: 'Return to the home page',
+    emailPlaceholder: "email{'@'}example.com",
+    passwordPlaceholder: 'Minimum 6 characters',
+    emailRequired: 'Email is required.',
+    emailInvalid: 'Enter a valid email address.',
+    passwordRequired: 'Password is required.',
+    passwordMinLength: 'Password must contain at least 6 characters.',
+    passwordMaxLength: 'Password cannot exceed 20 characters.',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    invalidRole: 'Your account does not have a valid assigned role. Contact the administrator.',
     invalidCredentials: 'Invalid credentials',
     sessionExpired: 'Your session has expired',
   },
+
 
   inventory: {
     title: 'Inventory',

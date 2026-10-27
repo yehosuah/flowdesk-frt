@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import {
   Menu,
@@ -33,6 +34,7 @@ import NotificationBell from '@/features/notifications/components/NotificationBe
 import { useInventoryAlerts } from '@/features/notifications/useInventoryAlerts';
 
 const router = useRouter();
+const { t } = useI18n();
 
 const sidebarOpen = ref(false);
 const chatOpen = ref(false);
@@ -109,85 +111,87 @@ watch(sidebarOpen, (isOpen) => {
   }
 });
 
-const navItems = [
+
+const navItems = computed(() => [
   {
     name: 'inventory',
-    label: 'Inventario',
+    label: t('navigation.inventory'),
     to: { name: 'inventory' },
     icon: Package,
   },
   {
     name: 'inventorymovement',
-    label: 'Movimiento de Inventario',
+    label: t('navigation.inventoryMovement'),
     to: { name: 'inventorymovement' },
     icon: ArrowRightLeft,
   },
   {
     name: 'tasks',
-    label: 'Gestión de tareas',
+    label: t('navigation.tasks'),
     to: { name: 'tasks' },
     icon: ClipboardList,
   },
   {
     name: 'tasks-calendar',
-    label: 'Calendario',
+    label: t('navigation.calendar'),
     to: { name: 'tasks-calendar' },
     icon: Calendar,
   },
   {
     name: 'superAdmin',
-    label: 'Manejo de Cuentas',
+    label: t('navigation.accounts'),
     to: { name: 'superAdmin' },
     icon: Shield,
   },
   {
     name: 'analytics',
-    label: 'Análisis',
+    label: t('navigation.analytics'),
     to: { name: 'analytics' },
     icon: BarChart3,
   },
   {
     name: 'employees',
-    label: 'Empleados',
+    label: t('navigation.employees'),
     to: { name: 'employees' },
     icon: Users,
   },
   {
     name: 'suppliers',
-    label: 'Proveedores',
+    label: t('navigation.suppliers'),
     to: { name: 'suppliers' },
     icon: Truck,
   },
   {
     name: 'clients',
-    label: 'Clientes',
+    label: t('navigation.clients'),
     to: { name: 'clients' },
     icon: UserCircle,
   },
   {
     name: 'reports',
-    label: 'Reportes',
+    label: t('navigation.reports'),
     to: { name: 'reports' },
     icon: FileText,
   },
   {
     name: 'tax-dashboard',
-    label: 'Dashboard Tributario',
+    label: t('navigation.taxation'),
     to: { name: 'tax-dashboard' },
     icon: Receipt,
   },
   {
     name: 'profile',
-    label: 'Mi Perfil',
+    label: t('navigation.profile'),
     to: { name: 'profile' },
     icon: User,
   },
-];
+]);
+
 
 // Mostrar únicamente las opciones permitidas
 // para el rol del usuario autenticado.
 const visibleNavItems = computed(() =>
-  navItems.filter((item) =>
+  navItems.value.filter((item) =>
     canAccessRoute(item.name),
   ),
 );
