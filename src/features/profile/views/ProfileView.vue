@@ -87,6 +87,21 @@
       </section>
 
       <section class="card section-card">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Moneda de la empresa</h2>
+            <p class="preference-desc">Se usará para mostrar importes en ventas, inventario y reportes.</p>
+          </div>
+        </div>
+        <label class="form-label" for="profile-currency">Moneda predeterminada</label>
+        <select id="profile-currency" class="form-input" :value="currency.code" @change="onCurrencyChange">
+          <option v-for="option in CURRENCY_OPTIONS" :key="option.code" :value="option.code">
+            {{ option.code }} — {{ option.name }}
+          </option>
+        </select>
+      </section>
+
+      <section class="card section-card">
         <div class="preference-row">
           <div class="preference-info">
             <span class="preference-label">Modo oscuro</span>
@@ -121,8 +136,10 @@ import { fetchProfile, updateProfile } from '@/features/profile/api';
 import type { ProfileResponse } from '@/features/profile/types';
 import { getApiErrorMessage } from '@/services/apiClient';
 import { useTheme } from '@/styles/useTheme';
+import { CURRENCY_OPTIONS, useCurrency } from '@/features/currency';
 
 const { theme, toggle: toggleTheme } = useTheme();
+const { currency, setCurrency } = useCurrency();
 const isDark = computed(() => theme.value === 'dark');
 
 interface ProfileFormData {
@@ -141,6 +158,10 @@ const profileSubmitError = ref('');
 const profileSuccessMsg = ref('');
 const profileForm = reactive<ProfileFormData>({ username: '' });
 const profileErrors = reactive<Record<keyof ProfileFormData, string>>({ username: '' });
+
+function onCurrencyChange(event: Event) {
+  setCurrency((event.target as HTMLSelectElement).value);
+}
 
 const hasProfileChanges = computed(() => profileForm.username.trim() !== profile.value?.username);
 
