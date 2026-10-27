@@ -5,7 +5,7 @@
     <div class="mobile-header">
       <div class="page-heading-row">
         <h1 class="page-title">Inventario</h1>
-        <button v-if="false" class="btn-sales-shortcut" type="button" @click="goToSales">
+        <button v-if="false" class="btn-sales-shortcut" type="button">
           <ShoppingCart :size="16" aria-hidden="true" />
           <span aria-hidden="true">▣</span> Registrar venta
         </button>
@@ -24,7 +24,7 @@
         <div class="desktop-header">
           <div class="page-heading-row">
             <h1 class="page-title">Inventario</h1>
-            <button v-if="false" class="btn-sales-shortcut" type="button" @click="goToSales">
+            <button v-if="false" class="btn-sales-shortcut" type="button">
               <ShoppingCart :size="16" aria-hidden="true" />
               <span aria-hidden="true">▣</span> Registrar venta
             </button>
