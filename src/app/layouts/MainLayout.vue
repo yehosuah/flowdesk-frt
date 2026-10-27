@@ -407,11 +407,36 @@ async function cerrarSesion(): Promise<void> {
     padding-right: 12px;
   }
 
+  .sidebar :deep(.notif-bell__trigger) {
+    justify-content: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sidebar :deep(.notif-bell__label) {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.2s ease, opacity 0.15s ease;
+  }
+
   .sidebar:hover .sidebar__link,
   .sidebar:focus-within .sidebar__link,
   .sidebar:hover .sidebar__logout,
   .sidebar:focus-within .sidebar__logout {
     justify-content: flex-start;
+  }
+
+  .sidebar:hover :deep(.notif-bell__trigger),
+  .sidebar:focus-within :deep(.notif-bell__trigger) {
+    justify-content: flex-start;
+  }
+
+  .sidebar:hover :deep(.notif-bell__label),
+  .sidebar:focus-within :deep(.notif-bell__label) {
+    max-width: 220px;
+    opacity: 1;
   }
 
   .sidebar__label {
