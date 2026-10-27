@@ -98,6 +98,24 @@ export function useOnboarding(options?: UseOnboardingOptions) {
         }
       },
       {
+        element: '[data-nav-item="inventorymovement"]',
+        popover: {
+          title: 'Ventas y movimientos',
+          description: 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.',
+          side: 'right' as const,
+          align: 'start' as const
+        }
+      },
+      {
+        element: '[data-nav-item="tasks"]',
+        popover: {
+          title: 'Tareas del equipo',
+          description: 'Organiza pendientes y da seguimiento al trabajo operativo del equipo.',
+          side: 'right' as const,
+          align: 'start' as const
+        }
+      },
+      {
         element: '.filtros-panel',
         popover: {
           title: 'Sección 3: Panel de Filtros',
@@ -148,9 +166,11 @@ export function useOnboarding(options?: UseOnboardingOptions) {
     const translatedSteps = tourSteps.map((step, index) => {
       const translated = [
         [copy.welcome, copy.welcomeDescription], [copy.menu, copy.menuDescription],
-        [copy.active, copy.activeDescription], [copy.filters, copy.filtersDescription],
-        [copy.catalog, copy.catalogDescription], [copy.assistant, copy.assistantDescription],
-        [copy.repeat, copy.repeatDescription], [copy.done, copy.doneDescription],
+        [copy.active, copy.activeDescription], ['Ventas y movimientos', 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.'],
+        ['Tareas del equipo', 'Organiza pendientes y da seguimiento al trabajo operativo del equipo.'],
+        [copy.filters, copy.filtersDescription], [copy.catalog, copy.catalogDescription],
+        [copy.assistant, copy.assistantDescription], [copy.repeat, copy.repeatDescription],
+        [copy.done, copy.doneDescription],
       ][index];
       return translated ? { ...step, popover: { ...step.popover, title: translated[0], description: translated[1] } } : step;
     });
