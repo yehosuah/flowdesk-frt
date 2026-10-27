@@ -37,7 +37,7 @@
           <RouterLink
             :to="item.to"
             :data-nav-item="item.name"
-            class="sidebar__link"
+            :class="['sidebar__link', { 'sidebar__link--sales': item.name === 'sales' }]"
             active-class="sidebar__link--active"
             @click="closeSidebar"
           >
@@ -260,6 +260,19 @@ async function cerrarSesion(): Promise<void> {
   transition:
     background 0.15s,
     color 0.15s;
+}
+
+.sidebar__link--sales {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.sidebar__link--sales:hover,
+.sidebar__link--sales.sidebar__link--active {
+  background: var(--color-pop-honey, #f2b84b);
+  color: var(--color-structure-base, #1e293b);
 }
 
 .sidebar__link:hover {
