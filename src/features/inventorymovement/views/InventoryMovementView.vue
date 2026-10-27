@@ -17,7 +17,7 @@
               @click="isDropdownOpen = !isDropdownOpen"
             >
               <span class="btn-icon">+</span>
-              <span>Nuevo Registro</span>
+              <span>{{ isSalesModule ? 'Registrar venta' : 'Nuevo Registro' }}</span>
             </button>
 
             <div
