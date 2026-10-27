@@ -351,7 +351,7 @@ async function cerrarSesion(): Promise<void> {
 /* Escritorio: barra compacta de iconos que se expande como un menú flotante. */
 @media (min-width: 1001px) {
   .main-layout {
-    padding-left: 64px;
+    padding-left: 76px;
   }
 
   .sidebar {
@@ -359,7 +359,7 @@ async function cerrarSesion(): Promise<void> {
     left: 0;
     top: 0;
     z-index: 1200;
-    width: 64px;
+    width: 76px;
     transition: width 0.2s ease, box-shadow 0.2s ease;
   }
 
@@ -370,12 +370,12 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__brand {
-    height: 96px;
-    padding: 16px 10px;
+    height: 116px;
+    padding: 18px 10px;
   }
 
   .sidebar__logo {
-    width: 42px;
+    width: 54px;
     height: auto;
   }
 
@@ -466,8 +466,12 @@ async function cerrarSesion(): Promise<void> {
     padding: 14px 18px;
   }
 
-  .sidebar__logo {
+  .sidebar__logo--full {
     width: 120px;
+  }
+
+  .sidebar__logo--compact {
+    width: 54px;
   }
 
   .sidebar__nav {
