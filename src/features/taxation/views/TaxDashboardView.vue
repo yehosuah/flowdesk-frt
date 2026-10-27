@@ -64,6 +64,21 @@
         @update:year="selectedYear = $event"
       />
 
+      <section v-if="isAdmin" class="tax-rate-settings" aria-labelledby="tax-rate-settings-title">
+        <div>
+          <h2 id="tax-rate-settings-title">Configuración de IVA</h2>
+          <p>Esta tasa se aplicará a las nuevas ventas de la empresa.</p>
+        </div>
+        <form class="tax-rate-form" @submit.prevent="saveCommercialRate">
+          <label for="commercial-tax-rate">Tasa (%)</label>
+          <input id="commercial-tax-rate" v-model.number="commercialRate" type="number" min="0" max="100" step="0.01" required />
+          <Button variant="primary" size="sm" :disabled="isSavingCommercialRate">
+            {{ isSavingCommercialRate ? 'Guardando...' : 'Guardar tasa' }}
+          </Button>
+        </form>
+        <p v-if="commercialRateFeedback" :class="commercialRateSaved ? 'tax-rate-success' : 'tax-rate-error'">{{ commercialRateFeedback }}</p>
+      </section>
+
       <!-- Estado de Error -->
       <Alert
         v-if="errorMessage"
@@ -284,19 +299,26 @@ import {
 import { appStore } from '@/stores/app.store';
 import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
-import { fetchTaxPeriodMetrics } from '../api';
+import { fetchTaxPeriodMetrics, fetchCommercialTaxConfiguration, updateCommercialTaxConfiguration } from '../api';
 import {
   fetchTaxProfiles,
   saveTaxProfile,
   DEFAULT_GT_TAX_PROFILE,
 } from '../profileApi';
 import type { TaxPeriodMetrics, TaxProfile } from '../types';
+import { useAuth } from '@/composables/useAuth';
 
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
 const selectedYear = ref<number>(new Date().getFullYear());
 const isLoading = ref<boolean>(true);
 const isExporting = ref<boolean>(false);
 const errorMessage = ref<string | null>(null);
+const { role } = useAuth();
+const isAdmin = computed(() => role.value === 'admin');
+const commercialRate = ref<number | null>(null);
+const isSavingCommercialRate = ref(false);
+const commercialRateFeedback = ref('');
+const commercialRateSaved = ref(false);
 
 // Perfil tributario
 const activeProfile = ref<TaxProfile | null>(null);
@@ -304,6 +326,33 @@ const showProfileModal = ref<boolean>(false);
 const isLoadingProfile = ref<boolean>(false);
 const isActivatingProfile = ref<boolean>(false);
 const profileFeedback = ref<{ message: string; success: boolean } | null>(null);
+
+async function loadCommercialRate() {
+  if (!isAdmin.value) return;
+  try {
+    commercialRate.value = Number((await fetchCommercialTaxConfiguration()).tasa_impuesto);
+  } catch {
+    commercialRateFeedback.value = 'No se pudo cargar la tasa configurada.';
+    commercialRateSaved.value = false;
+  }
+}
+
+async function saveCommercialRate() {
+  if (commercialRate.value === null || commercialRate.value < 0 || commercialRate.value > 100) return;
+  isSavingCommercialRate.value = true;
+  commercialRateFeedback.value = '';
+  try {
+    const response = await updateCommercialTaxConfiguration(commercialRate.value);
+    commercialRate.value = Number(response.tasa_impuesto);
+    commercialRateFeedback.value = 'Tasa de IVA actualizada correctamente.';
+    commercialRateSaved.value = true;
+  } catch {
+    commercialRateFeedback.value = 'No se pudo actualizar la tasa de IVA.';
+    commercialRateSaved.value = false;
+  } finally {
+    isSavingCommercialRate.value = false;
+  }
+}
 
 const defaultTaxes = [
   {
@@ -548,6 +597,7 @@ watch([selectedMonth, selectedYear], () => {
 onMounted(() => {
   loadMetrics();
   loadProfile();
+  loadCommercialRate();
 });
 </script>
 
@@ -558,6 +608,25 @@ onMounted(() => {
   min-height: 100vh;
   box-sizing: border-box;
 }
+
+.tax-rate-settings {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 12px;
+}
+
+.tax-rate-settings h2 { margin: 0 0 4px; font-size: 1rem; color: var(--color-heading); }
+.tax-rate-settings p { margin: 0; color: var(--color-text-muted); font-size: .82rem; }
+.tax-rate-form { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.tax-rate-form label { font-size: .82rem; font-weight: 600; }
+.tax-rate-form input { width: 90px; padding: 8px 10px; border: 1px solid var(--color-bg-border); border-radius: 7px; }
+.tax-rate-success { color: var(--color-success-text) !important; }
+.tax-rate-error { color: var(--color-danger-text) !important; }
 
 .tax-dashboard-header {
   margin-bottom: 24px;
