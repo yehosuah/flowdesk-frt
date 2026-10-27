@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import '../styles/onboarding.css';
+import { getMessages, useLocale } from '@/i18n';
 
 const ONBOARDING_KEY = 'flowdesk_has_seen_onboarding';
 
@@ -14,6 +15,7 @@ export interface UseOnboardingOptions {
 
 export function useOnboarding(options?: UseOnboardingOptions) {
   const isWelcomeVisible = ref(false);
+  const { locale } = useLocale();
   let router: ReturnType<typeof useRouter> | null = null;
   try {
     router = useRouter();
@@ -64,6 +66,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
     const navSelector = isMobile ? '.mobile-menu-button' : '.sidebar';
     const headerSelector = isMobile ? '.mobile-header' : '.desktop-header';
     const restartSelector = isMobile ? '.mobile-menu-button' : '[data-tour="restart-tutorial"]';
+    const copy = getMessages(locale.value).tutorial;
 
     const tourSteps = [
       {
@@ -142,16 +145,26 @@ export function useOnboarding(options?: UseOnboardingOptions) {
       }
     ];
 
+    const translatedSteps = tourSteps.map((step, index) => {
+      const translated = [
+        [copy.welcome, copy.welcomeDescription], [copy.menu, copy.menuDescription],
+        [copy.active, copy.activeDescription], [copy.filters, copy.filtersDescription],
+        [copy.catalog, copy.catalogDescription], [copy.assistant, copy.assistantDescription],
+        [copy.repeat, copy.repeatDescription], [copy.done, copy.doneDescription],
+      ][index];
+      return translated ? { ...step, popover: { ...step.popover, title: translated[0], description: translated[1] } } : step;
+    });
+
     const driverObj = driver({
       showProgress: true,
-      progressText: 'Paso {{current}} de {{total}}',
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Anterior',
+      progressText: copy.progress,
+      nextBtnText: copy.next,
+      prevBtnText: copy.previous,
       doneBtnText: '¡Comenzar!',
       allowClose: true,
       skipMissingElement: true,
       showButtons: ['next', 'previous', 'close'],
-      steps: tourSteps,
+      steps: translatedSteps,
       onDestroyed: () => {
         if (isMobile) {
           options?.closeSidebar?.();
