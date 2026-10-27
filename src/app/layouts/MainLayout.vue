@@ -51,6 +51,7 @@
         class="sidebar__logout"
         type="button"
         data-tour="restart-tutorial"
+        aria-label="Reiniciar tutorial"
         @click="resetOnboarding"
         style="padding-bottom: 4px;"
       >
