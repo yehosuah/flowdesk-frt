@@ -68,7 +68,6 @@
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 12 }"
-                  @click="setTaxRate(12)"
                 >
                   12% (General)
                 </button>
@@ -76,7 +75,6 @@
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 5 }"
-                  @click="setTaxRate(5)"
                 >
                   5% (Pequeño Contribuyente)
                 </button>
@@ -84,7 +82,6 @@
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 0 }"
-                  @click="setTaxRate(0)"
                 >
                   0%
                 </button>
