@@ -119,14 +119,13 @@ export const handler: Handler = async (event) => {
 
   // SCRUM-730:
   // Conservar el Content-Type original.
-  // Para multipart/form-data es necesario
-  // preservar el boundary de la solicitud.
+  // En multipart/form-data se debe mantener
+  // el boundary de la solicitud.
   const contentType =
     event.headers['content-type'] ||
     event.headers['Content-Type'];
 
-  // Preparar los encabezados que se
-  // enviarán al backend.
+  // Preparar los encabezados enviados al backend.
   const requestHeaders: Record<string, string> = {};
 
   if (contentType) {
@@ -146,18 +145,45 @@ export const handler: Handler = async (event) => {
   );
 
   try {
-    // No enviar cuerpo en solicitudes GET o HEAD.
-    const requestBody = ['GET', 'HEAD'].includes(
-      event.httpMethod.toUpperCase(),
-    )
-      ? undefined
-      : (event.body ?? undefined);
+    // SCRUM-731:
+    // Reconstruir los bytes originales cuando
+    // Netlify entrega el cuerpo codificado en base64.
+    const method = event.httpMethod.toUpperCase();
 
-    // Reenviar la solicitud al backend,
-    // conservando el tipo de contenido original.
+    let requestBody: BodyInit | undefined;
+
+    if (
+      method === 'GET' ||
+      method === 'HEAD' ||
+      event.body === null
+    ) {
+      requestBody = undefined;
+    } else if (event.isBase64Encoded) {
+      // Decodificar el cuerpo base64.
+      const decoded = Buffer.from(
+        event.body,
+        'base64',
+      );
+
+      // Crear una copia independiente para obtener
+      // un ArrayBuffer compatible con Fetch.
+      const binaryBody = new Uint8Array(
+        decoded.length,
+      );
+
+      binaryBody.set(decoded);
+
+      requestBody = binaryBody.buffer;
+    } else {
+      // Conservar las solicitudes JSON y texto
+      // sin modificar su contenido.
+      requestBody = event.body;
+    }
+
+    // Reenviar la solicitud al backend.
     const response = await fetch(url.toString(), {
       signal: controller.signal,
-      method: event.httpMethod,
+      method,
       headers: requestHeaders,
       body: requestBody,
     });
@@ -171,7 +197,7 @@ export const handler: Handler = async (event) => {
       body: data,
     };
   } catch {
-    // No exponer errores internos,
+    // Evitar exponer errores internos,
     // credenciales o detalles del servidor.
     return {
       statusCode: 502,
@@ -182,7 +208,7 @@ export const handler: Handler = async (event) => {
       }),
     };
   } finally {
-    // Liberar recursos del temporizador.
+    // Liberar el temporizador.
     clearTimeout(timeoutId);
   }
 };
