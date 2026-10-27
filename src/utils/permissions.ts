@@ -9,6 +9,7 @@ export type Permission =
   | 'movement.view'
   | 'movement.create'
   | 'sales.create'
+  | 'sales.void'
   | 'tasks.view'
   | 'tasks.manage'
   | 'calendar.view'
@@ -39,6 +40,7 @@ const PERMISSIONS: Record<Permission, AppRole[]> = {
   'movement.view': OPERATIONAL,
   'movement.create': ADMIN_MANAGER,
   'sales.create': OPERATIONAL,
+  'sales.void': ADMIN_MANAGER,
 
   'tasks.view': OPERATIONAL,
   'tasks.manage': OPERATIONAL,

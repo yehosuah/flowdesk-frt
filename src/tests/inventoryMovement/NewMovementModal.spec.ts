@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import NewMovementModal from "@/features/inventorymovement/components/NewMovementModal.vue";
 
-vi.mock("@/features/inventorymovement/api", () => ({
+vi.mock("@/features/inventorymovement/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/features/inventorymovement/api")>()),
   createMovement: vi.fn(),
 }));
 
@@ -83,6 +84,43 @@ describe("NewMovementModal", () => {
     expect(wrapper.text()).toContain(
       "La cantidad debe ser mayor a 0."
     );
+  });
+
+  it("exige motivo cuando el movimiento es un ajuste", async () => {
+    const { createMovement } = await import("@/features/inventorymovement/api");
+    const wrapper = createWrapper();
+
+    const selects = wrapper.findAll("select");
+    await selects[0].setValue("1");
+    await selects[1].setValue("ajuste_negativo");
+    await wrapper.find("input[type='number']").setValue("2");
+
+    await wrapper.find("form").trigger("submit.prevent");
+
+    expect(wrapper.text()).toContain("El motivo es obligatorio para los ajustes.");
+    expect(createMovement).not.toHaveBeenCalled();
+  });
+
+  it("mantiene el motivo opcional en movimientos que no son ajustes", async () => {
+    const { createMovement } = await import("@/features/inventorymovement/api");
+    vi.mocked(createMovement).mockResolvedValueOnce({} as never);
+    const wrapper = createWrapper();
+
+    const selects = wrapper.findAll("select");
+    await selects[0].setValue("1");
+    await selects[1].setValue("entrada_manual");
+    await wrapper.find("input[type='number']").setValue("2");
+
+    await wrapper.find("form").trigger("submit.prevent");
+    await flushPromises();
+
+    expect(createMovement).toHaveBeenCalledWith({
+      producto_id: "1",
+      tipo_movimiento: "entrada_manual",
+      cantidad: 2,
+      motivo: undefined,
+    });
+    expect(wrapper.emitted("created")).toBeTruthy();
   });
 
   it("emite el evento close al presionar cancelar", async () => {
