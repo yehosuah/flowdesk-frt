@@ -5,12 +5,12 @@
     <dl class="tax-breakdown__lines">
       <div class="tax-breakdown__line">
         <dt>Subtotal</dt>
-        <dd>Q {{ formatMoney(subtotal) }}</dd>
+        <dd>{{ formatMoney(subtotal) }}</dd>
       </div>
 
       <div v-if="descuento > 0" class="tax-breakdown__line">
         <dt>Descuento</dt>
-        <dd>- Q {{ formatMoney(descuento) }}</dd>
+        <dd>- {{ formatMoney(descuento) }}</dd>
       </div>
 
       <div class="tax-breakdown__line">
@@ -18,19 +18,20 @@
           <span v-if="isExempt" class="tax-breakdown__exempt-badge">Exenta de IVA</span>
           <span v-else>IVA ({{ taxRatePercent }}%)</span>
         </dt>
-        <dd>Q {{ formatMoney(impuesto) }}</dd>
+        <dd>{{ formatMoney(impuesto) }}</dd>
       </div>
     </dl>
 
     <div class="tax-breakdown__total">
       <span>Total</span>
-      <span>Q {{ formatMoney(total) }}</span>
+      <span>{{ formatMoney(total) }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useCurrency } from '@/features/currency';
 
 /**
  * Desglose tributario de una venta (subtotal, IVA, total).
@@ -67,9 +68,7 @@ function round2(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function formatMoney(value: number): string {
-  return Number.isFinite(value) ? value.toFixed(2) : '0.00';
-}
+const { formatCurrency: formatMoney } = useCurrency();
 
 const taxRatePercent = computed(() => round2(props.taxRate));
 const impuesto = computed(() =>

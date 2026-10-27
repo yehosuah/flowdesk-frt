@@ -110,7 +110,7 @@
                     v-if="columnasVisibles.precio"
                     data-label="Precio c/u"
                   >
-                    Q{{ formatPrice(producto.precio) }}
+                    {{ formatPrice(producto.precio) }}
                   </td>
 
                   <td
@@ -281,6 +281,7 @@
 </template>
 
 <script setup lang="ts">
+import { useCurrency } from '@/features/currency';
 import {
   ref,
   computed,
@@ -340,13 +341,7 @@ async function onImported() {
 }
 
 
-function formatPrice(
-  value: number,
-): string {
-  return Number.isFinite(value)
-    ? value.toFixed(2)
-    : '0.00';
-}
+const { formatCurrency: formatPrice } = useCurrency();
 
 
 function formatQuantity(
