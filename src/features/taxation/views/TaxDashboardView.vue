@@ -72,11 +72,10 @@
         <form class="tax-rate-form" @submit.prevent="saveCommercialRate">
           <label for="commercial-tax-rate">Tasa (%)</label>
           <input id="commercial-tax-rate" v-model.number="commercialRate" type="number" min="0" max="100" step="0.01" required />
-          <Button variant="primary" size="sm" :disabled="isSavingCommercialRate">
+          <Button type="submit" variant="primary" size="sm" :disabled="isSavingCommercialRate">
             {{ isSavingCommercialRate ? 'Guardando...' : 'Guardar tasa' }}
           </Button>
         </form>
-        <p v-if="commercialRateFeedback" :class="commercialRateSaved ? 'tax-rate-success' : 'tax-rate-error'">{{ commercialRateFeedback }}</p>
       </section>
 
       <!-- Estado de Error -->
@@ -307,6 +306,7 @@ import {
 } from '../profileApi';
 import type { TaxPeriodMetrics, TaxProfile } from '../types';
 import { useAuth } from '@/composables/useAuth';
+import { useToast } from '@/composables/useToast';
 
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
 const selectedYear = ref<number>(new Date().getFullYear());
@@ -317,8 +317,7 @@ const { role } = useAuth();
 const isAdmin = computed(() => role.value === 'admin');
 const commercialRate = ref<number | null>(null);
 const isSavingCommercialRate = ref(false);
-const commercialRateFeedback = ref('');
-const commercialRateSaved = ref(false);
+const { success: showSuccess, error: showError } = useToast();
 
 // Perfil tributario
 const activeProfile = ref<TaxProfile | null>(null);
@@ -332,23 +331,19 @@ async function loadCommercialRate() {
   try {
     commercialRate.value = Number((await fetchCommercialTaxConfiguration()).tasa_impuesto);
   } catch {
-    commercialRateFeedback.value = 'No se pudo cargar la tasa configurada.';
-    commercialRateSaved.value = false;
+    showError('No se pudo cargar la tasa configurada.');
   }
 }
 
 async function saveCommercialRate() {
   if (commercialRate.value === null || commercialRate.value < 0 || commercialRate.value > 100) return;
   isSavingCommercialRate.value = true;
-  commercialRateFeedback.value = '';
   try {
     const response = await updateCommercialTaxConfiguration(commercialRate.value);
     commercialRate.value = Number(response.tasa_impuesto);
-    commercialRateFeedback.value = 'Tasa de IVA actualizada correctamente.';
-    commercialRateSaved.value = true;
+    showSuccess('Tasa de IVA actualizada correctamente.');
   } catch {
-    commercialRateFeedback.value = 'No se pudo actualizar la tasa de IVA.';
-    commercialRateSaved.value = false;
+    showError('No se pudo actualizar la tasa de IVA.');
   } finally {
     isSavingCommercialRate.value = false;
   }
@@ -625,8 +620,6 @@ onMounted(() => {
 .tax-rate-form { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .tax-rate-form label { font-size: .82rem; font-weight: 600; }
 .tax-rate-form input { width: 90px; padding: 8px 10px; border: 1px solid var(--color-bg-border); border-radius: 7px; }
-.tax-rate-success { color: var(--color-success-text) !important; }
-.tax-rate-error { color: var(--color-danger-text) !important; }
 
 .tax-dashboard-header {
   margin-bottom: 24px;
