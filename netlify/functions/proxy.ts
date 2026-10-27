@@ -42,7 +42,8 @@ export const handler: Handler = async (event) => {
       statusCode: 503,
       headers: JSON_HEADERS,
       body: JSON.stringify({
-        detail: 'El servicio no está disponible temporalmente.',
+        detail:
+          'El servicio no está disponible temporalmente.',
       }),
     };
   }
@@ -52,13 +53,18 @@ export const handler: Handler = async (event) => {
     '',
   );
 
-  // Construir la URL sin permitir cambiar el host configurado.
+  // Construir la URL sin permitir cambiar
+  // el host configurado.
   const url = new URL(apiBase.toString());
 
   const basePath = url.pathname.replace(/\/+$/, '');
-  const requestPath = path.startsWith('/') ? path : `/${path}`;
 
-  // Rechazar rutas que puedan alterar el destino del proxy.
+  const requestPath = path.startsWith('/')
+    ? path
+    : `/${path}`;
+
+  // Rechazar rutas que puedan alterar
+  // el destino del proxy.
   const segments = requestPath.split('/');
 
   if (
@@ -66,8 +72,13 @@ export const handler: Handler = async (event) => {
     segments.some((segment) => {
       try {
         const decoded = decodeURIComponent(segment);
-        return decoded === '.' || decoded === '..' ||
-          decoded.includes('/') || decoded.includes('\\');
+
+        return (
+          decoded === '.' ||
+          decoded === '..' ||
+          decoded.includes('/') ||
+          decoded.includes('\\')
+        );
       } catch {
         return true;
       }
@@ -84,7 +95,8 @@ export const handler: Handler = async (event) => {
 
   url.pathname = `${basePath}${requestPath}`;
 
-  // Conservar los parámetros simples y repetidos.
+  // Conservar los parámetros simples
+  // y los parámetros repetidos.
   const queryParams =
     event.multiValueQueryStringParameters ??
     event.queryStringParameters ??
@@ -100,10 +112,32 @@ export const handler: Handler = async (event) => {
     }
   }
 
+  // Recuperar el encabezado de autenticación.
   const authHeader =
     event.headers.authorization ||
     event.headers.Authorization;
 
+  // SCRUM-730:
+  // Conservar el Content-Type original.
+  // Para multipart/form-data es necesario
+  // preservar el boundary de la solicitud.
+  const contentType =
+    event.headers['content-type'] ||
+    event.headers['Content-Type'];
+
+  // Preparar los encabezados que se
+  // enviarán al backend.
+  const requestHeaders: Record<string, string> = {};
+
+  if (contentType) {
+    requestHeaders['Content-Type'] = contentType;
+  }
+
+  if (authHeader) {
+    requestHeaders.Authorization = authHeader;
+  }
+
+  // Controlar el tiempo máximo de espera.
   const controller = new AbortController();
 
   const timeoutId = setTimeout(
@@ -112,18 +146,23 @@ export const handler: Handler = async (event) => {
   );
 
   try {
+    // No enviar cuerpo en solicitudes GET o HEAD.
+    const requestBody = ['GET', 'HEAD'].includes(
+      event.httpMethod.toUpperCase(),
+    )
+      ? undefined
+      : (event.body ?? undefined);
+
+    // Reenviar la solicitud al backend,
+    // conservando el tipo de contenido original.
     const response = await fetch(url.toString(), {
       signal: controller.signal,
       method: event.httpMethod,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authHeader ? { Authorization: authHeader } : {}),
-      },
-      body: ['GET', 'HEAD'].includes(event.httpMethod)
-        ? undefined
-        : (event.body ?? undefined),
+      headers: requestHeaders,
+      body: requestBody,
     });
 
+    // Recuperar la respuesta del backend.
     const data = await response.text();
 
     return {
@@ -132,6 +171,8 @@ export const handler: Handler = async (event) => {
       body: data,
     };
   } catch {
+    // No exponer errores internos,
+    // credenciales o detalles del servidor.
     return {
       statusCode: 502,
       headers: JSON_HEADERS,
@@ -141,6 +182,7 @@ export const handler: Handler = async (event) => {
       }),
     };
   } finally {
+    // Liberar recursos del temporizador.
     clearTimeout(timeoutId);
   }
 };
