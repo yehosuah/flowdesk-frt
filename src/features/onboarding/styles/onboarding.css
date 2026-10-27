@@ -16,6 +16,7 @@
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
 }
 
 .driver-popover-description {
@@ -23,6 +24,7 @@
   line-height: 1.5;
   color: #475569;
   margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 
 .driver-popover-footer {
