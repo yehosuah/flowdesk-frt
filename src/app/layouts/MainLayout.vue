@@ -145,7 +145,8 @@ watch(sidebarOpen, (isOpen) => {
 
 const navItems = [
   { name: 'inventory', label: 'Inventario', to: { name: 'inventory' }, icon: Package },
-  { name: 'inventorymovement', label: 'Movimiento de Inventario', to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
+  { name: 'sales', label: 'Ventas', to: { name: 'sales' }, icon: Receipt },
+  { name: 'inventorymovement', label: 'Movimientos de inventario', to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
   { name: 'tasks', label: 'Gestión de tareas', to: { name: 'tasks' }, icon: ClipboardList },
   { name: 'tasks-calendar', label: 'Calendario', to: { name: 'tasks-calendar' }, icon: Calendar },
   { name: 'superAdmin', label: 'Manejo de Cuentas', to: { name: 'superAdmin' }, icon: Shield },

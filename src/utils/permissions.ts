@@ -66,6 +66,7 @@ const PERMISSIONS: Record<Permission, AppRole[]> = {
 export const ROUTE_PERMISSION: Record<string, Permission> = {
   inventory: 'inventory.view',
   inventorymovement: 'movement.view',
+  sales: 'sales.create',
   tasks: 'tasks.view',
   'tasks-calendar': 'calendar.view',
   analytics: 'analytics.view',
