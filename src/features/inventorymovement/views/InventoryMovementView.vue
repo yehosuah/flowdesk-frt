@@ -4,9 +4,9 @@
       <div class="table-section">
         <div class="section-header">
           <div class="header-copy">
-            <h1 class="page-title">Movimiento de Inventario</h1>
+            <h1 class="page-title">{{ isSalesModule ? 'Ventas' : 'Movimiento de Inventario' }}</h1>
             <p class="page-subtitle">
-              Gestiona las entradas y salidas de tus productos
+              {{ isSalesModule ? 'Registra y consulta las operaciones de venta' : 'Gestiona las entradas, salidas y ajustes de tus productos' }}
             </p>
           </div>
 
@@ -25,7 +25,7 @@
               class="dropdown-menu"
             >
               <button
-                v-if="can('products.create')"
+                v-if="!isSalesModule && can('products.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('product')"
@@ -34,7 +34,7 @@
               </button>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('stock')"
@@ -51,10 +51,10 @@
                 Registrar Venta
               </button>
 
-              <div v-if="can('movement.create')" class="dropdown-divider"></div>
+              <div v-if="!isSalesModule && can('movement.create')" class="dropdown-divider"></div>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('adjustment')"
@@ -63,7 +63,7 @@
               </button>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('other')"
@@ -726,6 +726,7 @@ import {
 import {
   CalendarDays,
 } from 'lucide-vue-next';
+import { useRoute } from 'vue-router';
 
 import {
   fetchMovements,
@@ -768,6 +769,8 @@ import {
 import { useAuth } from '@/composables/useAuth';
 
 const { can } = useAuth();
+const route = useRoute();
+const isSalesModule = computed(() => route?.name === 'sales');
 
 const movimientos =
   ref<InventoryMovement[]>([]);
@@ -1521,6 +1524,9 @@ const movimientosFiltrados =
   computed(() =>
     movimientos.value.filter(
       movement => {
+        if (isSalesModule.value && !isSaleMovement(movement)) {
+          return false;
+        }
         if (
           filtroTipo.value ===
             'entrada' &&
