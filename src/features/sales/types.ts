@@ -37,7 +37,20 @@ export interface Sale {
   es_exenta: boolean;
   total: number;
   estado: string;
+  motivo_anulacion?: string | null;
+  anulada_por?: string | null;
+  anulada_en?: string | null;
   items: SaleItem[];
+}
+
+export const SALE_STATE_COMPLETED = 'completada';
+export const SALE_STATE_VOIDED = 'anulada';
+
+// Coincide con SaleVoid del backend: motivo obligatorio de 1 a 200 caracteres.
+export const SALE_VOID_REASON_MAX_LENGTH = 200;
+
+export interface SaleVoidPayload {
+  motivo: string;
 }
 
 export interface TaxConfiguration {
