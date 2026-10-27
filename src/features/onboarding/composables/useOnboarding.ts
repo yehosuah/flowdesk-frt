@@ -177,6 +177,11 @@ export function useOnboarding(options?: UseOnboardingOptions) {
 
     const driverObj = driver({
       showProgress: true,
+      animate: true,
+      smoothScroll: true,
+      stagePadding: 8,
+      stageRadius: 10,
+      overlayColor: 'rgba(15, 23, 42, 0.58)',
       progressText: copy.progress,
       nextBtnText: copy.next,
       prevBtnText: copy.previous,
