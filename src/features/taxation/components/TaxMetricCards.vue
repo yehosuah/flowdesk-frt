@@ -124,7 +124,9 @@ defineProps<{
   metrics: TaxPeriodMetrics;
 }>();
 
-const { formatCurrency } = useCurrency();
+const { formatCurrency: formatConfiguredCurrency } = useCurrency();
+const formatCurrency = (amount: number | undefined | null): string =>
+  formatConfiguredCurrency(amount, { useGrouping: true });
 </script>
 
 <style scoped>
