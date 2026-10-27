@@ -11,6 +11,10 @@
   z-index: 100000;
 }
 
+.driver-active-element {
+  scroll-margin: 24px;
+}
+
 .driver-popover-title {
   font-size: 1.05rem;
   font-weight: 700;
