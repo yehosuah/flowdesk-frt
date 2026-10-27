@@ -370,19 +370,25 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__brand {
-    height: 96px;
+    height: 82px;
     padding: 12px 10px;
+    transition: height 0.2s ease, padding 0.2s ease;
   }
 
   .sidebar__logo {
-    width: 54px;
+    width: 42px;
     height: auto;
+    max-width: 100%;
+    max-height: 52px;
+    object-fit: contain;
+    transition: width 0.2s ease, max-height 0.2s ease;
   }
 
   .sidebar__logo--full { display: none; }
 
   .sidebar:hover .sidebar__brand,
   .sidebar:focus-within .sidebar__brand {
+    height: 132px;
     padding: 14px 20px;
   }
 
@@ -394,7 +400,8 @@ async function cerrarSesion(): Promise<void> {
   .sidebar:hover .sidebar__logo--full,
   .sidebar:focus-within .sidebar__logo--full {
     display: block;
-    width: 150px;
+    width: 140px;
+    max-height: 82px;
   }
 
   .sidebar__nav {
@@ -462,19 +469,6 @@ async function cerrarSesion(): Promise<void> {
 }
 
 @media (max-height: 850px) and (min-width: 1001px) {
-  .sidebar__brand {
-    height: 88px;
-    padding: 10px 8px;
-  }
-
-  .sidebar__logo--full {
-    width: 120px;
-  }
-
-  .sidebar__logo--compact {
-    width: 54px;
-  }
-
   .sidebar__nav {
     padding-top: 5px;
     padding-bottom: 8px;
