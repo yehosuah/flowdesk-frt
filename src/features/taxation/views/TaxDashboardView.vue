@@ -5,6 +5,7 @@
         <div class="tax-header-title-row">
           <h1 class="tax-title">Dashboard Tributario</h1>
           <button
+            v-if="false"
             type="button"
             class="tax-regime-badge"
             :class="{ 'tax-regime-badge--inactive': activeProfile && !activeProfile.active }"
@@ -26,6 +27,7 @@
           variant="secondary"
           size="sm"
           class="action-btn"
+          type="button"
           @click="openProfileModal"
         >
           <ShieldCheck :size="15" />
