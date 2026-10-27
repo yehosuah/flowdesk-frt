@@ -24,9 +24,14 @@
     >
       <div class="sidebar__brand">
         <img
+          src="../../logo/logoSolo.PNG"
+          alt="FlowDesk"
+          class="sidebar__logo sidebar__logo--compact"
+        />
+        <img
           src="../../logo/logo.png"
           alt="FlowDesk"
-          class="sidebar__logo"
+          class="sidebar__logo sidebar__logo--full"
         />
       </div>
 
@@ -371,17 +376,24 @@ async function cerrarSesion(): Promise<void> {
 
   .sidebar__logo {
     width: 42px;
-    object-fit: cover;
-    object-position: left center;
+    height: auto;
   }
+
+  .sidebar__logo--full { display: none; }
 
   .sidebar:hover .sidebar__brand,
   .sidebar:focus-within .sidebar__brand {
     padding: 20px;
   }
 
-  .sidebar:hover .sidebar__logo,
-  .sidebar:focus-within .sidebar__logo {
+  .sidebar:hover .sidebar__logo--compact,
+  .sidebar:focus-within .sidebar__logo--compact {
+    display: none;
+  }
+
+  .sidebar:hover .sidebar__logo--full,
+  .sidebar:focus-within .sidebar__logo--full {
+    display: block;
     width: 150px;
   }
 
@@ -560,6 +572,14 @@ async function cerrarSesion(): Promise<void> {
 
   .sidebar__logo {
     width: 110px;
+  }
+
+  .sidebar__logo--compact {
+    display: none;
+  }
+
+  .sidebar__logo--full {
+    display: block;
   }
 
   .sidebar__nav {
