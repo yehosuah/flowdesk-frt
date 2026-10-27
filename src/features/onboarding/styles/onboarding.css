@@ -21,6 +21,7 @@
   color: #0f172a;
   margin-bottom: 8px;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .driver-popover-description {
