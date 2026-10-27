@@ -370,8 +370,8 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__brand {
-    height: 116px;
-    padding: 18px 10px;
+    height: 96px;
+    padding: 12px 10px;
   }
 
   .sidebar__logo {
@@ -383,7 +383,7 @@ async function cerrarSesion(): Promise<void> {
 
   .sidebar:hover .sidebar__brand,
   .sidebar:focus-within .sidebar__brand {
-    padding: 20px;
+    padding: 14px 20px;
   }
 
   .sidebar:hover .sidebar__logo--compact,
@@ -398,7 +398,8 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__nav {
-    padding: 10px 8px;
+    gap: 4px;
+    padding: 6px 8px 10px;
   }
 
   .sidebar__link {
@@ -462,8 +463,8 @@ async function cerrarSesion(): Promise<void> {
 
 @media (max-height: 850px) and (min-width: 1001px) {
   .sidebar__brand {
-    height: 150px;
-    padding: 14px 18px;
+    height: 88px;
+    padding: 10px 8px;
   }
 
   .sidebar__logo--full {
@@ -475,9 +476,9 @@ async function cerrarSesion(): Promise<void> {
   }
 
   .sidebar__nav {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    gap: 1px;
+    padding-top: 5px;
+    padding-bottom: 8px;
+    gap: 3px;
   }
 
   .sidebar__link {
