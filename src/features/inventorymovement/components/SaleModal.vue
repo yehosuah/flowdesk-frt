@@ -124,9 +124,6 @@
             :is-exempt="form.es_exenta"
           />
           <p v-else-if="taxConfigError" class="tax-config-error full-width">{{ taxConfigError }}</p>
-          <p v-if="isTemporaryTaxRate" class="tax-config-warning full-width">
-            Vista previa temporal al 12%. El backend todavía puede registrar la venta con IVA 0%.
-          </p>
 
           <div v-if="error" class="error-alert full-width">{{ error }}</div>
 
@@ -172,7 +169,6 @@ const form = reactive({
   tasa_iva: 12,
 });
 
-const defaultTaxRate = ref<number>(12);
 const selectedProduct = computed(() => props.products.find(p => p.id === form.producto_id) ?? null);
 
 const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
@@ -182,7 +178,7 @@ const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
 // Si no, se utiliza la tasa configurada o personalizada para esta venta.
 const effectiveTaxRate = computed(() => {
   if (form.es_exenta) return 0;
-  if (isBlank(form.tasa_iva)) return 0;
+  if (isBlank(form.tasa_iva)) return null;
   return Number(form.tasa_iva);
 });
 
@@ -196,29 +192,22 @@ const subtotalPreview = computed(() => {
 const isSubmitting = ref(false);
 const error = ref('');
 
-// Fallback temporal solo para la vista previa mientras se corrige el backend.
-const TEMPORARY_TAX_RATE_FALLBACK = 12;
 const taxRate = ref<number | null>(null);
 const taxConfigError = ref('');
-const isTemporaryTaxRate = ref(false);
 
 onMounted(async () => {
   try {
     const config = await fetchTaxConfiguration();
     const configuredRate = Number(config.tasa_impuesto);
-    isTemporaryTaxRate.value = configuredRate === 0;
-    const resolvedRate = isTemporaryTaxRate.value
-      ? TEMPORARY_TAX_RATE_FALLBACK
-      : configuredRate;
-    taxRate.value = resolvedRate;
-    defaultTaxRate.value = resolvedRate;
-    form.tasa_iva = resolvedRate;
+    if (!Number.isFinite(configuredRate) || configuredRate < 0 || configuredRate > 100) {
+      throw new Error('La configuración tributaria no contiene una tasa válida.');
+    }
+    taxRate.value = configuredRate;
+    form.tasa_iva = configuredRate;
   } catch (err) {
-    // Si falla la consulta de la configuración, se permite editar manualmente.
-    taxConfigError.value = 'No se pudo cargar la tasa de IVA configurada. Puedes ingresar el porcentaje manualmente.';
-    taxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
-    defaultTaxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
-    form.tasa_iva = TEMPORARY_TAX_RATE_FALLBACK;
+    taxConfigError.value = 'No se pudo cargar una tasa de IVA válida. La venta no puede registrarse hasta sincronizar la configuración tributaria.';
+    taxRate.value = null;
+    form.tasa_iva = '';
   }
 });
 
@@ -255,14 +244,9 @@ function validateForm(): boolean {
     isValid = false;
   }
 
-  if (!form.es_exenta) {
-    if (isBlank(form.tasa_iva)) {
-      errors.tasa_iva = 'Ingresa el porcentaje de IVA.';
-      isValid = false;
-    } else if (Number(form.tasa_iva) < 0 || Number(form.tasa_iva) > 100) {
-      errors.tasa_iva = 'El porcentaje de IVA debe estar entre 0% y 100%.';
-      isValid = false;
-    }
+  if (!form.es_exenta && taxRate.value === null) {
+    errors.tasa_iva = 'La configuración tributaria no está disponible.';
+    isValid = false;
   }
 
   return isValid;
