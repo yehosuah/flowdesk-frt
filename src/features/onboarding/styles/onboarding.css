@@ -89,6 +89,12 @@
   color: #0f172a;
 }
 
+.driver-popover button:focus-visible,
+.driver-popover-close-btn:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px;
+}
+
 /* Adaptación responsive para celulares y tablets */
 @media (max-width: 1000px) {
   .driver-popover {
