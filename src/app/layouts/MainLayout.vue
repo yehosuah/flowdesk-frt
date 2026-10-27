@@ -280,9 +280,9 @@ async function cerrarSesion(): Promise<void> {
    Ventas necesita contraste propio para no desaparecer entre los enlaces. */
 [data-theme='light'] .sidebar__link--sales,
 :root:not([data-theme='dark']) .sidebar__link--sales {
-  background: #f2b84b;
-  border-color: #f8d98b;
-  color: #1e2738;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
 }
 
 [data-theme='light'] .sidebar__link--sales:hover,

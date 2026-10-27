@@ -5,7 +5,7 @@
     <div class="mobile-header">
       <div class="page-heading-row">
         <h1 class="page-title">Inventario</h1>
-        <button class="btn-sales-shortcut" type="button" @click="goToSales">
+        <button v-if="false" class="btn-sales-shortcut" type="button" @click="goToSales">
           <ShoppingCart :size="16" aria-hidden="true" />
           <span aria-hidden="true">▣</span> Registrar venta
         </button>
@@ -24,7 +24,7 @@
         <div class="desktop-header">
           <div class="page-heading-row">
             <h1 class="page-title">Inventario</h1>
-            <button class="btn-sales-shortcut" type="button" @click="goToSales">
+            <button v-if="false" class="btn-sales-shortcut" type="button" @click="goToSales">
               <ShoppingCart :size="16" aria-hidden="true" />
               <span aria-hidden="true">▣</span> Registrar venta
             </button>
@@ -294,8 +294,6 @@
 
 <script setup lang="ts">
 import { useCurrency } from '@/features/currency';
-import { useRouter } from 'vue-router';
-import { ShoppingCart } from 'lucide-vue-next';
 import {
   ref,
   computed,
@@ -356,11 +354,6 @@ async function onImported() {
 
 
 const { formatCurrency: formatPrice } = useCurrency();
-const router = useRouter();
-
-function goToSales() {
-  router.push({ name: 'sales' });
-}
 
 
 function formatQuantity(
