@@ -8,13 +8,13 @@
             v-if="false"
             type="button"
             class="tax-regime-badge"
-            :class="{ 'tax-regime-badge--inactive': activeProfile && !activeProfile.active }"
+            :class="{ 'tax-regime-badge--inactive': activeProfile?.active === false }"
             @click="openProfileModal"
             title="Haz clic para ver o gestionar el perfil tributario"
           >
             <ShieldCheck :size="14" class="badge-icon" />
             <span>{{ activeProfile?.name || 'Régimen General IVA (12%)' }}</span>
-            <span class="badge-status-dot" :class="activeProfile && !activeProfile.active ? 'dot--inactive' : 'dot--active'"></span>
+            <span class="badge-status-dot" :class="activeProfile?.active === false ? 'dot--inactive' : 'dot--active'"></span>
           </button>
         </div>
         <p class="tax-subtitle">
