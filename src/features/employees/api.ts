@@ -40,10 +40,13 @@ export function fetchRoles(): Promise<{ id: number; name: string; description: s
 }
 
 export interface UpdateEmployeePayload {
+  username?: string;
   role_id?: number;
   is_active?: boolean;
 }
 
+// El backend aplica todos los campos en una sola transacción: si uno es
+// rechazado, no se guarda ninguno.
 export function updateEmployee(userId: string, payload: UpdateEmployeePayload): Promise<UserResponse> {
   return apiClient.request<UserResponse>(`/api/v1/users/${userId}`, {
     method: 'PUT',

@@ -223,12 +223,13 @@ import {
 
 import {
   updateEmployee,
-  updateEmployeeStatus,
   fetchRoles,
+  type UpdateEmployeePayload,
   type UserResponse,
 } from '@/features/employees/api';
 
 import {
+  ApiError,
   getApiErrorMessage,
 } from '@/services/apiClient';
 
@@ -264,6 +265,25 @@ interface RoleOption {
 const EXCLUDED_ROLES = [
   'superadmin',
 ];
+
+const USERNAME_MAX_LENGTH = 50;
+
+const BACKEND_MESSAGES: Record<string, string> = {
+  'Username already registered':
+    'Ese nombre de usuario ya está registrado.',
+  'Cannot change your own role':
+    'No puedes cambiar tu propio rol.',
+  'Cannot change your own status':
+    'No puedes cambiar tu propio estado.',
+  'Cannot modify a superadmin user':
+    'No se puede modificar a un superadministrador.',
+  'Cannot assign superadmin role':
+    'No se puede asignar el rol de superadministrador.',
+  'Role not found':
+    'El rol seleccionado ya no existe.',
+  'User not found':
+    'El empleado ya no existe o no pertenece a tu empresa.',
+};
 
 const form = reactive<FormData>({
   username:
@@ -386,6 +406,14 @@ function validate(): boolean {
       'El nombre de usuario es obligatorio.';
 
     ok = false;
+  } else if (
+    form.username.trim().length >
+    USERNAME_MAX_LENGTH
+  ) {
+    errors.username =
+      `El nombre de usuario no puede superar ${USERNAME_MAX_LENGTH} caracteres.`;
+
+    ok = false;
   }
 
   if (!form.role_id) {
@@ -396,6 +424,32 @@ function validate(): boolean {
   }
 
   return ok;
+}
+
+function translateError(
+  err: unknown,
+): string {
+  if (!(err instanceof ApiError)) {
+    return getApiErrorMessage(err);
+  }
+
+  // Sin respuesta del servidor (timeout o red) no se sabe si el
+  // cambio llegó a guardarse.
+  if (
+    err.status === 0 ||
+    err.status === 408
+  ) {
+    return `${err.message} Recarga la lista para confirmar si los cambios se guardaron.`;
+  }
+
+  const detail =
+    BACKEND_MESSAGES[err.message] ??
+    (err.status === 403
+      ? 'No tienes permisos para modificar este empleado.'
+      : err.message);
+
+  // El backend rechaza la actualización completa, nunca a medias.
+  return `No se guardó ningún cambio. ${detail}`;
 }
 
 async function submit() {
@@ -414,10 +468,7 @@ async function submit() {
   isSubmitting.value = true;
 
   try {
-    const payload: {
-      username?: string;
-      role_id?: number;
-    } = {};
+    const payload: UpdateEmployeePayload = {};
 
     if (
       form.username.trim() !==
@@ -436,34 +487,26 @@ async function submit() {
     }
 
     if (
-      Object.keys(payload).length >
-      0
-    ) {
-      await updateEmployee(
-        props.employee.id,
-        payload,
-      );
-    }
-
-    if (
       form.is_active !==
       props.employee.is_active
     ) {
-      await updateEmployeeStatus(
-        props.employee.id,
-        {
-          is_active:
-            form.is_active,
-        },
-      );
+      payload.is_active =
+        form.is_active;
     }
+
+    // Una sola llamada: antes el estado se enviaba en un PATCH aparte y,
+    // si fallaba, el rol quedaba cambiado aunque se mostrara un error.
+    await updateEmployee(
+      props.employee.id,
+      payload,
+    );
 
     emit('updated');
     emit('close');
 
   } catch (err) {
     submitError.value =
-      getApiErrorMessage(err);
+      translateError(err);
 
   } finally {
     isSubmitting.value = false;
