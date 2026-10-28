@@ -19,22 +19,31 @@
 
     <div class="display">
       <div v-if="active === 'negocios'" class="list">
-        <p class="section-label">
+        <p v-if="!isLoadingCompanies && !companiesError" class="section-label">
           {{ negocios.length }}
           {{ negocios.length === 1 ? 'negocio registrado' : 'negocios registrados' }}
         </p>
-        <div v-if="negocios.length === 0" class="empty-businesses">
-          No hay empresas creadas en esta sesion.
+        <div v-if="isLoadingCompanies" class="empty-businesses" data-test="companies-loading">
+          Cargando empresas...
         </div>
-        <div v-for="negocio in negocios" :key="negocio.id" class="item">
-          <div>
-            <div class="item-name">{{ negocio.name }}</div>
-            <div class="item-meta">{{ negocio.schema_name }}</div>
+        <div v-else-if="companiesError" class="empty-businesses empty-businesses--error" data-test="companies-error">
+          <span>{{ companiesError }}</span>
+          <button class="btn-retry" type="button" @click="loadCompanies">Reintentar</button>
+        </div>
+        <div v-else-if="negocios.length === 0" class="empty-businesses">
+          No hay empresas registradas.
+        </div>
+        <template v-else>
+          <div v-for="negocio in negocios" :key="negocio.id" class="item">
+            <div>
+              <div class="item-name">{{ negocio.name }}</div>
+              <div class="item-meta">{{ negocio.schema_name }}</div>
+            </div>
+            <span :class="['business-status', negocio.is_active ? 'business-status--active' : 'business-status--inactive']">
+              {{ negocio.is_active ? 'Activa' : 'Inactiva' }}
+            </span>
           </div>
-          <span :class="['business-status', negocio.is_active ? 'business-status--active' : 'business-status--inactive']">
-            {{ negocio.is_active ? 'Activa' : 'Inactiva' }}
-          </span>
-        </div>
+        </template>
       </div>
 
       <div v-if="active === 'usuarios'">
@@ -43,7 +52,10 @@
         </p>
         <div class="table-container">
           <div v-if="isLoading" class="table-empty">Cargando usuarios...</div>
-          <div v-else-if="loadError" class="table-empty table-empty--error">{{ loadError }}</div>
+          <div v-else-if="loadError" class="table-empty table-empty--error" data-test="users-error">
+            <span>{{ loadError }}</span>
+            <button class="btn-retry" type="button" @click="loadUsers">Reintentar</button>
+          </div>
           <table v-else class="emp-table">
             <thead>
               <tr>
@@ -88,15 +100,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { fetchEmployees, type UserResponse } from '@/features/employees/api';
-import { type CompanyResponse } from '@/features/roles/api';
+import { fetchCompanies, type CompanyResponse } from '@/features/roles/api';
 import CreateCompanyModal from '@/features/roles/components/CreateCompanyModal.vue';
 import { ApiError, getApiErrorMessage } from '@/services/apiClient';
 
-const SESSION_COMPANIES_KEY = 'flowdesk.createdCompanies';
 const active = ref<'negocios' | 'usuarios'>('negocios');
-const negocios = ref<CompanyResponse[]>(loadSessionCompanies());
+const negocios = ref<CompanyResponse[]>([]);
+const isLoadingCompanies = ref(false);
+const companiesError = ref('');
 const usuarios = ref<UserResponse[]>([]);
 const isLoading = ref(false);
 const loadError = ref('');
@@ -105,20 +118,26 @@ const showCreateCompanyModal = ref(false);
 const successMsg = ref('');
 const activeUsersCount = computed(() => usuarios.value.filter(user => user.is_active).length);
 
-function loadSessionCompanies(): CompanyResponse[] {
-  try {
-    const savedCompanies = sessionStorage.getItem(SESSION_COMPANIES_KEY);
-    if (!savedCompanies) return [];
-
-    const parsedCompanies = JSON.parse(savedCompanies) as unknown;
-    return Array.isArray(parsedCompanies) ? parsedCompanies as CompanyResponse[] : [];
-  } catch {
-    return [];
+// /companies y /auth/register son exclusivos del superadmin en el backend;
+// un 403 significa que la sesión no tiene ese rol.
+function translateError(error: unknown, resource: string): string {
+  if (error instanceof ApiError && error.status === 403) {
+    return `Solo el superadministrador puede consultar ${resource}.`;
   }
+  return getApiErrorMessage(error);
 }
 
-function persistSessionCompanies(): void {
-  sessionStorage.setItem(SESSION_COMPANIES_KEY, JSON.stringify(negocios.value));
+async function loadCompanies(): Promise<void> {
+  isLoadingCompanies.value = true;
+  companiesError.value = '';
+
+  try {
+    negocios.value = await fetchCompanies();
+  } catch (error) {
+    companiesError.value = translateError(error, 'las empresas');
+  } finally {
+    isLoadingCompanies.value = false;
+  }
 }
 
 async function setActiveTab(tab: 'negocios' | 'usuarios'): Promise<void> {
@@ -137,15 +156,15 @@ async function loadUsers(): Promise<void> {
     usuarios.value = await fetchEmployees();
     hasLoadedUsers.value = true;
   } catch (error) {
-    loadError.value = error instanceof ApiError && error.status >= 500
-      ? 'No se pudieron cargar los usuarios. El endpoint de usuarios aun no esta disponible para superadmin.'
-      : getApiErrorMessage(error);
+    loadError.value = translateError(error, 'los usuarios');
   } finally {
     isLoading.value = false;
   }
 }
 
 function onCompanyCreated(company: CompanyResponse): void {
+  // La respuesta del registro ya es la empresa guardada; se agrega al inicio
+  // porque el backend lista las empresas de la más reciente a la más antigua.
   const existingIndex = negocios.value.findIndex(negocio => negocio.id === company.id);
 
   if (existingIndex >= 0) {
@@ -154,10 +173,11 @@ function onCompanyCreated(company: CompanyResponse): void {
     negocios.value.unshift(company);
   }
 
-  persistSessionCompanies();
   successMsg.value = 'Empresa creada. Se envio el correo de invitacion al administrador.';
   setTimeout(() => { successMsg.value = ''; }, 5000);
 }
+
+onMounted(loadCompanies);
 
 function roleBadgeClass(role: string): string {
   if (role === 'admin') return 'role-badge--admin';
@@ -369,8 +389,23 @@ function roleBadgeClass(role: string): string {
   font-size: .88rem;
 }
 
-.table-empty--error {
+.table-empty--error,
+.empty-businesses--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   color: var(--color-danger-text);
+}
+
+.btn-retry {
+  padding: 6px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .role-badge {

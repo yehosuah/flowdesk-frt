@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { getApiErrorMessage } from '@/services/apiClient';
+import { ApiError, getApiErrorMessage } from '@/services/apiClient';
 import { createCompany, type CompanyResponse, type CreateCompanyPayload } from '@/features/roles/api';
 
 const emit = defineEmits<{ close: []; created: [company: CompanyResponse] }>();
@@ -121,6 +121,13 @@ function validate(): boolean {
   return isValid;
 }
 
+function translateError(error: unknown): string {
+  if (error instanceof ApiError && error.status === 403) {
+    return 'Solo el superadministrador puede crear empresas.';
+  }
+  return getApiErrorMessage(error);
+}
+
 async function submit(): Promise<void> {
   submitError.value = '';
 
@@ -140,7 +147,7 @@ async function submit(): Promise<void> {
     emit('created', company);
     emit('close');
   } catch (error) {
-    submitError.value = getApiErrorMessage(error);
+    submitError.value = translateError(error);
   } finally {
     isSubmitting.value = false;
   }
