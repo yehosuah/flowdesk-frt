@@ -32,14 +32,18 @@ import {
   deleteTask,
 } from '@/features/tasks/api';
 
+const TASK_ID = '3f1c2a9e-7b1d-4c5e-9a0b-1d2e3f4a5b6c';
+
 const task: Task = {
-  id: 1,
-  title: 'Revisar inventario',
-  description: 'Verificar existencias',
-  assignee: 'Empleado de prueba',
-  priority: 'Alta',
-  status: 'Pendiente',
-  dueDate: '2026-10-30',
+  id: TASK_ID,
+  usuario_id: '9a8b7c6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d',
+  titulo: 'Revisar inventario',
+  descripcion: 'Verificar existencias',
+  fecha_limite: '2026-10-30T00:00:00',
+  estado: 'pendiente',
+  prioridad: 'alta',
+  created_at: '2026-10-20T12:00:00',
+  updated_at: '2026-10-20T12:00:00',
 };
 
 describe('SCRUM-809: Integración API de tareas', () => {
@@ -67,8 +71,8 @@ describe('SCRUM-809: Integración API de tareas', () => {
     mocks.request.mockResolvedValue([task]);
 
     await fetchTasks(
-      'Pendiente',
-      'Alta',
+      'en_progreso',
+      'urgente',
       'revisar inventario',
     );
 
@@ -83,11 +87,11 @@ describe('SCRUM-809: Integración API de tareas', () => {
 
     expect(
       parsedUrl.searchParams.get('estado'),
-    ).toBe('Pendiente');
+    ).toBe('en_progreso');
 
     expect(
       parsedUrl.searchParams.get('prioridad'),
-    ).toBe('Alta');
+    ).toBe('urgente');
 
     expect(
       parsedUrl.searchParams.get('search'),
@@ -102,12 +106,12 @@ describe('SCRUM-809: Integración API de tareas', () => {
   it('consulta una tarea por identificador', async () => {
     mocks.request.mockResolvedValue(task);
 
-    const result = await getTask('1');
+    const result = await getTask(TASK_ID);
 
     expect(result).toEqual(task);
 
     expect(mocks.request).toHaveBeenCalledWith(
-      '/api/v1/tasks/1',
+      `/api/v1/tasks/${TASK_ID}`,
       {
         method: 'GET',
         auth: true,
@@ -117,12 +121,10 @@ describe('SCRUM-809: Integración API de tareas', () => {
 
   it('crea una tarea mediante POST', async () => {
     const newTask: TaskCreate = {
-      title: 'Revisar inventario',
-      description: 'Verificar existencias',
-      assignee: 'Empleado de prueba',
-      priority: 'Alta',
-      status: 'Pendiente',
-      dueDate: '2026-10-30',
+      titulo: 'Revisar inventario',
+      descripcion: 'Verificar existencias',
+      prioridad: 'alta',
+      fecha_limite: '2026-10-30T00:00:00',
     };
 
     mocks.request.mockResolvedValue(task);
@@ -143,8 +145,8 @@ describe('SCRUM-809: Integración API de tareas', () => {
 
   it('actualiza una tarea mediante PUT', async () => {
     const changes: TaskUpdate = {
-      title: 'Inventario actualizado',
-      priority: 'Media',
+      titulo: 'Inventario actualizado',
+      prioridad: 'media',
     };
 
     mocks.request.mockResolvedValue({
@@ -152,12 +154,12 @@ describe('SCRUM-809: Integración API de tareas', () => {
       ...changes,
     });
 
-    const result = await updateTask('1', changes);
+    const result = await updateTask(TASK_ID, changes);
 
-    expect(result.title).toBe('Inventario actualizado');
+    expect(result.titulo).toBe('Inventario actualizado');
 
     expect(mocks.request).toHaveBeenCalledWith(
-      '/api/v1/tasks/1',
+      `/api/v1/tasks/${TASK_ID}`,
       {
         method: 'PUT',
         auth: true,
@@ -169,23 +171,23 @@ describe('SCRUM-809: Integración API de tareas', () => {
   it('actualiza el estado mediante PATCH', async () => {
     mocks.request.mockResolvedValue({
       ...task,
-      status: 'Completada',
+      estado: 'completada',
     });
 
     const result = await updateTaskStatus(
-      '1',
-      'Completada',
+      TASK_ID,
+      'completada',
     );
 
-    expect(result.status).toBe('Completada');
+    expect(result.estado).toBe('completada');
 
     expect(mocks.request).toHaveBeenCalledWith(
-      '/api/v1/tasks/1/status',
+      `/api/v1/tasks/${TASK_ID}/status`,
       {
         method: 'PATCH',
         auth: true,
         body: {
-          estado: 'Completada',
+          estado: 'completada',
         },
       },
     );
@@ -194,10 +196,10 @@ describe('SCRUM-809: Integración API de tareas', () => {
   it('elimina una tarea mediante DELETE', async () => {
     mocks.request.mockResolvedValue(undefined);
 
-    await deleteTask('1');
+    await deleteTask(TASK_ID);
 
     expect(mocks.request).toHaveBeenCalledWith(
-      '/api/v1/tasks/1',
+      `/api/v1/tasks/${TASK_ID}`,
       {
         method: 'DELETE',
         auth: true,
@@ -222,12 +224,10 @@ describe('SCRUM-809: Integración API de tareas', () => {
 
     await expect(
       createTask({
-        title: 'Nueva tarea',
-        description: 'Descripción',
-        assignee: 'Empleado',
-        priority: 'Media',
-        status: 'Pendiente',
-        dueDate: '2026-10-30',
+        titulo: 'Nueva tarea',
+        descripcion: 'Descripción',
+        prioridad: 'media',
+        fecha_limite: '2026-10-30T00:00:00',
       }),
     ).rejects.toThrow('No se pudo crear la tarea');
   });
@@ -235,7 +235,7 @@ describe('SCRUM-809: Integración API de tareas', () => {
   it('no envía filtros vacíos en la consulta', async () => {
     mocks.request.mockResolvedValue([]);
 
-    await fetchTasks('', '', '');
+    await fetchTasks(undefined, undefined, '');
 
     const [url] = mocks.request.mock.calls[0];
 

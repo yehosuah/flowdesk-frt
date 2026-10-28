@@ -1,7 +1,18 @@
 import { apiClient } from '@/services/apiClient';
-import type { Task, TaskCreate, TaskUpdate, TaskStatusUpdate } from './types';
+import type {
+  Task,
+  TaskCreate,
+  TaskPriority,
+  TaskStatus,
+  TaskStatusUpdate,
+  TaskUpdate,
+} from './types';
 
-export async function fetchTasks(estado?: string, prioridad?: string, search?: string): Promise<Task[]> {
+export async function fetchTasks(
+  estado?: TaskStatus,
+  prioridad?: TaskPriority,
+  search?: string,
+): Promise<Task[]> {
   const params = new URLSearchParams();
   if (estado) params.append('estado', estado);
   if (prioridad) params.append('prioridad', prioridad);
@@ -36,11 +47,13 @@ export async function updateTask(id: string, data: TaskUpdate): Promise<Task> {
   });
 }
 
-export async function updateTaskStatus(id: string, estado: string): Promise<Task> {
+export async function updateTaskStatus(id: string, estado: TaskStatus): Promise<Task> {
+  const body: TaskStatusUpdate = { estado };
+
   return apiClient.request<Task>(`/api/v1/tasks/${id}/status`, {
     method: 'PATCH',
     auth: true,
-    body: { estado },
+    body,
   });
 }
 
@@ -50,5 +63,3 @@ export async function deleteTask(id: string): Promise<void> {
     auth: true,
   });
 }
-
-
