@@ -316,7 +316,7 @@ const isLoading = ref<boolean>(true);
 const isExporting = ref<boolean>(false);
 const errorMessage = ref<string | null>(null);
 const { role } = useAuth();
-const isAdmin = computed(() => role.value === 'admin');
+const isAdmin = computed(() => role?.value === 'admin');
 const commercialRate = ref<number | null>(null);
 const isSavingCommercialRate = ref(false);
 const { success: showSuccess, error: showError } = useToast();

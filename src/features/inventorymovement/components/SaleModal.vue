@@ -88,7 +88,7 @@
               </div>
             </div>
             <div class="tax-rate-readonly">
-              {{ form.es_exenta ? 'Exenta' : `${form.tasa_iva}% (configurado por la empresa)` }}
+              {{ form.es_exenta ? 'Exenta' : form.tasa_iva === null ? 'No disponible' : `${form.tasa_iva}% (configurado por la empresa)` }}
             </div>
             <div v-if="false" class="input-suffix-wrapper">
               <input
