@@ -84,6 +84,7 @@ Los resultados anteriores forman parte de las 526 pruebas de la suite completa y
 
 - Las 526 pruebas automatizadas finalizaron satisfactoriamente.
 - No se identificaron regresiones en los escenarios cubiertos por las pruebas ejecutadas.
+- Los mensajes de error mostrados en la consola corresponden a escenarios simulados para verificar el manejo de errores.
 - La compilación de producción se completó correctamente.
 - Vite presentó una advertencia por el tamaño de algunos archivos JavaScript.
 - Los módulos `roles/api.ts` y `employees/api.ts` no registran cobertura porque las pruebas de componentes simulan la API.
