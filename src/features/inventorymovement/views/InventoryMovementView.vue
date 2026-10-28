@@ -1524,7 +1524,7 @@ const movimientosFiltrados =
   computed(() =>
     movimientos.value.filter(
       movement => {
-        if (isSalesModule.value && !isSaleMovement(movement)) {
+        if (isSalesModule.value && !isSaleMovement(movement) && !isVoidReversal(movement)) {
           return false;
         }
         if (
