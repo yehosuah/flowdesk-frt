@@ -41,5 +41,8 @@ export interface AuthSession {
 export interface BackendErrorResponse {
   detail?: string;
   message?: string;
-  errors?: Record<string, string | string[]>;
+  code?: string;
+  errors?:
+    | Record<string, string | string[]>
+    | unknown[];
 }

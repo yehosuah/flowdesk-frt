@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n';
 import type { BackendErrorResponse } from '@/features/auth/types';
 
 import { appEnv } from '@/services/env';
@@ -7,12 +8,41 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
 
 export class ApiError extends Error {
   status: number;
+  code: string | null;
 
-  constructor(status: number, detail: string) {
+  constructor(
+    status: number,
+    detail: string,
+    code: string | null = null,
+  ) {
     super(detail);
+
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
+}
+
+const BACKEND_ERROR_CODES: Record<string, string> = {
+  validation_error: 'errors.validationError',
+  request_error: 'errors.validationError',
+  unauthorized: 'errors.unauthorized',
+  not_authenticated: 'errors.unauthorized',
+  forbidden: 'errors.forbidden',
+  permission_denied: 'errors.forbidden',
+  not_found: 'errors.notFound',
+  internal_error: 'errors.serverError',
+  server_error: 'errors.serverError',
+};
+
+function translateBackendError(code: string): string | null {
+  const key = BACKEND_ERROR_CODES[code];
+
+  if (!key) {
+    return null;
+  }
+
+  return i18n.global.t(key);
 }
 
 interface RequestOptions extends Omit<RequestInit, 'body' | 'headers' | 'signal'> {
@@ -93,6 +123,14 @@ function buildUrl(path: string): string {
 
 export function getApiErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.code) {
+      const translated = translateBackendError(error.code);
+
+      if (translated) {
+        return translated;
+      }
+    }
+
     return error.message;
   }
 
@@ -186,7 +224,20 @@ export const apiClient = {
           appStore.clearSession();
         }
 
-        throw new ApiError(response.status, errorMessage);
+        const backendCode =
+          responsePayload !== null &&
+          typeof responsePayload === 'object' &&
+          !Array.isArray(responsePayload) &&
+          'code' in responsePayload &&
+          typeof responsePayload.code === 'string'
+            ? responsePayload.code
+            : null;
+
+        throw new ApiError(
+          response.status,
+          errorMessage,
+          backendCode,
+        );
       }
 
       return responsePayload as T;
