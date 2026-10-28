@@ -39,6 +39,7 @@ export default {
     taxation: 'Dashboard Tributario',
     profile: 'Mi Perfil',
     logout: 'Cerrar sesión',
+    sales: 'Ventas',
   },
 
 

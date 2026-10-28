@@ -39,6 +39,7 @@ export default {
     taxation: 'Tax Dashboard',
     profile: 'My Profile',
     logout: 'Log out',
+    sales: 'Sales',
   },
 
 
