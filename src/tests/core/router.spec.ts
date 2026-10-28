@@ -160,6 +160,29 @@ describe("protección de rutas", () => {
     expect(router.currentRoute.value.name).toBe("superAdmin");
   });
 
+  it.each(["admin", "manager", "employee"])(
+    "SCRUM-790: permite a %s acceder al módulo de ventas",
+    async (role) => {
+      mocks.isAuthenticated.value = true;
+      mocks.roleName.value = role;
+
+      await router.push("/sales");
+
+      expect(router.currentRoute.value.name).toBe("sales");
+    },
+  );
+
+  it("SCRUM-790: bloquea al superadmin cuando intenta acceder a ventas", async () => {
+    mocks.isAuthenticated.value = true;
+    mocks.roleName.value = "superadmin";
+    mocks.resolveHomeByRole.mockReturnValue("/superAdmin");
+
+    await router.push("/sales");
+
+    expect(mocks.resolveHomeByRole).toHaveBeenCalledWith("superadmin");
+    expect(router.currentRoute.value.name).toBe("superAdmin");
+  });
+
   it("SCRUM-728: pide iniciar sesión antes de entrar al módulo de superadmin", async () => {
     mocks.isAuthenticated.value = false;
 

@@ -8,6 +8,7 @@ describe("permissions", () => {
     
       ["inventory", ["admin", "manager", "employee"], ["superadmin"]],
       ["inventorymovement", ["admin", "manager", "employee"], ["superadmin"]],
+      ["sales", ["admin", "manager", "employee"], ["superadmin"]],
       ["tasks", ["admin", "manager", "employee"], ["superadmin"]],
       ["tasks-calendar", ["admin", "manager", "employee"], ["superadmin"]],
       ["analytics", ["admin", "manager"], ["employee", "superadmin"]],

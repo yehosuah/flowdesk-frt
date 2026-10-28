@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
+      // Las pruebas del router importan la app completa en beforeAll; con
+      // cobertura y todos los archivos en paralelo eso superaba a veces los
+      // 10 s por defecto y la suite fallaba de forma intermitente.
+      hookTimeout: 30_000,
     },
   };
 });
