@@ -63,12 +63,11 @@
           <div class="form-group full-width">
             <div class="tax-rate-header">
               <label class="form-label" for="sale-tax-rate">Porcentaje de IVA (%) *</label>
-              <div v-if="!form.es_exenta" class="tax-presets">
+              <div v-if="false" class="tax-presets">
                 <button
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 12 }"
-                  @click="setTaxRate(12)"
                 >
                   12% (General)
                 </button>
@@ -76,7 +75,6 @@
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 5 }"
-                  @click="setTaxRate(5)"
                 >
                   5% (Pequeño Contribuyente)
                 </button>
@@ -84,13 +82,15 @@
                   type="button"
                   class="preset-chip"
                   :class="{ 'preset-chip--active': form.tasa_iva === 0 }"
-                  @click="setTaxRate(0)"
                 >
                   0%
                 </button>
               </div>
             </div>
-            <div class="input-suffix-wrapper">
+            <div class="tax-rate-readonly">
+              {{ form.es_exenta ? 'Exenta' : form.tasa_iva === null ? 'No disponible' : `${form.tasa_iva}% (configurado por la empresa)` }}
+            </div>
+            <div v-if="false" class="input-suffix-wrapper">
               <input
                 id="sale-tax-rate"
                 v-model.number="form.tasa_iva"
@@ -124,9 +124,6 @@
             :is-exempt="form.es_exenta"
           />
           <p v-else-if="taxConfigError" class="tax-config-error full-width">{{ taxConfigError }}</p>
-          <p v-if="isTemporaryTaxRate" class="tax-config-warning full-width">
-            Vista previa temporal al 12%. El backend todavía puede registrar la venta con IVA 0%.
-          </p>
 
           <div v-if="error" class="error-alert full-width">{{ error }}</div>
 
@@ -169,10 +166,9 @@ const form = reactive({
   producto_id: '',
   cantidad: 1,
   es_exenta: false,
-  tasa_iva: 12,
+  tasa_iva: null as number | null,
 });
 
-const defaultTaxRate = ref<number>(12);
 const selectedProduct = computed(() => props.products.find(p => p.id === form.producto_id) ?? null);
 
 const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
@@ -182,14 +178,9 @@ const selectedProductMax = computed(() => selectedProduct.value?.cantidad);
 // Si no, se utiliza la tasa configurada o personalizada para esta venta.
 const effectiveTaxRate = computed(() => {
   if (form.es_exenta) return 0;
-  if (isBlank(form.tasa_iva)) return 0;
+  if (isBlank(form.tasa_iva)) return null;
   return Number(form.tasa_iva);
 });
-
-function setTaxRate(value: number): void {
-  form.tasa_iva = value;
-  errors.tasa_iva = '';
-}
 
 // Vista previa en vivo: se recalcula con producto/cantidad y tasa de IVA elegida.
 const subtotalPreview = computed(() => {
@@ -201,29 +192,22 @@ const subtotalPreview = computed(() => {
 const isSubmitting = ref(false);
 const error = ref('');
 
-// Fallback temporal solo para la vista previa mientras se corrige el backend.
-const TEMPORARY_TAX_RATE_FALLBACK = 12;
 const taxRate = ref<number | null>(null);
 const taxConfigError = ref('');
-const isTemporaryTaxRate = ref(false);
 
 onMounted(async () => {
   try {
     const config = await fetchTaxConfiguration();
     const configuredRate = Number(config.tasa_impuesto);
-    isTemporaryTaxRate.value = configuredRate === 0;
-    const resolvedRate = isTemporaryTaxRate.value
-      ? TEMPORARY_TAX_RATE_FALLBACK
-      : configuredRate;
-    taxRate.value = resolvedRate;
-    defaultTaxRate.value = resolvedRate;
-    form.tasa_iva = resolvedRate;
+    if (!Number.isFinite(configuredRate) || configuredRate < 0 || configuredRate > 100) {
+      throw new Error('La configuración tributaria no contiene una tasa válida.');
+    }
+    taxRate.value = configuredRate;
+    form.tasa_iva = configuredRate;
   } catch (err) {
-    // Si falla la consulta de la configuración, se permite editar manualmente.
-    taxConfigError.value = 'No se pudo cargar la tasa de IVA configurada. Puedes ingresar el porcentaje manualmente.';
-    taxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
-    defaultTaxRate.value = TEMPORARY_TAX_RATE_FALLBACK;
-    form.tasa_iva = TEMPORARY_TAX_RATE_FALLBACK;
+    taxConfigError.value = 'No se pudo cargar una tasa de IVA válida. La venta no puede registrarse hasta sincronizar la configuración tributaria.';
+    taxRate.value = null;
+    form.tasa_iva = null;
   }
 });
 
@@ -233,7 +217,7 @@ const errors = reactive({
   tasa_iva: '',
 });
 
-function isBlank(value: number | string): boolean {
+function isBlank(value: number | string | null): boolean {
   return String(value).trim() === '';
 }
 
@@ -260,14 +244,9 @@ function validateForm(): boolean {
     isValid = false;
   }
 
-  if (!form.es_exenta) {
-    if (isBlank(form.tasa_iva)) {
-      errors.tasa_iva = 'Ingresa el porcentaje de IVA.';
-      isValid = false;
-    } else if (Number(form.tasa_iva) < 0 || Number(form.tasa_iva) > 100) {
-      errors.tasa_iva = 'El porcentaje de IVA debe estar entre 0% y 100%.';
-      isValid = false;
-    }
+  if (!form.es_exenta && taxRate.value === null) {
+    errors.tasa_iva = 'La configuración tributaria no está disponible.';
+    isValid = false;
   }
 
   return isValid;
@@ -286,7 +265,6 @@ async function submit() {
     await createSale({
       items: [{ producto_id: form.producto_id, cantidad: Number(form.cantidad) }],
       es_exenta: form.es_exenta,
-      tasa_impuesto: form.es_exenta ? 0 : Number(form.tasa_iva),
     });
 
     emit('created');
@@ -301,6 +279,18 @@ async function submit() {
 
 <style scoped>
 /* Reutilizando los estilos base */
+.tax-rate-readonly {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-bg-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--color-bg-subtle, #f8fafc);
+  color: var(--color-text-secondary, #475569);
+  font-weight: 600;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

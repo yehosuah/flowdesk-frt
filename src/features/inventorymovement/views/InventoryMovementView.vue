@@ -4,9 +4,9 @@
       <div class="table-section">
         <div class="section-header">
           <div class="header-copy">
-            <h1 class="page-title">Movimiento de Inventario</h1>
+            <h1 class="page-title">{{ isSalesModule ? 'Ventas' : 'Movimiento de Inventario' }}</h1>
             <p class="page-subtitle">
-              Gestiona las entradas y salidas de tus productos
+              {{ isSalesModule ? 'Registra y consulta las operaciones de venta' : 'Gestiona las entradas, salidas y ajustes de tus productos' }}
             </p>
           </div>
 
@@ -14,18 +14,19 @@
             <button
               class="btn-add"
               type="button"
-              @click="isDropdownOpen = !isDropdownOpen"
+              @click="handlePrimaryAction"
             >
               <span class="btn-icon">+</span>
-              <span>Nuevo Registro</span>
+              <span v-if="isSalesModule">Registrar venta</span>
+              <span v-else>Nuevo Registro</span>
             </button>
 
             <div
-              v-if="isDropdownOpen"
+              v-if="!isSalesModule && isDropdownOpen"
               class="dropdown-menu"
             >
               <button
-                v-if="can('products.create')"
+                v-if="!isSalesModule && can('products.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('product')"
@@ -34,7 +35,7 @@
               </button>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('stock')"
@@ -42,19 +43,19 @@
                 Ingresar Stock
               </button>
 
+              <div v-if="!isSalesModule && can('movement.create')" class="dropdown-divider"></div>
+
               <button
-                v-if="can('sales.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
-                @click="openModal('sale')"
+                @click="openModal('adjustment')"
               >
-                Registrar Venta
+                Ajuste por Conteo Físico
               </button>
 
-              <div v-if="can('movement.create')" class="dropdown-divider"></div>
-
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('other')"
@@ -100,6 +101,7 @@
                     <th v-if="columnasVisibles.tipo">Tipo</th>
                     <th v-if="columnasVisibles.cantidad">Cantidad</th>
                     <th v-if="columnasVisibles.motivo">Motivo</th>
+                    <th v-if="canVoidSales">Acciones</th>
                   </tr>
                 </thead>
 
@@ -153,6 +155,20 @@
                             : 'Salida'
                         }}
                       </span>
+
+                      <span
+                        v-if="isVoidReversal(mov)"
+                        class="history-tag"
+                      >
+                        Anulación
+                      </span>
+
+                      <span
+                        v-else-if="isVoidedSaleMovement(mov)"
+                        class="history-tag history-tag--voided"
+                      >
+                        Venta anulada
+                      </span>
                     </td>
 
                     <td
@@ -181,6 +197,22 @@
                       data-label="Motivo"
                     >
                       {{ mov.motivo ?? '—' }}
+                    </td>
+
+                    <td
+                      v-if="canVoidSales"
+                      class="td-acciones"
+                      data-label="Acciones"
+                    >
+                      <button
+                        v-if="isVoidableSaleMovement(mov)"
+                        class="btn-void"
+                        type="button"
+                        @click="openVoidSale(mov.referencia_id!)"
+                      >
+                        Anular venta
+                      </button>
+                      <span v-else>—</span>
                     </td>
                   </tr>
 
@@ -656,6 +688,21 @@
       @close="showNewMovement = false"
       @created="onMovementCreated"
     />
+
+    <StockAdjustmentModal
+      v-if="showAdjustment"
+      :products="products"
+      @close="showAdjustment = false"
+      @created="onAdjustmentCreated"
+    />
+
+    <VoidSaleModal
+      v-if="voidSaleId"
+      :sale-id="voidSaleId"
+      :products="products"
+      @close="voidSaleId = null"
+      @voided="onSaleVoided"
+    />
   </div>
 </template>
 
@@ -671,10 +718,13 @@ import {
 import {
   CalendarDays,
 } from 'lucide-vue-next';
+import { useRoute } from 'vue-router';
 
 import {
   fetchMovements,
   isInbound,
+  SALE_REFERENCE,
+  SALE_VOID_REFERENCE,
   type InventoryMovement,
 } from '@/features/inventorymovement/api';
 
@@ -698,6 +748,12 @@ import SaleModal
 import NewMovementModal
   from '@/features/inventorymovement/components/NewMovementModal.vue';
 
+import StockAdjustmentModal
+  from '@/features/inventorymovement/components/StockAdjustmentModal.vue';
+
+import VoidSaleModal
+  from '@/features/inventorymovement/components/VoidSaleModal.vue';
+
 import {
   ApiError,
 } from '@/services/apiClient';
@@ -705,6 +761,8 @@ import {
 import { useAuth } from '@/composables/useAuth';
 
 const { can } = useAuth();
+const route = useRoute();
+const isSalesModule = computed(() => route?.name === 'sales');
 
 const movimientos =
   ref<InventoryMovement[]>([]);
@@ -720,8 +778,54 @@ const showNewMovement = ref(false);
 const showNewProduct = ref(false);
 const showStockInput = ref(false);
 const showSale = ref(false);
+const showAdjustment = ref(false);
+const voidSaleId = ref<string | null>(null);
+
+const canVoidSales = computed(() => isSalesModule.value && can('sales.void'));
+
+// Una venta anulada conserva sus salidas; la anulación agrega entradas que la
+// referencian. Con esas entradas sabemos qué ventas ya no se pueden anular.
+const voidedSaleIds = computed(() =>
+  new Set(
+    movimientos.value
+      .filter(movement => movement.referencia_tipo === SALE_VOID_REFERENCE)
+      .map(movement => movement.referencia_id),
+  ),
+);
+
+function isVoidReversal(movement: InventoryMovement): boolean {
+  return movement.referencia_tipo === SALE_VOID_REFERENCE;
+}
+
+function isSaleMovement(movement: InventoryMovement): boolean {
+  return (
+    movement.tipo_movimiento === 'salida_venta' &&
+    movement.referencia_tipo === SALE_REFERENCE &&
+    !!movement.referencia_id
+  );
+}
+
+function isVoidedSaleMovement(movement: InventoryMovement): boolean {
+  return isSaleMovement(movement) && voidedSaleIds.value.has(movement.referencia_id);
+}
+
+function isVoidableSaleMovement(movement: InventoryMovement): boolean {
+  return isSaleMovement(movement) && !voidedSaleIds.value.has(movement.referencia_id);
+}
+
+function openVoidSale(saleId: string) {
+  voidSaleId.value = saleId;
+}
 
 const isDropdownOpen = ref(false);
+
+function handlePrimaryAction() {
+  if (isSalesModule.value) {
+    openModal('sale');
+    return;
+  }
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
 
 function openModal(
   modalName: string
@@ -738,6 +842,10 @@ function openModal(
 
   if (modalName === 'sale') {
     showSale.value = true;
+  }
+
+  if (modalName === 'adjustment') {
+    showAdjustment.value = true;
   }
 
   if (modalName === 'other') {
@@ -825,15 +933,36 @@ onUnmounted(() => {
   );
 });
 
-async function onMovementCreated() {
-  successMsg.value =
-    'Movimiento registrado correctamente.';
+async function showSuccessAndReload(
+  message: string
+) {
+  successMsg.value = message;
 
   await load();
 
   setTimeout(() => {
     successMsg.value = '';
   }, 5000);
+}
+
+function onMovementCreated() {
+  return showSuccessAndReload(
+    'Movimiento registrado correctamente.'
+  );
+}
+
+function onAdjustmentCreated() {
+  return showSuccessAndReload(
+    'Ajuste registrado correctamente.'
+  );
+}
+
+function onSaleVoided() {
+  voidSaleId.value = null;
+
+  return showSuccessAndReload(
+    'Venta anulada. El stock fue devuelto al inventario.'
+  );
 }
 
 function getProductName(
@@ -1005,7 +1134,8 @@ const columnaCount =
       1,
       Object.values(
         columnasVisibles.value
-      ).filter(Boolean).length
+      ).filter(Boolean).length +
+        (canVoidSales.value ? 1 : 0)
     )
   );
 
@@ -1394,6 +1524,9 @@ const movimientosFiltrados =
   computed(() =>
     movimientos.value.filter(
       movement => {
+        if (isSalesModule.value && !isSaleMovement(movement) && !isVoidReversal(movement)) {
+          return false;
+        }
         if (
           filtroTipo.value ===
             'entrada' &&
@@ -1832,6 +1965,46 @@ function limpiarFiltros() {
 .tipo-badge--salida {
   background: var(--color-danger-bg);
   color: var(--color-danger);
+}
+
+.history-tag {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--color-bg-border);
+  color: var(--color-text-muted);
+  font-size: .7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.history-tag--voided {
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.td-acciones {
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+.btn-void {
+  padding: 5px 12px;
+  border: 1.5px solid var(--color-danger-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-danger-text);
+  font-size: .78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .13s;
+}
+
+.btn-void:hover {
+  background: var(--color-danger-bg);
 }
 
 .cantidad-num {

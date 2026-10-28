@@ -1,4 +1,3 @@
-
 import { createI18n } from 'vue-i18n';
 
 import es from './locales/es';
@@ -14,3 +13,7 @@ export const i18n = createI18n({
     en,
   },
 });
+
+export * from './types';
+export * from './useLocale';
+export * from './messages';

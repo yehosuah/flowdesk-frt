@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/apiClient';
-import type { Sale, SaleCreatePayload, TaxConfiguration } from '@/features/sales/types';
+import type { Sale, SaleCreatePayload, SaleVoidPayload, TaxConfiguration } from '@/features/sales/types';
 
 /** GET /commercial/tax-configuration — tasa de IVA configurada por la empresa. */
 export function fetchTaxConfiguration(): Promise<TaxConfiguration> {
@@ -12,6 +12,19 @@ export function fetchTaxConfiguration(): Promise<TaxConfiguration> {
 /** POST /commercial/sales — registra la venta; el backend calcula precios e impuesto. */
 export function createSale(payload: SaleCreatePayload): Promise<Sale> {
   return apiClient.request<Sale>('/api/v1/commercial/sales', {
+    method: 'POST',
+    auth: true,
+    body: payload,
+  });
+}
+
+/**
+ * POST /commercial/sales/{id}/void — anula una venta completada con motivo
+ * obligatorio. El backend conserva la venta y sus movimientos, y registra una
+ * devolucion_cliente por línea para devolver el stock.
+ */
+export function voidSale(id: string, payload: SaleVoidPayload): Promise<Sale> {
+  return apiClient.request<Sale>(`/api/v1/commercial/sales/${id}/void`, {
     method: 'POST',
     auth: true,
     body: payload,

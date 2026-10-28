@@ -55,6 +55,13 @@ describe("permissions", () => {
         expect(can(role, "inventory.import")).toBe(true);
       }
     });
+
+    it("solo manager y admin anulan ventas (require_role('manager') en el backend)", () => {
+      expect(can("admin", "sales.void")).toBe(true);
+      expect(can("manager", "sales.void")).toBe(true);
+      expect(can("employee", "sales.void")).toBe(false);
+      expect(can(null, "sales.void")).toBe(false);
+    });
   });
 
   describe("estado de proveedor / cliente (según backend)", () => {

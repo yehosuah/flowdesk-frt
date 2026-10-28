@@ -25,5 +25,19 @@ export async function fetchTaxPeriodMetrics(payload: TaxPeriodCalculatePayload):
   });
 }
 
+export interface CommercialTaxConfiguration {
+  tasa_impuesto: number | string;
+}
+
+export function fetchCommercialTaxConfiguration(): Promise<CommercialTaxConfiguration> {
+  return apiClient.request('/api/v1/commercial/tax-configuration', { method: 'GET', auth: true });
+}
+
+export function updateCommercialTaxConfiguration(tasa_impuesto: number): Promise<CommercialTaxConfiguration> {
+  return apiClient.request('/api/v1/commercial/tax-configuration', {
+    method: 'PUT', auth: true, body: { tasa_impuesto },
+  });
+}
+
 export * from './profileApi';
 

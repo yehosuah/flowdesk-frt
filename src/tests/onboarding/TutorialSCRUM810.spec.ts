@@ -183,7 +183,7 @@ describe('SCRUM-810: Tutorial de bienvenida', () => {
     const config = mocks.driver.mock.calls[0][0];
 
     expect(config.showProgress).toBe(true);
-    expect(config.steps).toHaveLength(8);
+    expect(config.steps).toHaveLength(10);
 
     expect(config.nextBtnText).toBe('Siguiente');
     expect(config.prevBtnText).toBe('Anterior');

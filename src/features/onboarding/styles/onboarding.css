@@ -11,11 +11,17 @@
   z-index: 100000;
 }
 
+.driver-active-element {
+  scroll-margin: 24px;
+}
+
 .driver-popover-title {
   font-size: 1.05rem;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .driver-popover-description {
@@ -23,6 +29,7 @@
   line-height: 1.5;
   color: #475569;
   margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 
 .driver-popover-footer {
@@ -38,11 +45,15 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: #64748b;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .driver-popover-navigation-btns {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .driver-popover-prev-btn {
@@ -87,6 +98,12 @@
   color: #0f172a;
 }
 
+.driver-popover button:focus-visible,
+.driver-popover-close-btn:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px;
+}
+
 /* Adaptación responsive para celulares y tablets */
 @media (max-width: 1000px) {
   .driver-popover {
@@ -107,6 +124,19 @@
   .driver-popover-next-btn {
     padding: 5px 10px !important;
     font-size: 0.78rem !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .driver-popover-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .driver-popover-navigation-btns {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

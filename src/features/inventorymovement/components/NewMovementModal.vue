@@ -55,10 +55,12 @@
           <div class="form-group">
             <label class="form-label">
               Motivo
-              <span style="color:var(--color-text-muted);font-weight:400;font-size:.78rem;">(opcional)</span>
+              <span v-if="requiresReason">*</span>
+              <span v-else style="color:var(--color-text-muted);font-weight:400;font-size:.78rem;">(opcional)</span>
             </label>
-            <input v-model="form.motivo" type="text" class="form-input"
-              placeholder="Ej. Venta #204, ajuste de inventario…" maxlength="200" />
+            <input v-model="form.motivo" type="text" class="form-input" :class="{ 'input-error': errors.motivo }"
+              placeholder="Ej. Venta #204, ajuste de inventario…" maxlength="200" @input="errors.motivo = ''" />
+            <span v-if="errors.motivo" class="error-msg">{{ errors.motivo }}</span>
           </div>
 
           <div class="modal__footer">
@@ -75,8 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { createMovement, type MovementType } from '@/features/inventorymovement/api';
+import { computed, reactive, ref } from 'vue';
+import { createMovement, isAdjustment, type MovementType } from '@/features/inventorymovement/api';
 import { getApiErrorMessage } from '@/services/apiClient';
 import type { InventoryProduct } from '@/features/inventory/types';
 import { useAccessibleModal } from '@/composables/useAccessibleModal';
@@ -109,17 +111,21 @@ interface FormData {
 }
 
 const form = reactive<FormData>({ producto_id: '', tipo_movimiento: '', cantidad: '', motivo: '' });
-const errors = reactive<Record<'producto_id' | 'tipo_movimiento' | 'cantidad', string>>({
-  producto_id: '', tipo_movimiento: '', cantidad: '',
+const errors = reactive<Record<'producto_id' | 'tipo_movimiento' | 'cantidad' | 'motivo', string>>({
+  producto_id: '', tipo_movimiento: '', cantidad: '', motivo: '',
 });
 const isSubmitting = ref(false);
 const submitError = ref('');
+
+// El backend rechaza los ajustes sin motivo: es el único registro de por qué cambió el stock.
+const requiresReason = computed(() => isAdjustment(form.tipo_movimiento));
 
 function validate(): boolean {
   let ok = true;
   if (!form.producto_id) { errors.producto_id = 'Selecciona un producto.'; ok = false; }
   if (!form.tipo_movimiento) { errors.tipo_movimiento = 'Selecciona el tipo de movimiento.'; ok = false; }
   if (!form.cantidad || Number(form.cantidad) <= 0) { errors.cantidad = 'La cantidad debe ser mayor a 0.'; ok = false; }
+  if (requiresReason.value && !form.motivo.trim()) { errors.motivo = 'El motivo es obligatorio para los ajustes.'; ok = false; }
   return ok;
 }
 

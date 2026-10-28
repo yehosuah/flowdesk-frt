@@ -38,6 +38,19 @@ export function createMovement(payload: CreateMovementPayload): Promise<Inventor
   });
 }
 
+// referencia_tipo que el backend asigna a los movimientos de una venta y de su anulación.
+export const SALE_REFERENCE = 'venta';
+export const SALE_VOID_REFERENCE = 'anulacion_venta';
+
+// El backend exige motivo en los ajustes y los permite en productos inactivos.
+export const ADJUSTMENT_TYPES: MovementType[] = ['ajuste_positivo', 'ajuste_negativo'];
+
+export const MOVEMENT_REASON_MAX_LENGTH = 200;
+
+export function isAdjustment(tipo: string): boolean {
+  return (ADJUSTMENT_TYPES as string[]).includes(tipo);
+}
+
 export const INBOUND_TYPES = [
   'entrada_compra', 'entrada_manual', 'ajuste_positivo', 'devolucion_cliente',
 ];
