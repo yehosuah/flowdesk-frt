@@ -400,8 +400,10 @@ async function cerrarSesion(): Promise<void> {
   .sidebar:hover .sidebar__logo--full,
   .sidebar:focus-within .sidebar__logo--full {
     display: block;
-    width: 140px;
-    max-height: 82px;
+    width: 185px;
+    max-width: 100%;
+    max-height: 108px;
+    object-fit: contain;
   }
 
   .sidebar__nav {
