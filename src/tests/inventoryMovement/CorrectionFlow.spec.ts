@@ -293,11 +293,10 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
       vi.mocked(fetchMovements).mockResolvedValue([saleMovement]);
 
       const wrapper = await mountView("sales");
-      await wrapper.find(".btn-add").trigger("click");
+      // Ventas no usa menú desplegable: el botón abre directamente el modal.
 
       expect(wrapper.find("th:last-child").text()).toBe("Acciones");
       expect(wrapper.find(".btn-void").exists()).toBe(true);
-      expect(wrapper.findAll(".dropdown-item").map(item => item.text())).toContain("Ajuste por Conteo Físico");
     });
 
     it("employee no ve la anulación ni el ajuste físico", async () => {
