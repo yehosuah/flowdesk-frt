@@ -1,3 +1,4 @@
+
 import type {
   AuthSession,
   AuthTokenClaims,
@@ -6,30 +7,47 @@ import type {
 
 const AUTH_STORAGE_KEY = 'flowdesk.auth.session';
 
-function decodeJwtPayload(
-  token: string,
-): AuthTokenClaims | null {
-  const [, payload] = token.split('.');
+function decodeJwtPayload(token: string): AuthTokenClaims | null {
+  const parts = token.split('.');
 
-  if (!payload) {
+  if (parts.length !== 3 || parts.some((part) => !part)) {
     return null;
   }
 
   try {
-    const normalizedPayload = payload
+    const payload = parts[1]
       .replace(/-/g, '+')
-      .replace(/_/g, '/')
-      .padEnd(
-        Math.ceil(payload.length / 4) * 4,
-        '=',
-      );
+      .replace(/_/g, '/');
 
-    const decodedPayload =
-      atob(normalizedPayload);
+    const normalizedPayload = payload.padEnd(
+      Math.ceil(payload.length / 4) * 4,
+      '=',
+    );
 
-    return JSON.parse(
-      decodedPayload,
-    ) as AuthTokenClaims;
+    const decoded = JSON.parse(
+      atob(normalizedPayload),
+    ) as unknown;
+
+    if (
+      !decoded ||
+      typeof decoded !== 'object' ||
+      Array.isArray(decoded)
+    ) {
+      return null;
+    }
+
+    const claims = decoded as Record<string, unknown>;
+
+    if (
+      typeof claims.sub !== 'string' ||
+      !claims.sub.trim() ||
+      typeof claims.exp !== 'number' ||
+      !Number.isFinite(claims.exp)
+    ) {
+      return null;
+    }
+
+    return claims as unknown as AuthTokenClaims;
   } catch {
     return null;
   }
@@ -42,32 +60,22 @@ export function isSessionExpired(
     return true;
   }
 
-  const exp = session.claims?.exp;
+  const claims = decodeJwtPayload(session.accessToken);
 
-  if (typeof exp !== 'number') {
-    return false;
+  if (!claims) {
+    return true;
   }
 
-  const currentTime =
-    Math.floor(Date.now() / 1000);
-
-  return exp <= currentTime;
+  return claims.exp! <= Math.floor(Date.now() / 1000);
 }
 
 export function createSession(
   tokenResponse: TokenResponse,
 ): AuthSession {
   return {
-    accessToken:
-      tokenResponse.access_token,
-
-    tokenType:
-      tokenResponse.token_type,
-
-    claims:
-      decodeJwtPayload(
-        tokenResponse.access_token,
-      ),
+    accessToken: tokenResponse.access_token,
+    tokenType: tokenResponse.token_type,
+    claims: decodeJwtPayload(tokenResponse.access_token),
   };
 }
 
@@ -80,61 +88,51 @@ export function saveStoredSession(
   );
 }
 
-export function loadStoredSession():
-  AuthSession | null {
+export function loadStoredSession(): AuthSession | null {
   if (typeof window === 'undefined') {
     return null;
   }
 
-  const rawSession =
-    localStorage.getItem(
-      AUTH_STORAGE_KEY,
-    );
+  const rawSession = localStorage.getItem(AUTH_STORAGE_KEY);
 
   if (!rawSession) {
     return null;
   }
 
   try {
-    const parsedSession =
-      JSON.parse(rawSession) as Partial<
-        AuthSession & TokenResponse
-      >;
+    const parsed = JSON.parse(rawSession) as Record<string, unknown>;
 
-    let session: AuthSession | null =
-      null;
-
-    if (
-      typeof parsedSession.accessToken ===
-      'string'
-    ) {
-      session = {
-        accessToken:
-          parsedSession.accessToken,
-
-        tokenType:
-          parsedSession.tokenType ??
-          'bearer',
-
-        claims:
-          parsedSession.claims ??
-          decodeJwtPayload(
-            parsedSession.accessToken,
-          ),
-      };
-    } else if (
-      typeof parsedSession.access_token ===
-      'string'
-    ) {
-      session = createSession(
-        parsedSession as TokenResponse,
-      );
+    if (!parsed || typeof parsed !== 'object') {
+      clearStoredSession();
+      return null;
     }
 
-    if (
-      session &&
-      isSessionExpired(session)
-    ) {
+    const accessToken =
+      typeof parsed.accessToken === 'string'
+        ? parsed.accessToken
+        : typeof parsed.access_token === 'string'
+          ? parsed.access_token
+          : null;
+
+    if (!accessToken) {
+      clearStoredSession();
+      return null;
+    }
+
+    const tokenType =
+      typeof parsed.tokenType === 'string'
+        ? parsed.tokenType
+        : typeof parsed.token_type === 'string'
+          ? parsed.token_type
+          : 'bearer';
+
+    const session: AuthSession = {
+      accessToken,
+      tokenType,
+      claims: decodeJwtPayload(accessToken),
+    };
+
+    if (isSessionExpired(session)) {
       clearStoredSession();
       return null;
     }
@@ -147,7 +145,5 @@ export function loadStoredSession():
 }
 
 export function clearStoredSession(): void {
-  localStorage.removeItem(
-    AUTH_STORAGE_KEY,
-  );
+  localStorage.removeItem(AUTH_STORAGE_KEY);
 }

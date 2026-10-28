@@ -1,12 +1,13 @@
+
 import {
   describe,
   it,
   expect,
   vi,
   beforeEach,
-} from "vitest";
+} from 'vitest';
 
-vi.mock("@/services/authStorage", () => ({
+vi.mock('@/services/authStorage', () => ({
   loadStoredSession: vi.fn(),
   saveStoredSession: vi.fn(),
   clearStoredSession: vi.fn(),
@@ -14,10 +15,16 @@ vi.mock("@/services/authStorage", () => ({
   isSessionExpired: vi.fn(),
 }));
 
-import * as authStorage from "@/services/authStorage";
-import { appStore } from "@/stores/app.store";
+import * as authStorage from '@/services/authStorage';
+import { appStore } from '@/stores/app.store';
 
-describe("appStore", () => {
+const futureExpiration = () =>
+  Math.floor(Date.now() / 1000) + 3600;
+
+const pastExpiration = () =>
+  Math.floor(Date.now() / 1000) - 3600;
+
+describe('appStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -30,7 +37,7 @@ describe("appStore", () => {
     vi.clearAllMocks();
   });
 
-  it("inicia sin una sesión autenticada", () => {
+  it('inicia sin una sesión autenticada', () => {
     expect(
       appStore.isAuthenticated.value,
     ).toBe(false);
@@ -40,31 +47,24 @@ describe("appStore", () => {
     ).toBeNull();
   });
 
-  it("establece una sesión vigente correctamente", () => {
+  it('establece una sesión vigente correctamente', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token123",
-      tokenType: "bearer",
+      accessToken: 'token123',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
-        role: "admin",
-        schema_name: "empresa",
-        company_id: "1",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) + 3600,
+        sub: 'usuario-prueba',
+        role: 'admin',
+        schema_name: 'empresa',
+        company_id: '1',
+        exp: futureExpiration(),
       },
     });
 
-    vi.mocked(
-      authStorage.isSessionExpired,
-    ).mockReturnValue(false);
-
     appStore.setSession({
-      access_token: "token123",
-      token_type: "bearer",
+      access_token: 'token123',
+      token_type: 'bearer',
     });
 
     expect(
@@ -73,26 +73,23 @@ describe("appStore", () => {
 
     expect(
       appStore.accessToken,
-    ).toBe("token123");
+    ).toBe('token123');
 
     expect(
       authStorage.saveStoredSession,
     ).toHaveBeenCalledTimes(1);
   });
 
-  it("rechaza una sesión expirada", () => {
+  it('rechaza una sesión expirada', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token-expirado",
-      tokenType: "bearer",
+      accessToken: 'token-expirado',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
-        role: "admin",
-        exp:
-          Math.floor(
-            Date.now() / 1000,
-          ) - 3600,
+        sub: 'usuario-prueba',
+        role: 'admin',
+        exp: pastExpiration(),
       },
     });
 
@@ -101,8 +98,8 @@ describe("appStore", () => {
     ).mockReturnValue(true);
 
     appStore.setSession({
-      access_token: "token-expirado",
-      token_type: "bearer",
+      access_token: 'token-expirado',
+      token_type: 'bearer',
     });
 
     expect(
@@ -122,24 +119,21 @@ describe("appStore", () => {
     ).toHaveBeenCalled();
   });
 
-  it("elimina la sesión correctamente", () => {
+  it('elimina la sesión correctamente', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token123",
-      tokenType: "bearer",
+      accessToken: 'token123',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
+        sub: 'usuario-prueba',
+        exp: futureExpiration(),
       },
     });
 
-    vi.mocked(
-      authStorage.isSessionExpired,
-    ).mockReturnValue(false);
-
     appStore.setSession({
-      access_token: "token123",
-      token_type: "bearer",
+      access_token: 'token123',
+      token_type: 'bearer',
     });
 
     appStore.clearSession();
@@ -157,69 +151,72 @@ describe("appStore", () => {
     ).toHaveBeenCalled();
   });
 
-  it("obtiene correctamente el rol", () => {
+  it('obtiene correctamente el rol', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token123",
-      tokenType: "bearer",
+      accessToken: 'token123',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
-        role: "manager",
+        sub: 'usuario-prueba',
+        role: 'manager',
+        exp: futureExpiration(),
       },
     });
 
     appStore.setSession({
-      access_token: "token123",
-      token_type: "bearer",
+      access_token: 'token123',
+      token_type: 'bearer',
     });
 
     expect(
       appStore.roleName.value,
-    ).toBe("manager");
+    ).toBe('manager');
   });
 
-  it("obtiene correctamente el schema", () => {
+  it('obtiene correctamente el schema', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token123",
-      tokenType: "bearer",
+      accessToken: 'token123',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
-        schema_name: "empresa_demo",
+        sub: 'usuario-prueba',
+        schema_name: 'empresa_demo',
+        exp: futureExpiration(),
       },
     });
 
     appStore.setSession({
-      access_token: "token123",
-      token_type: "bearer",
+      access_token: 'token123',
+      token_type: 'bearer',
     });
 
     expect(
       appStore.schemaName.value,
-    ).toBe("empresa_demo");
+    ).toBe('empresa_demo');
   });
 
-  it("obtiene correctamente el companyId", () => {
+  it('obtiene correctamente el companyId', () => {
     vi.mocked(
       authStorage.createSession,
     ).mockReturnValue({
-      accessToken: "token123",
-      tokenType: "bearer",
+      accessToken: 'token123',
+      tokenType: 'bearer',
       claims: {
-        sub: "usuario-prueba",
-        company_id: "25",
+        sub: 'usuario-prueba',
+        company_id: '25',
+        exp: futureExpiration(),
       },
     });
 
     appStore.setSession({
-      access_token: "token123",
-      token_type: "bearer",
+      access_token: 'token123',
+      token_type: 'bearer',
     });
 
     expect(
       appStore.companyId.value,
-    ).toBe("25");
+    ).toBe('25');
   });
 });

@@ -98,6 +98,7 @@
 
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { Menu, LogOut, HelpCircle, Package, ArrowRightLeft, ClipboardList, Calendar, Shield, BarChart3, Users, Truck, UserCircle, FileText, User, Receipt } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
@@ -110,9 +111,23 @@ import NotificationBell from '@/features/notifications/components/NotificationBe
 import { useInventoryAlerts } from '@/features/notifications/useInventoryAlerts';
 
 const router = useRouter();
+const { t } = useI18n();
 const sidebarOpen = ref(false);
 const chatOpen = ref(false);
 const { canAccessRoute } = useAuth();
+
+watch(
+  () => appStore.isAuthenticated.value,
+  async (authenticated, wasAuthenticated) => {
+    if (wasAuthenticated && !authenticated &&
+        router.currentRoute.value.name !== 'login') {
+      closeSidebar();
+      closeChat();
+      await router.replace({ name: 'login' });
+    }
+  },
+);
+
 // Mismo conteo que usa la campana del sidebar, para el puntito del botón ☰
 // en mobile (el sidebar está oculto ahí hasta que se abre).
 const { count: alertCount } = useInventoryAlerts();
@@ -148,32 +163,35 @@ watch(sidebarOpen, (isOpen) => {
   }
 });
 
-const navItems = [
-  { name: 'inventory', label: 'Inventario', to: { name: 'inventory' }, icon: Package },
-  { name: 'sales', label: 'Ventas', to: { name: 'sales' }, icon: Receipt },
-  { name: 'inventorymovement', label: 'Movimientos de inventario', to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
-  { name: 'tasks', label: 'Gestión de tareas', to: { name: 'tasks' }, icon: ClipboardList },
-  { name: 'tasks-calendar', label: 'Calendario', to: { name: 'tasks-calendar' }, icon: Calendar },
-  { name: 'superAdmin', label: 'Manejo de Cuentas', to: { name: 'superAdmin' }, icon: Shield },
-  { name: 'analytics', label: 'Análisis', to: { name: 'analytics' }, icon: BarChart3 },
-  { name: 'employees', label: 'Empleados', to: { name: 'employees' }, icon: Users },
-  { name: 'suppliers', label: 'Proveedores', to: { name: 'suppliers' }, icon: Truck },
-  { name: 'clients', label: 'Clientes', to: { name: 'clients' }, icon: UserCircle },
-  { name: 'reports', label: 'Reportes', to: { name: 'reports' }, icon: FileText },
-  { name: 'tax-dashboard', label: 'Dashboard Tributario', to: { name: 'tax-dashboard' }, icon: Receipt },
-  { name: 'profile', label: 'Mi Perfil', to: { name: 'profile' }, icon: User },
-];
+const navItems = computed(() => [
+  { name: 'inventory', label: t('navigation.inventory'), to: { name: 'inventory' }, icon: Package },
+  { name: 'sales', label: t('navigation.sales'), to: { name: 'sales' }, icon: Receipt },
+  { name: 'inventorymovement', label: t('navigation.inventoryMovement'), to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
+  { name: 'tasks', label: t('navigation.tasks'), to: { name: 'tasks' }, icon: ClipboardList },
+  { name: 'tasks-calendar', label: t('navigation.calendar'), to: { name: 'tasks-calendar' }, icon: Calendar },
+  { name: 'superAdmin', label: t('navigation.accounts'), to: { name: 'superAdmin' }, icon: Shield },
+  { name: 'analytics', label: t('navigation.analytics'), to: { name: 'analytics' }, icon: BarChart3 },
+  { name: 'employees', label: t('navigation.employees'), to: { name: 'employees' }, icon: Users },
+  { name: 'suppliers', label: t('navigation.suppliers'), to: { name: 'suppliers' }, icon: Truck },
+  { name: 'clients', label: t('navigation.clients'), to: { name: 'clients' }, icon: UserCircle },
+  { name: 'reports', label: t('navigation.reports'), to: { name: 'reports' }, icon: FileText },
+  { name: 'tax-dashboard', label: t('navigation.taxation'), to: { name: 'tax-dashboard' }, icon: Receipt },
+  { name: 'profile', label: t('navigation.profile'), to: { name: 'profile' }, icon: User },
+]);
 
 // Solo se muestran las páginas a las que el rol de la sesión puede entrar
 // (misma matriz que usan los guards del router: src/utils/permissions.ts).
 const visibleNavItems = computed(() =>
-  navItems.filter((item) => canAccessRoute(item.name)),
+  navItems.value.filter((item) => canAccessRoute(item.name)),
 );
 
 async function cerrarSesion(): Promise<void> {
   closeSidebar();
+  closeChat();
   appStore.clearSession();
-  await router.push({ name: 'login' });
+  if (router.currentRoute.value.name !== 'login') {
+    await router.replace({ name: 'login' });
+  }
 }
 </script>
 
@@ -713,9 +731,3 @@ async function cerrarSesion(): Promise<void> {
 .fade-leave-to {
   opacity: 0;
 }
-
-
-
-
-
-
