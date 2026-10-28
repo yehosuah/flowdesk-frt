@@ -4,10 +4,13 @@ import { i18n } from './index';
 import type { Locale } from './types';
 
 const STORAGE_KEY = 'flowdesk.locale';
+
 let hydrated = false;
 
-function hydrate(): void {
-  if (hydrated || typeof window === 'undefined') return;
+export function hydrateLocale(): void {
+  if (hydrated || typeof window === 'undefined') {
+    return;
+  }
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -16,21 +19,23 @@ function hydrate(): void {
       i18n.global.locale.value = stored;
     }
   } catch {
-    // Mantener el idioma predeterminado.
+    // Mantener español cuando localStorage no esté disponible.
   }
 
   hydrated = true;
 }
 
 export function useLocale() {
-  hydrate();
+  hydrateLocale();
 
-  const locale = computed<Locale>(() =>
-    i18n.global.locale.value as Locale,
+  const locale = computed<Locale>(
+    () => i18n.global.locale.value as Locale,
   );
 
   function setLocale(value: Locale): void {
-    if (value !== 'es' && value !== 'en') return;
+    if (value !== 'es' && value !== 'en') {
+      return;
+    }
 
     i18n.global.locale.value = value;
     hydrated = true;
@@ -39,10 +44,13 @@ export function useLocale() {
       try {
         window.localStorage.setItem(STORAGE_KEY, value);
       } catch {
-        // El idioma sigue funcionando sin almacenamiento.
+        // Mantener el idioma seleccionado en memoria.
       }
     }
   }
 
-  return { locale, setLocale };
+  return {
+    locale,
+    setLocale,
+  };
 }
