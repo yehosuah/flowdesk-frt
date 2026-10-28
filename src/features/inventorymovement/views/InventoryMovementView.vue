@@ -4,9 +4,9 @@
       <div class="table-section">
         <div class="section-header">
           <div class="header-copy">
-            <h1 class="page-title">Movimiento de Inventario</h1>
+            <h1 class="page-title">{{ isSalesModule ? 'Ventas' : 'Movimiento de Inventario' }}</h1>
             <p class="page-subtitle">
-              Gestiona las entradas y salidas de tus productos
+              {{ isSalesModule ? 'Registra y consulta las operaciones de venta' : 'Gestiona las entradas, salidas y ajustes de tus productos' }}
             </p>
           </div>
 
@@ -14,18 +14,19 @@
             <button
               class="btn-add"
               type="button"
-              @click="isDropdownOpen = !isDropdownOpen"
+              @click="handlePrimaryAction"
             >
               <span class="btn-icon">+</span>
-              <span>Nuevo Registro</span>
+              <span v-if="isSalesModule">Registrar venta</span>
+              <span v-else>Nuevo Registro</span>
             </button>
 
             <div
-              v-if="isDropdownOpen"
+              v-if="!isSalesModule && isDropdownOpen"
               class="dropdown-menu"
             >
               <button
-                v-if="can('products.create')"
+                v-if="!isSalesModule && can('products.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('product')"
@@ -34,7 +35,7 @@
               </button>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('stock')"
@@ -42,19 +43,10 @@
                 Ingresar Stock
               </button>
 
-              <button
-                v-if="can('sales.create')"
-                class="dropdown-item"
-                type="button"
-                @click="openModal('sale')"
-              >
-                Registrar Venta
-              </button>
-
-              <div v-if="can('movement.create')" class="dropdown-divider"></div>
+              <div v-if="!isSalesModule && can('movement.create')" class="dropdown-divider"></div>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('adjustment')"
@@ -63,7 +55,7 @@
               </button>
 
               <button
-                v-if="can('movement.create')"
+                v-if="!isSalesModule && can('movement.create')"
                 class="dropdown-item"
                 type="button"
                 @click="openModal('other')"
@@ -726,6 +718,7 @@ import {
 import {
   CalendarDays,
 } from 'lucide-vue-next';
+import { useRoute } from 'vue-router';
 
 import {
   fetchMovements,
@@ -768,6 +761,8 @@ import {
 import { useAuth } from '@/composables/useAuth';
 
 const { can } = useAuth();
+const route = useRoute();
+const isSalesModule = computed(() => route?.name === 'sales');
 
 const movimientos =
   ref<InventoryMovement[]>([]);
@@ -786,7 +781,7 @@ const showSale = ref(false);
 const showAdjustment = ref(false);
 const voidSaleId = ref<string | null>(null);
 
-const canVoidSales = computed(() => can('sales.void'));
+const canVoidSales = computed(() => isSalesModule.value && can('sales.void'));
 
 // Una venta anulada conserva sus salidas; la anulación agrega entradas que la
 // referencian. Con esas entradas sabemos qué ventas ya no se pueden anular.
@@ -823,6 +818,14 @@ function openVoidSale(saleId: string) {
 }
 
 const isDropdownOpen = ref(false);
+
+function handlePrimaryAction() {
+  if (isSalesModule.value) {
+    openModal('sale');
+    return;
+  }
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
 
 function openModal(
   modalName: string
@@ -1521,6 +1524,9 @@ const movimientosFiltrados =
   computed(() =>
     movimientos.value.filter(
       movement => {
+        if (isSalesModule.value && !isSaleMovement(movement) && !isVoidReversal(movement)) {
+          return false;
+        }
         if (
           filtroTipo.value ===
             'entrada' &&

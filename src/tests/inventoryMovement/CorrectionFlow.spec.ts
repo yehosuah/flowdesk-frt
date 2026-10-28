@@ -28,6 +28,11 @@ vi.mock("@/features/sales/api", () => ({
 enableAutoUnmount(afterEach);
 
 const auth = vi.hoisted(() => ({ role: "manager" }));
+const routeState = vi.hoisted(() => ({ name: "inventory" }));
+
+vi.mock("vue-router", () => ({
+  useRoute: () => routeState,
+}));
 
 vi.mock("@/composables/useAuth", async () => {
   const { can } = await import("@/utils/permissions");
@@ -102,7 +107,8 @@ const sale: Sale = {
   items: [{ id: "i1", producto_id: "p1", cantidad: 2, precio_unitario: 50, subtotal: 100 }],
 };
 
-async function mountView() {
+async function mountView(routeName = "inventory") {
+  routeState.name = routeName;
   const wrapper = mount(InventoryMovementView, {
     global: { stubs: { teleport: true } },
     attachTo: document.body,
@@ -144,7 +150,7 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
       vi.mocked(getSale).mockResolvedValue(sale);
       vi.mocked(voidSale).mockResolvedValue({ ...sale, estado: "anulada", motivo_anulacion: "Cobro duplicado" });
 
-      const wrapper = await mountView();
+      const wrapper = await mountView("sales");
 
       // 1. La salida de la venta ofrece la acción de anular.
       const voidButton = wrapper.find(".btn-void");
@@ -185,7 +191,7 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
     it("no ofrece anular una venta que ya tiene su reversión en el historial", async () => {
       vi.mocked(fetchMovements).mockResolvedValue([voidMovement, saleMovement]);
 
-      const wrapper = await mountView();
+      const wrapper = await mountView("sales");
 
       expect(wrapper.find(".btn-void").exists()).toBe(false);
       expect(wrapper.text()).toContain("Venta anulada");
@@ -197,7 +203,7 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
         movement({ tipo_movimiento: "ajuste_negativo", motivo: "Conteo" }),
       ]);
 
-      const wrapper = await mountView();
+      const wrapper = await mountView("sales");
 
       expect(wrapper.find(".btn-void").exists()).toBe(false);
     });
@@ -206,7 +212,7 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
       vi.mocked(fetchMovements).mockResolvedValue([saleMovement]);
       vi.mocked(getSale).mockResolvedValue(sale);
 
-      const wrapper = await mountView();
+      const wrapper = await mountView("sales");
       await wrapper.find(".btn-void").trigger("click");
       await flushPromises();
       await wrapper.find("[data-testid='void-sale-modal'] .btn-secondary").trigger("click");
@@ -286,12 +292,11 @@ describe("Flujo de corrección de ventas y existencias (SCRUM-746)", () => {
       auth.role = role;
       vi.mocked(fetchMovements).mockResolvedValue([saleMovement]);
 
-      const wrapper = await mountView();
-      await wrapper.find(".btn-add").trigger("click");
+      const wrapper = await mountView("sales");
+      // Ventas no usa menú desplegable: el botón abre directamente el modal.
 
       expect(wrapper.find("th:last-child").text()).toBe("Acciones");
       expect(wrapper.find(".btn-void").exists()).toBe(true);
-      expect(wrapper.findAll(".dropdown-item").map(item => item.text())).toContain("Ajuste por Conteo Físico");
     });
 
     it("employee no ve la anulación ni el ajuste físico", async () => {

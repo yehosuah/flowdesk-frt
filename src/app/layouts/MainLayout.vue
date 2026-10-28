@@ -24,9 +24,14 @@
     >
       <div class="sidebar__brand">
         <img
+          src="../../logo/logoSolo.PNG"
+          alt="FlowDesk"
+          class="sidebar__logo sidebar__logo--compact"
+        />
+        <img
           src="../../logo/logo.png"
           alt="FlowDesk"
-          class="sidebar__logo"
+          class="sidebar__logo sidebar__logo--full"
         />
       </div>
 
@@ -37,7 +42,7 @@
           <RouterLink
             :to="item.to"
             :data-nav-item="item.name"
-            class="sidebar__link"
+            :class="['sidebar__link', { 'sidebar__link--sales': item.name === 'sales' }]"
             active-class="sidebar__link--active"
             @click="closeSidebar"
           >
@@ -51,6 +56,7 @@
         class="sidebar__logout"
         type="button"
         data-tour="restart-tutorial"
+        aria-label="Reiniciar tutorial"
         @click="resetOnboarding"
         style="padding-bottom: 4px;"
       >
@@ -144,7 +150,8 @@ watch(sidebarOpen, (isOpen) => {
 
 const navItems = [
   { name: 'inventory', label: 'Inventario', to: { name: 'inventory' }, icon: Package },
-  { name: 'inventorymovement', label: 'Movimiento de Inventario', to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
+  { name: 'sales', label: 'Ventas', to: { name: 'sales' }, icon: Receipt },
+  { name: 'inventorymovement', label: 'Movimientos de inventario', to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
   { name: 'tasks', label: 'Gestión de tareas', to: { name: 'tasks' }, icon: ClipboardList },
   { name: 'tasks-calendar', label: 'Calendario', to: { name: 'tasks-calendar' }, icon: Calendar },
   { name: 'superAdmin', label: 'Manejo de Cuentas', to: { name: 'superAdmin' }, icon: Shield },
@@ -260,6 +267,11 @@ async function cerrarSesion(): Promise<void> {
     color 0.15s;
 }
 
+.sidebar__link--sales {
+  display: flex;
+  font-weight: 600;
+}
+
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
@@ -336,20 +348,133 @@ async function cerrarSesion(): Promise<void> {
   display: none;
 }
 
-@media (max-height: 850px) and (min-width: 1001px) {
+/* Escritorio: barra compacta de iconos que se expande como un menú flotante. */
+@media (min-width: 1001px) {
+  .main-layout {
+    padding-left: 76px;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1200;
+    width: 76px;
+    transition: width 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sidebar:hover,
+  .sidebar:focus-within {
+    width: 280px;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
   .sidebar__brand {
-    height: 150px;
-    padding: 14px 18px;
+    height: 82px;
+    padding: 12px 10px;
+    transition: height 0.2s ease, padding 0.2s ease;
   }
 
   .sidebar__logo {
-    width: 120px;
+    width: 42px;
+    height: auto;
+    max-width: 100%;
+    max-height: 52px;
+    object-fit: contain;
+    transition: width 0.2s ease, max-height 0.2s ease;
+  }
+
+  .sidebar__logo--full { display: none; }
+
+  .sidebar:hover .sidebar__brand,
+  .sidebar:focus-within .sidebar__brand {
+    height: 132px;
+    padding: 14px 20px;
+  }
+
+  .sidebar:hover .sidebar__logo--compact,
+  .sidebar:focus-within .sidebar__logo--compact {
+    display: none;
+  }
+
+  .sidebar:hover .sidebar__logo--full,
+  .sidebar:focus-within .sidebar__logo--full {
+    display: block;
+    width: 185px;
+    max-width: 100%;
+    max-height: 108px;
+    object-fit: contain;
   }
 
   .sidebar__nav {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    gap: 1px;
+    gap: 4px;
+    padding: 6px 8px 10px;
+  }
+
+  .sidebar__link {
+    justify-content: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sidebar :deep(.notif-bell__trigger) {
+    justify-content: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sidebar :deep(.notif-bell__label) {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.2s ease, opacity 0.15s ease;
+  }
+
+  .sidebar:hover .sidebar__link,
+  .sidebar:focus-within .sidebar__link,
+  .sidebar:hover .sidebar__logout,
+  .sidebar:focus-within .sidebar__logout {
+    justify-content: flex-start;
+  }
+
+  .sidebar:hover :deep(.notif-bell__trigger),
+  .sidebar:focus-within :deep(.notif-bell__trigger) {
+    justify-content: flex-start;
+  }
+
+  .sidebar:hover :deep(.notif-bell__label),
+  .sidebar:focus-within :deep(.notif-bell__label) {
+    max-width: 220px;
+    opacity: 1;
+  }
+
+  .sidebar__label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.2s ease, opacity 0.15s ease;
+  }
+
+  .sidebar:hover .sidebar__label,
+  .sidebar:focus-within .sidebar__label {
+    max-width: 220px;
+    opacity: 1;
+  }
+
+  .sidebar__logout {
+    justify-content: center;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+@media (max-height: 850px) and (min-width: 1001px) {
+  .sidebar__nav {
+    padding-top: 5px;
+    padding-bottom: 8px;
+    gap: 3px;
   }
 
   .sidebar__link {
@@ -473,6 +598,14 @@ async function cerrarSesion(): Promise<void> {
 
   .sidebar__logo {
     width: 110px;
+  }
+
+  .sidebar__logo--compact {
+    display: none;
+  }
+
+  .sidebar__logo--full {
+    display: block;
   }
 
   .sidebar__nav {

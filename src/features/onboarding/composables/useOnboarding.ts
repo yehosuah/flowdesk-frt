@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import '../styles/onboarding.css';
+import { getMessages, useLocale } from '@/i18n';
 
 const ONBOARDING_KEY = 'flowdesk_has_seen_onboarding';
 
@@ -14,6 +15,7 @@ export interface UseOnboardingOptions {
 
 export function useOnboarding(options?: UseOnboardingOptions) {
   const isWelcomeVisible = ref(false);
+  const { locale } = useLocale();
   let router: ReturnType<typeof useRouter> | null = null;
   try {
     router = useRouter();
@@ -64,6 +66,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
     const navSelector = isMobile ? '.mobile-menu-button' : '.sidebar';
     const headerSelector = isMobile ? '.mobile-header' : '.desktop-header';
     const restartSelector = isMobile ? '.mobile-menu-button' : '[data-tour="restart-tutorial"]';
+    const copy = getMessages(locale.value).tutorial;
 
     const tourSteps = [
       {
@@ -92,6 +95,24 @@ export function useOnboarding(options?: UseOnboardingOptions) {
           description: 'En la parte superior siempre tendrás la referencia del módulo en el que estás posicionado y su propósito operativo (en este momento, tu vista de Inventario).',
           side: 'bottom' as const,
           align: isMobile ? 'center' as const : 'start' as const
+        }
+      },
+      {
+        element: '[data-nav-item="sales"]',
+        popover: {
+          title: 'Ventas y movimientos',
+          description: 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.',
+          side: 'right' as const,
+          align: 'start' as const
+        }
+      },
+      {
+        element: '[data-nav-item="tasks"]',
+        popover: {
+          title: 'Tareas del equipo',
+          description: 'Organiza pendientes y da seguimiento al trabajo operativo del equipo.',
+          side: 'right' as const,
+          align: 'start' as const
         }
       },
       {
@@ -142,16 +163,34 @@ export function useOnboarding(options?: UseOnboardingOptions) {
       }
     ];
 
+    const translatedSteps = tourSteps.map((step, index) => {
+      const translated = [
+        [copy.welcome, copy.welcomeDescription], [copy.menu, copy.menuDescription],
+        [copy.active, copy.activeDescription], ['Ventas y movimientos', 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.'],
+        ['Tareas del equipo', 'Organiza pendientes y da seguimiento al trabajo operativo del equipo.'],
+        [copy.filters, copy.filtersDescription], [copy.catalog, copy.catalogDescription],
+        [copy.assistant, copy.assistantDescription], [copy.repeat, copy.repeatDescription],
+        [copy.done, copy.doneDescription],
+      ][index];
+      return translated ? { ...step, popover: { ...step.popover, title: translated[0], description: translated[1] } } : step;
+    });
+
     const driverObj = driver({
       showProgress: true,
-      progressText: 'Paso {{current}} de {{total}}',
-      nextBtnText: 'Siguiente',
-      prevBtnText: 'Anterior',
+      animate: true,
+      smoothScroll: true,
+      stagePadding: 8,
+      stageRadius: 10,
+      overlayColor: 'rgba(15, 23, 42, 0.58)',
+      progressText: copy.progress,
+      nextBtnText: copy.next,
+      prevBtnText: copy.previous,
       doneBtnText: '¡Comenzar!',
       allowClose: true,
+      allowKeyboardControl: true,
       skipMissingElement: true,
       showButtons: ['next', 'previous', 'close'],
-      steps: tourSteps,
+      steps: translatedSteps,
       onDestroyed: () => {
         if (isMobile) {
           options?.closeSidebar?.();

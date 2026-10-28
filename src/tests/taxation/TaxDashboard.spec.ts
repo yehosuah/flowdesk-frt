@@ -39,7 +39,7 @@ describe('TaxDashboardView', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('Dashboard Tributario');
-    expect(wrapper.text()).toContain('Régimen General IVA (12%)');
+    expect(wrapper.text()).toContain('Perfil Fiscal');
     expect(wrapper.findComponent(TaxFiltersBar).exists()).toBe(true);
     expect(wrapper.findComponent(TaxMetricCards).exists()).toBe(true);
     expect(wrapper.text()).toContain('Obligación tributaria líquida por pagar');

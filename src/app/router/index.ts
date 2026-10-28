@@ -134,6 +134,16 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
+        path: "sales",
+        name: "sales",
+        component: InventoryMovementView,
+        meta: {
+          requiresAuth: true,
+          requiresRole: ['admin', 'manager', 'employee'],
+          title: "Ventas",
+        },
+      },
+      {
         path: "tasks",
         name: "tasks",
         component: TaskView,

@@ -108,6 +108,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useCurrency } from '@/features/currency';
 import { getSale, voidSale } from '@/features/sales/api';
 import {
   SALE_STATE_COMPLETED,
@@ -205,9 +206,7 @@ function formatDate(iso: string): string {
   );
 }
 
-function formatMoney(value: number | string): string {
-  return `Q ${Number(value).toFixed(2)}`;
-}
+const { formatCurrency: formatMoney } = useCurrency();
 </script>
 
 <style scoped>

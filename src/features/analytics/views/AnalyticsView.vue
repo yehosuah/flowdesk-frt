@@ -177,7 +177,7 @@
           </div>
           <div class="metric-card__body">
             <p class="metric-card__label">Ingresos Totales</p>
-            <p class="metric-card__value" style="color: #2e7d32;">Q12,450</p>
+            <p class="metric-card__value" style="color: #2e7d32;">{{ formatCurrency(12450) }}</p>
           </div>
         </div>
         <div class="metric-card">
@@ -343,6 +343,9 @@ import {
   type InventoryAlertResponse
 } from '@/features/analytics/api';
 import { getApiErrorMessage } from '@/services/apiClient';
+import { useCurrency } from '@/features/currency';
+
+const { formatCurrency } = useCurrency();
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale, ArcElement, BarElement);
 

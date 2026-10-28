@@ -5,15 +5,16 @@
         <div class="tax-header-title-row">
           <h1 class="tax-title">Dashboard Tributario</h1>
           <button
+            v-if="false"
             type="button"
             class="tax-regime-badge"
-            :class="{ 'tax-regime-badge--inactive': activeProfile && !activeProfile.active }"
+            :class="{ 'tax-regime-badge--inactive': activeProfile?.active === false }"
             @click="openProfileModal"
             title="Haz clic para ver o gestionar el perfil tributario"
           >
             <ShieldCheck :size="14" class="badge-icon" />
             <span>{{ activeProfile?.name || 'Régimen General IVA (12%)' }}</span>
-            <span class="badge-status-dot" :class="activeProfile && !activeProfile.active ? 'dot--inactive' : 'dot--active'"></span>
+            <span class="badge-status-dot" :class="activeProfile?.active === false ? 'dot--inactive' : 'dot--active'"></span>
           </button>
         </div>
         <p class="tax-subtitle">
@@ -25,7 +26,8 @@
         <Button
           variant="secondary"
           size="sm"
-          class="action-btn"
+          class="action-btn profile-action-btn"
+          type="button"
           @click="openProfileModal"
         >
           <ShieldCheck :size="15" />
@@ -63,6 +65,20 @@
         @update:month="selectedMonth = $event"
         @update:year="selectedYear = $event"
       />
+
+      <section v-if="isAdmin" class="tax-rate-settings" aria-labelledby="tax-rate-settings-title">
+        <div>
+          <h2 id="tax-rate-settings-title">Configuración de IVA</h2>
+          <p>Esta tasa se aplicará a las nuevas ventas de la empresa.</p>
+        </div>
+        <form class="tax-rate-form" @submit.prevent="saveCommercialRate">
+          <label for="commercial-tax-rate">Tasa (%)</label>
+          <input id="commercial-tax-rate" v-model.number="commercialRate" type="number" min="0" max="100" step="0.01" required />
+          <Button type="submit" variant="primary" size="sm" :disabled="isSavingCommercialRate">
+            {{ isSavingCommercialRate ? 'Guardando...' : 'Guardar tasa' }}
+          </Button>
+        </form>
+      </section>
 
       <!-- Estado de Error -->
       <Alert
@@ -284,19 +300,26 @@ import {
 import { appStore } from '@/stores/app.store';
 import TaxFiltersBar from '../components/TaxFiltersBar.vue';
 import TaxMetricCards from '../components/TaxMetricCards.vue';
-import { fetchTaxPeriodMetrics } from '../api';
+import { fetchTaxPeriodMetrics, fetchCommercialTaxConfiguration, updateCommercialTaxConfiguration } from '../api';
 import {
   fetchTaxProfiles,
   saveTaxProfile,
   DEFAULT_GT_TAX_PROFILE,
 } from '../profileApi';
 import type { TaxPeriodMetrics, TaxProfile } from '../types';
+import { useAuth } from '@/composables/useAuth';
+import { useToast } from '@/composables/useToast';
 
 const selectedMonth = ref<number>(new Date().getMonth() + 1);
 const selectedYear = ref<number>(new Date().getFullYear());
 const isLoading = ref<boolean>(true);
 const isExporting = ref<boolean>(false);
 const errorMessage = ref<string | null>(null);
+const { role } = useAuth();
+const isAdmin = computed(() => role?.value === 'admin');
+const commercialRate = ref<number | null>(null);
+const isSavingCommercialRate = ref(false);
+const { success: showSuccess, error: showError } = useToast();
 
 // Perfil tributario
 const activeProfile = ref<TaxProfile | null>(null);
@@ -304,6 +327,29 @@ const showProfileModal = ref<boolean>(false);
 const isLoadingProfile = ref<boolean>(false);
 const isActivatingProfile = ref<boolean>(false);
 const profileFeedback = ref<{ message: string; success: boolean } | null>(null);
+
+async function loadCommercialRate() {
+  if (!isAdmin.value) return;
+  try {
+    commercialRate.value = Number((await fetchCommercialTaxConfiguration()).tasa_impuesto);
+  } catch {
+    showError('No se pudo cargar la tasa configurada.');
+  }
+}
+
+async function saveCommercialRate() {
+  if (commercialRate.value === null || commercialRate.value < 0 || commercialRate.value > 100) return;
+  isSavingCommercialRate.value = true;
+  try {
+    const response = await updateCommercialTaxConfiguration(commercialRate.value);
+    commercialRate.value = Number(response.tasa_impuesto);
+    showSuccess('Tasa de IVA actualizada correctamente.');
+  } catch {
+    showError('No se pudo actualizar la tasa de IVA.');
+  } finally {
+    isSavingCommercialRate.value = false;
+  }
+}
 
 const defaultTaxes = [
   {
@@ -548,6 +594,7 @@ watch([selectedMonth, selectedYear], () => {
 onMounted(() => {
   loadMetrics();
   loadProfile();
+  loadCommercialRate();
 });
 </script>
 
@@ -558,6 +605,23 @@ onMounted(() => {
   min-height: 100vh;
   box-sizing: border-box;
 }
+
+.tax-rate-settings {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 12px;
+}
+
+.tax-rate-settings h2 { margin: 0 0 4px; font-size: 1rem; color: var(--color-heading); }
+.tax-rate-settings p { margin: 0; color: var(--color-text-muted); font-size: .82rem; }
+.tax-rate-form { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.tax-rate-form label { font-size: .82rem; font-weight: 600; }
+.tax-rate-form input { width: 90px; padding: 8px 10px; border: 1px solid var(--color-bg-border); border-radius: 7px; }
 
 .tax-dashboard-header {
   margin-bottom: 24px;
@@ -628,6 +692,11 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+}
+
+.profile-action-btn {
+  min-width: 132px;
 }
 
 .spin-icon {
