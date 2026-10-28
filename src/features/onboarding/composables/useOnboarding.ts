@@ -100,8 +100,8 @@ export function useOnboarding(options?: UseOnboardingOptions) {
       {
         element: '[data-nav-item="sales"]',
         popover: {
-          title: 'Ventas y movimientos',
-          description: 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.',
+          title: 'Ventas',
+          description: 'Registra y consulta las operaciones de venta desde este módulo.',
           side: 'right' as const,
           align: 'start' as const
         }
@@ -166,7 +166,7 @@ export function useOnboarding(options?: UseOnboardingOptions) {
     const translatedSteps = tourSteps.map((step, index) => {
       const translated = [
         [copy.welcome, copy.welcomeDescription], [copy.menu, copy.menuDescription],
-        [copy.active, copy.activeDescription], ['Ventas y movimientos', 'Registra ventas, revisa movimientos y corrige existencias desde este módulo.'],
+        [copy.active, copy.activeDescription], ['Ventas', 'Registra y consulta las operaciones de venta desde este módulo.'],
         ['Tareas del equipo', 'Organiza pendientes y da seguimiento al trabajo operativo del equipo.'],
         [copy.filters, copy.filtersDescription], [copy.catalog, copy.catalogDescription],
         [copy.assistant, copy.assistantDescription], [copy.repeat, copy.repeatDescription],

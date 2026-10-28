@@ -100,7 +100,7 @@
 import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
-import { Menu, LogOut, HelpCircle, Package, ArrowRightLeft, ClipboardList, Calendar, Shield, BarChart3, Users, Truck, UserCircle, FileText, User, Receipt } from 'lucide-vue-next';
+import { Menu, LogOut, HelpCircle, Package, ShoppingCart, ArrowRightLeft, ClipboardList, Calendar, Shield, BarChart3, Users, Truck, UserCircle, FileText, User, Receipt } from 'lucide-vue-next';
 import { appStore } from '@/stores/app.store';
 import { useAuth } from '@/composables/useAuth';
 import ChatWidget from '@/features/chatbot/components/ChatWidget.vue';
@@ -165,7 +165,9 @@ watch(sidebarOpen, (isOpen) => {
 
 const navItems = computed(() => [
   { name: 'inventory', label: t('navigation.inventory'), to: { name: 'inventory' }, icon: Package },
-  { name: 'sales', label: t('navigation.sales'), to: { name: 'sales' }, icon: Receipt },
+  // Ventas va justo después de Inventario y con un icono propio (Tributación usa Receipt)
+  // para que cajeros y supervisores lo ubiquen sin buscar.
+  { name: 'sales', label: t('navigation.sales'), to: { name: 'sales' }, icon: ShoppingCart },
   { name: 'inventorymovement', label: t('navigation.inventoryMovement'), to: { name: 'inventorymovement' }, icon: ArrowRightLeft },
   { name: 'tasks', label: t('navigation.tasks'), to: { name: 'tasks' }, icon: ClipboardList },
   { name: 'tasks-calendar', label: t('navigation.calendar'), to: { name: 'tasks-calendar' }, icon: Calendar },

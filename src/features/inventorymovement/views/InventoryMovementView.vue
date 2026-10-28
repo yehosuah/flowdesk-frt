@@ -679,7 +679,7 @@
       v-if="showSale"
       :products="products"
       @close="showSale = false"
-      @created="onMovementCreated"
+      @created="onSaleCreated"
     />
 
     <NewMovementModal
@@ -948,6 +948,13 @@ async function showSuccessAndReload(
 function onMovementCreated() {
   return showSuccessAndReload(
     'Movimiento registrado correctamente.'
+  );
+}
+
+// Las ventas solo se registran desde el módulo de Ventas.
+function onSaleCreated() {
+  return showSuccessAndReload(
+    'Venta registrada correctamente.'
   );
 }
 

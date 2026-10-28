@@ -5,10 +5,6 @@
     <div class="mobile-header">
       <div class="page-heading-row">
         <h1 class="page-title">Inventario</h1>
-        <button v-if="false" class="btn-sales-shortcut" type="button">
-          <ShoppingCart :size="16" aria-hidden="true" />
-          <span aria-hidden="true">▣</span> Registrar venta
-        </button>
       </div>
       <p class="page-subtitle">
         Consulta los productos disponibles en tu inventario
@@ -24,10 +20,6 @@
         <div class="desktop-header">
           <div class="page-heading-row">
             <h1 class="page-title">Inventario</h1>
-            <button v-if="false" class="btn-sales-shortcut" type="button">
-              <ShoppingCart :size="16" aria-hidden="true" />
-              <span aria-hidden="true">▣</span> Registrar venta
-            </button>
           </div>
           <p class="page-subtitle">
             Consulta los productos disponibles en tu inventario
@@ -1561,26 +1553,6 @@ const productosStockBajo =
   justify-content: space-between;
   gap: 16px;
 }
-
-.btn-sales-shortcut {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 0;
-  border-radius: 8px;
-  padding: 9px 14px;
-  background: var(--color-pop-honey, #f2b84b);
-  color: var(--color-structure-base, #1e293b);
-  font: inherit;
-  font-size: .82rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn-sales-shortcut:hover { filter: brightness(.96); }
-.btn-sales-shortcut > span[aria-hidden="true"] { display: none; }
-.btn-sales-shortcut:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 
 
 /* =========================================================
