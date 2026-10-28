@@ -41,34 +41,6 @@
             <h3>Detalles</h3>
 
             <div class="form-group">
-              <label>Responsable</label>
-
-              <details
-                ref="assigneeDropdown"
-                class="custom-select"
-              >
-                <summary class="custom-select__trigger">
-                  {{ assignee }}
-                </summary>
-
-                <div class="custom-select__options">
-                  <button
-                    v-for="person in assigneeOptions"
-                    :key="person"
-                    type="button"
-                    class="custom-select__option"
-                    :class="{
-                      'custom-select__option--active': assignee === person
-                    }"
-                    @click="changeAssignee(person)"
-                  >
-                    {{ person }}
-                  </button>
-                </div>
-              </details>
-            </div>
-
-            <div class="form-group">
               <label>Prioridad</label>
 
               <details
@@ -76,7 +48,7 @@
                 class="custom-select"
               >
                 <summary class="custom-select__trigger">
-                  {{ priority }}
+                  {{ PRIORITY_LABELS[priority] }}
                 </summary>
 
                 <div class="custom-select__options">
@@ -90,7 +62,7 @@
                     }"
                     @click="changePriority(option)"
                   >
-                    {{ option }}
+                    {{ PRIORITY_LABELS[option] }}
                   </button>
                 </div>
               </details>
@@ -202,9 +174,10 @@
         <button
           class="btn-save"
           type="button"
+          :disabled="saving"
           @click="saveTask"
         >
-          Guardar cambios
+          {{ saving ? 'Guardando...' : 'Guardar cambios' }}
         </button>
       </div>
     </div>
@@ -214,46 +187,39 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { CalendarDays, X } from 'lucide-vue-next';
-import type { Task } from '../types';
+import {
+  PRIORITY_LABELS,
+  TASK_PRIORITIES,
+  type Task,
+  type TaskPriority,
+  type TaskUpdate,
+} from '../types';
+import { toDateKey, toFechaLimite } from '../utils/dueDate';
 
 const props = defineProps<{
   task: Task;
+  saving?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'save', task: Task): void;
+  (e: 'save', changes: TaskUpdate): void;
 }>();
 
-const title = ref(props.task.title);
-const description = ref(props.task.description);
-const assignee = ref(props.task.assignee);
-const priority = ref<Task['priority']>(props.task.priority);
-const dueDate = ref(props.task.dueDate);
+const title = ref(props.task.titulo);
+const description = ref(props.task.descripcion ?? '');
+const priority = ref<TaskPriority>(props.task.prioridad);
+const dueDate = ref(toDateKey(props.task.fecha_limite));
 
-const assigneeDropdown = ref<HTMLDetailsElement | null>(null);
 const priorityDropdown = ref<HTMLDetailsElement | null>(null);
 const dateDropdown = ref<HTMLDetailsElement | null>(null);
 
-const assigneeOptions = [
-  'Sin asignar',
-  'María',
-  'Juan',
-  'Andrea',
-  'Josué',
-];
-
-const priorityOptions: Task['priority'][] = [
-  'Sin prioridad',
-  'Alta',
-  'Media',
-  'Baja',
-];
+const priorityOptions = TASK_PRIORITIES;
 
 const today = new Date();
 
-const initialDate = props.task.dueDate
-  ? new Date(`${props.task.dueDate}T00:00:00`)
+const initialDate = dueDate.value
+  ? new Date(`${dueDate.value}T00:00:00`)
   : today;
 
 const calendarYear = ref(initialDate.getFullYear());
@@ -304,15 +270,7 @@ const formattedDueDate = computed(() => {
   return `${day}/${month}/${year}`;
 });
 
-function changeAssignee(person: string) {
-  assignee.value = person;
-
-  if (assigneeDropdown.value) {
-    assigneeDropdown.value.open = false;
-  }
-}
-
-function changePriority(option: Task['priority']) {
+function changePriority(option: TaskPriority) {
   priority.value = option;
 
   if (priorityDropdown.value) {
@@ -411,12 +369,10 @@ function saveTask() {
   }
 
   emit('save', {
-    ...props.task,
-    title: title.value,
-    description: description.value,
-    assignee: assignee.value,
-    priority: priority.value,
-    dueDate: dueDate.value,
+    titulo: title.value,
+    descripcion: description.value,
+    prioridad: priority.value,
+    fecha_limite: toFechaLimite(dueDate.value),
   });
 }
 </script>
@@ -909,6 +865,11 @@ function saveTask() {
 
 .btn-save:hover {
   opacity: .92;
+}
+
+.btn-save:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 850px) {

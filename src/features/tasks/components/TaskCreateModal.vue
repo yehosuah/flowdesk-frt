@@ -44,35 +44,6 @@
             <h3>Detalles</h3>
 
             <div class="form-group">
-              <label>Responsable</label>
-
-              <details
-                ref="assigneeDropdown"
-                class="custom-select"
-              >
-                <summary class="custom-select__trigger">
-                  {{ assignee }}
-                </summary>
-
-                <div class="custom-select__options">
-                  <button
-                    v-for="person in assigneeOptions"
-                    :key="person"
-                    type="button"
-                    class="custom-select__option"
-                    :class="{
-                      'custom-select__option--active':
-                        assignee === person
-                    }"
-                    @click="changeAssignee(person)"
-                  >
-                    {{ person }}
-                  </button>
-                </div>
-              </details>
-            </div>
-
-            <div class="form-group">
               <label>Prioridad</label>
 
               <details
@@ -80,7 +51,7 @@
                 class="custom-select"
               >
                 <summary class="custom-select__trigger">
-                  {{ priority }}
+                  {{ PRIORITY_LABELS[priority] }}
                 </summary>
 
                 <div class="custom-select__options">
@@ -95,7 +66,7 @@
                     }"
                     @click="changePriority(option)"
                   >
-                    {{ option }}
+                    {{ PRIORITY_LABELS[option] }}
                   </button>
                 </div>
               </details>
@@ -214,9 +185,10 @@
 
         <button
           class="btn-create"
+          :disabled="saving"
           @click="createTask"
         >
-          Crear tarea
+          {{ saving ? 'Guardando...' : 'Crear tarea' }}
         </button>
       </div>
 
@@ -227,21 +199,27 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { X, CalendarDays } from 'lucide-vue-next';
-import type { Task } from '../types';
+import {
+  PRIORITY_LABELS,
+  TASK_PRIORITIES,
+  type TaskCreate,
+  type TaskPriority,
+} from '../types';
+import { toFechaLimite } from '../utils/dueDate';
+
+defineProps<{
+  saving?: boolean;
+}>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'create', task: Task): void;
+  (e: 'create', task: TaskCreate): void;
 }>();
 
 const title = ref('');
 const description = ref('');
-const assignee = ref('Sin asignar');
-const priority = ref<Task['priority']>('Sin prioridad');
+const priority = ref<TaskPriority>('media');
 const dueDate = ref('');
-
-const assigneeDropdown =
-  ref<HTMLDetailsElement | null>(null);
 
 const priorityDropdown =
   ref<HTMLDetailsElement | null>(null);
@@ -249,20 +227,7 @@ const priorityDropdown =
 const dateDropdown =
   ref<HTMLDetailsElement | null>(null);
 
-const assigneeOptions = [
-  'Sin asignar',
-  'María',
-  'Juan',
-  'Andrea',
-  'Josué',
-];
-
-const priorityOptions: Task['priority'][] = [
-  'Sin prioridad',
-  'Alta',
-  'Media',
-  'Baja',
-];
+const priorityOptions = TASK_PRIORITIES;
 
 const today = new Date();
 
@@ -318,16 +283,8 @@ const formattedDueDate = computed(() => {
   return `${day}/${month}/${year}`;
 });
 
-function changeAssignee(person: string) {
-  assignee.value = person;
-
-  if (assigneeDropdown.value) {
-    assigneeDropdown.value.open = false;
-  }
-}
-
 function changePriority(
-  option: Task['priority'],
+  option: TaskPriority,
 ) {
   priority.value = option;
 
@@ -433,27 +390,13 @@ function createTask() {
     return;
   }
 
-  const newTask: Task = {
-    id: Date.now(),
-    title: title.value,
-    description: description.value,
-    assignee: assignee.value,
-    priority: priority.value,
-    status: 'Pendiente',
-    dueDate:
-      dueDate.value ||
-      new Date().toISOString().split('T')[0],
-  };
-
-  emit('create', newTask);
-
-  title.value = '';
-  description.value = '';
-  assignee.value = 'Sin asignar';
-  priority.value = 'Sin prioridad';
-  dueDate.value = '';
-
-  emit('close');
+  // El modal se cierra desde la vista cuando el backend confirma la creación.
+  emit('create', {
+    titulo: title.value,
+    descripcion: description.value,
+    prioridad: priority.value,
+    fecha_limite: toFechaLimite(dueDate.value),
+  });
 }
 </script>
 
@@ -839,6 +782,11 @@ function createTask() {
 
 .btn-create:hover {
   opacity: .92;
+}
+
+.btn-create:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 850px) {

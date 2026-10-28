@@ -4,7 +4,6 @@
       <thead>
         <tr>
           <th class="col-task">Tarea</th>
-          <th class="col-assignee">Responsable</th>
           <th class="col-priority">Prioridad</th>
           <th class="col-status">Estado</th>
           <th class="col-date">Fecha límite</th>
@@ -22,24 +21,17 @@
             data-label="Tarea"
           >
             <div class="task-info">
-              <strong :title="task.title">
-                {{ task.title }}
+              <strong :title="task.titulo">
+                {{ task.titulo }}
               </strong>
 
               <small
                 class="task-description"
-                :title="task.description"
+                :title="task.descripcion ?? ''"
               >
-                {{ task.description }}
+                {{ task.descripcion }}
               </small>
             </div>
-          </td>
-
-          <td
-            class="col-assignee"
-            data-label="Responsable"
-          >
-            {{ task.assignee }}
           </td>
 
           <td
@@ -48,9 +40,9 @@
           >
             <span
               class="badge"
-              :class="priorityClass(task.priority)"
+              :class="priorityClass(task.prioridad)"
             >
-              {{ task.priority }}
+              {{ PRIORITY_LABELS[task.prioridad] }}
             </span>
           </td>
 
@@ -61,8 +53,8 @@
             <div class="status-wrapper">
               <select
                 class="status-select"
-                :class="statusClass(task.status)"
-                :value="task.status"
+                :class="statusClass(task.estado)"
+                :value="task.estado"
                 @change="
                   emit(
                     'status-change',
@@ -71,16 +63,12 @@
                   )
                 "
               >
-                <option value="Pendiente">
-                  Pendiente
-                </option>
-
-                <option value="En progreso">
-                  En progreso
-                </option>
-
-                <option value="Completada">
-                  Completada
+                <option
+                  v-for="option in TASK_STATUSES"
+                  :key="option"
+                  :value="option"
+                >
+                  {{ STATUS_LABELS[option] }}
                 </option>
               </select>
 
@@ -95,7 +83,7 @@
             class="col-date"
             data-label="Fecha límite"
           >
-            {{ formatDate(task.dueDate) }}
+            {{ formatDate(task.fecha_limite) }}
           </td>
 
           <td
@@ -110,6 +98,15 @@
             >
               ✏️
             </button>
+
+            <button
+              class="btn-delete"
+              type="button"
+              title="Eliminar tarea"
+              @click="emit('delete', task)"
+            >
+              🗑️
+            </button>
           </td>
         </tr>
 
@@ -118,7 +115,7 @@
           class="empty-row"
         >
           <td
-            colspan="6"
+            colspan="5"
             class="empty-state"
           >
             No hay tareas registradas.
@@ -132,10 +129,15 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next';
 
-import type {
-  Task,
-  TaskPriority,
-  TaskStatus,
+import { parseFechaLimite } from '../utils/dueDate';
+
+import {
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  TASK_STATUSES,
+  type Task,
+  type TaskPriority,
+  type TaskStatus,
 } from '../types';
 
 defineProps<{
@@ -145,9 +147,11 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'edit', task: Task): void;
 
+  (e: 'delete', task: Task): void;
+
   (
     e: 'status-change',
-    id: number,
+    id: string,
     status: TaskStatus
   ): void;
 }>();
@@ -156,14 +160,17 @@ function priorityClass(
   priority: TaskPriority
 ) {
   return {
+    'badge--urgent':
+      priority === 'urgente',
+
     'badge--high':
-      priority === 'Alta',
+      priority === 'alta',
 
     'badge--medium':
-      priority === 'Media',
+      priority === 'media',
 
     'badge--low':
-      priority === 'Baja',
+      priority === 'baja',
   };
 }
 
@@ -172,19 +179,29 @@ function statusClass(
 ) {
   return {
     'badge--pending':
-      status === 'Pendiente',
+      status === 'pendiente',
 
     'badge--progress':
-      status === 'En progreso',
+      status === 'en_progreso',
 
     'badge--completed':
-      status === 'Completada',
+      status === 'completada',
+
+    'badge--cancelled':
+      status === 'cancelada',
   };
 }
 
 function formatDate(
-  date: string
+  fechaLimite: string | null
 ): string {
+  const taskDate =
+    parseFechaLimite(fechaLimite);
+
+  if (!taskDate) {
+    return 'Sin fecha';
+  }
+
   const months = [
     'Ene',
     'Feb',
@@ -199,9 +216,6 @@ function formatDate(
     'Nov',
     'Dic',
   ];
-
-  const taskDate =
-    new Date(`${date}T00:00:00`);
 
   const day =
     String(
@@ -329,6 +343,12 @@ function formatDate(
   white-space: nowrap;
 }
 
+.badge--urgent {
+  background: var(--color-danger);
+
+  color: #fff;
+}
+
 .badge--high {
   background: var(--color-danger-bg);
 
@@ -363,6 +383,12 @@ function formatDate(
   background: var(--color-success-bg);
 
   color: var(--color-success-text);
+}
+
+.badge--cancelled {
+  background: var(--color-bg-hover);
+
+  color: var(--color-text-muted);
 }
 
 .status-wrapper {
@@ -414,7 +440,8 @@ function formatDate(
   text-align: center;
 }
 
-.btn-edit {
+.btn-edit,
+.btn-delete {
   padding: 2px;
 
   border: none;
@@ -428,7 +455,8 @@ function formatDate(
   transition: transform .2s;
 }
 
-.btn-edit:hover {
+.btn-edit:hover,
+.btn-delete:hover {
   transform: scale(1.15);
 }
 
@@ -554,7 +582,6 @@ function formatDate(
     text-align: right;
   }
 
-  .col-assignee,
   .col-priority,
   .col-status,
   .col-date,
@@ -649,7 +676,8 @@ function formatDate(
     width: 11px;
   }
 
-  .btn-edit {
+  .btn-edit,
+  .btn-delete {
     font-size: .9rem;
   }
 }
@@ -708,7 +736,8 @@ function formatDate(
     width: 10px;
   }
 
-  .btn-edit {
+  .btn-edit,
+  .btn-delete {
     font-size: .82rem;
   }
 }
@@ -763,7 +792,8 @@ function formatDate(
     width: 9px;
   }
 
-  .btn-edit {
+  .btn-edit,
+  .btn-delete {
     font-size: .78rem;
   }
 }

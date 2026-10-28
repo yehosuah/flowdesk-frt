@@ -14,7 +14,7 @@
 
     <details ref="statusDropdown" class="filter-dropdown">
       <summary class="filter-select">
-        {{ status || 'Todos los estados' }}
+        {{ status ? STATUS_LABELS[status] : 'Todos los estados' }}
       </summary>
 
       <div class="filter-options">
@@ -28,36 +28,20 @@
         </button>
 
         <button
+          v-for="option in TASK_STATUSES"
+          :key="option"
           type="button"
           class="filter-option"
-          :class="{ 'filter-option--active': status === 'Pendiente' }"
-          @click="changeStatus('Pendiente')"
+          :class="{ 'filter-option--active': status === option }"
+          @click="changeStatus(option)"
         >
-          Pendiente
-        </button>
-
-        <button
-          type="button"
-          class="filter-option"
-          :class="{ 'filter-option--active': status === 'En progreso' }"
-          @click="changeStatus('En progreso')"
-        >
-          En progreso
-        </button>
-
-        <button
-          type="button"
-          class="filter-option"
-          :class="{ 'filter-option--active': status === 'Completada' }"
-          @click="changeStatus('Completada')"
-        >
-          Completada
+          {{ STATUS_LABELS[option] }}
         </button>
       </div>
     </details>
     <details ref="priorityDropdown" class="filter-dropdown">
       <summary class="filter-select">
-        {{ priority || 'Todas las prioridades' }}
+        {{ priority ? PRIORITY_LABELS[priority] : 'Todas las prioridades' }}
       </summary>
 
       <div class="filter-options">
@@ -71,30 +55,14 @@
         </button>
 
         <button
+          v-for="option in TASK_PRIORITIES"
+          :key="option"
           type="button"
           class="filter-option"
-          :class="{ 'filter-option--active': priority === 'Alta' }"
-          @click="changePriority('Alta')"
+          :class="{ 'filter-option--active': priority === option }"
+          @click="changePriority(option)"
         >
-          Alta
-        </button>
-
-        <button
-          type="button"
-          class="filter-option"
-          :class="{ 'filter-option--active': priority === 'Media' }"
-          @click="changePriority('Media')"
-        >
-          Media
-        </button>
-
-        <button
-          type="button"
-          class="filter-option"
-          :class="{ 'filter-option--active': priority === 'Baja' }"
-          @click="changePriority('Baja')"
-        >
-          Baja
+          {{ PRIORITY_LABELS[option] }}
         </button>
       </div>
     </details>   
@@ -111,6 +79,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Search } from 'lucide-vue-next';
+import {
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  type TaskPriority,
+  type TaskStatus,
+} from '../types';
 
 const emit = defineEmits<{
   (
@@ -124,8 +100,8 @@ const emit = defineEmits<{
 }>();
 
 const search = ref('');
-const status = ref('');
-const priority = ref('');
+const status = ref<TaskStatus | ''>('');
+const priority = ref<TaskPriority | ''>('');
 
 const statusDropdown = ref<HTMLDetailsElement | null>(null);
 const priorityDropdown = ref<HTMLDetailsElement | null>(null);
@@ -138,7 +114,7 @@ function emitFilters() {
   });
 }
 
-function changeStatus(value: string) {
+function changeStatus(value: TaskStatus | '') {
   status.value = value;
 
   if (statusDropdown.value) {
@@ -148,7 +124,7 @@ function changeStatus(value: string) {
   emitFilters();
 }
 
-function changePriority(value: string) {
+function changePriority(value: TaskPriority | '') {
   priority.value = value;
 
   if (priorityDropdown.value) {

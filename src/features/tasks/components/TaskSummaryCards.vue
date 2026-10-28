@@ -56,15 +56,15 @@ const props = defineProps<{
 }>();
 
 const pending = computed(() =>
-  props.tasks.filter(task => task.status === 'Pendiente').length,
+  props.tasks.filter(task => task.estado === 'pendiente').length,
 );
 
 const inProgress = computed(() =>
-  props.tasks.filter(task => task.status === 'En progreso').length,
+  props.tasks.filter(task => task.estado === 'en_progreso').length,
 );
 
 const completed = computed(() =>
-  props.tasks.filter(task => task.status === 'Completada').length,
+  props.tasks.filter(task => task.estado === 'completada').length,
 );
 </script>
 

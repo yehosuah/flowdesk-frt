@@ -10,46 +10,119 @@
 
       <button
         class="btn-create"
+        :disabled="isLoading"
         @click="showCreateModal = true"
       >
         + Nueva tarea
       </button>
     </div>
 
-    <TaskSummaryCards :tasks="tasks" />
-        <TaskFilters @change="updateFilters" />
-
-        <TaskTable
-          :tasks="tasks"
-          @edit="editTask"
-          @status-change="updateStatus"
-        />
-        
-        <TaskCreateModal
-          v-if="showCreateModal"
-          @close="showCreateModal = false"
-          @create="createTask"
-        />
-
-        <TaskEditModal
-          v-if="showEditModal && selectedTask"
-          :task="selectedTask"
-          @close="showEditModal = false"
-          @save="updateTask"
-        />
+    <div
+      v-if="isLoading"
+      class="summary-skeleton"
+    >
+      <Skeleton
+        v-for="i in 4"
+        :key="i"
+        height="92px"
+      />
     </div>
+
+    <TaskSummaryCards
+      v-else-if="!loadError"
+      :tasks="filteredTasks"
+    />
+
+    <TaskFilters @change="updateFilters" />
+
+    <div
+      v-if="isLoading"
+      class="table-skeleton"
+      data-test="tasks-loading"
+    >
+      <Skeleton
+        v-for="i in 5"
+        :key="i"
+        height="52px"
+      />
+    </div>
+
+    <Alert
+      v-else-if="loadError"
+      title="No se pudieron cargar las tareas"
+      data-test="tasks-error"
+    >
+      <p class="error-message">{{ loadError }}</p>
+
+      <button
+        class="btn-retry"
+        type="button"
+        @click="loadTasks"
+      >
+        Reintentar
+      </button>
+    </Alert>
+
+    <TaskTable
+      v-else
+      :tasks="filteredTasks"
+      @edit="openEditModal"
+      @delete="taskToDelete = $event"
+      @status-change="changeStatus"
+    />
+
+    <TaskCreateModal
+      v-if="showCreateModal"
+      :saving="isSaving"
+      @close="showCreateModal = false"
+      @create="onCreate"
+    />
+
+    <TaskEditModal
+      v-if="showEditModal && selectedTask"
+      :task="selectedTask"
+      :saving="isSaving"
+      @close="showEditModal = false"
+      @save="onSave"
+    />
+
+    <ConfirmDialog
+      v-if="taskToDelete"
+      title="Eliminar tarea"
+      :message="`¿Seguro que deseas eliminar «${taskToDelete.titulo}»? Esta acción no se puede deshacer.`"
+      confirm-label="Eliminar"
+      variant="danger"
+      :loading="isDeleting"
+      @confirm="onDelete"
+      @cancel="taskToDelete = null"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-
+import { computed, onMounted, ref } from 'vue';
 import TaskSummaryCards from '../components/TaskSummaryCards.vue';
-import { mockTasks } from '../data/mockTasks';
 import TaskTable from '../components/TaskTable.vue';
 import TaskFilters from '../components/TaskFilters.vue';
 import TaskCreateModal from '../components/TaskCreateModal.vue';
 import TaskEditModal from '../components/TaskEditModal.vue';
-import { ref, computed } from 'vue';
-import type { Task, TaskStatus } from '../types';
+import ConfirmDialog from '@/app/components/ConfirmDialog.vue';
+import { Alert, Skeleton } from '@/app/components/ui';
+import { useTasks } from '../composables/useTasks';
+import type { Task, TaskCreate, TaskUpdate } from '../types';
+
+const {
+  tasks,
+  isLoading,
+  loadError,
+  isSaving,
+  isDeleting,
+  loadTasks,
+  addTask,
+  saveTask,
+  changeStatus,
+  removeTask,
+} = useTasks();
 
 const search = ref('');
 const status = ref('');
@@ -57,30 +130,27 @@ const priority = ref('');
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const selectedTask = ref<Task | null>(null);
-const taskList = ref([...mockTasks]);
+const taskToDelete = ref<Task | null>(null);
 
-const tasks = computed(() => {
-  return taskList.value.filter(task => {
+// Las tareas se cargan una vez y se filtran en memoria: así los filtros
+// responden al instante y los cambios de estado se reflejan sin recargar.
+const filteredTasks = computed(() => {
+  const term = search.value.toLowerCase();
 
+  return tasks.value.filter(task => {
     const matchesSearch =
-      task.title.toLowerCase().includes(search.value.toLowerCase()) ||
-      task.description.toLowerCase().includes(search.value.toLowerCase());
+      task.titulo.toLowerCase().includes(term) ||
+      (task.descripcion ?? '').toLowerCase().includes(term);
 
     const matchesStatus =
-      !status.value || task.status === status.value;
+      !status.value || task.estado === status.value;
 
     const matchesPriority =
-      !priority.value || task.priority === priority.value;
+      !priority.value || task.prioridad === priority.value;
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
 });
-
-function updateStatus(id: number, status: TaskStatus) {
-  const task = taskList.value.find(task => task.id === id);
-  if (!task) return;
-  task.status = status;
-}
 
 function updateFilters(filters: {
   search: string;
@@ -92,26 +162,34 @@ function updateFilters(filters: {
   priority.value = filters.priority;
 }
 
-function createTask(task: Task) {
-  taskList.value.unshift(task);
-  showCreateModal.value = false;
+async function onCreate(data: TaskCreate) {
+  if (await addTask(data)) {
+    showCreateModal.value = false;
+  }
 }
 
-function editTask(task: Task){
+function openEditModal(task: Task) {
   selectedTask.value = task;
   showEditModal.value = true;
 }
 
-function updateTask(updatedTask: Task) {
-  const index = taskList.value.findIndex(
-    task => task.id === updatedTask.id,
-  );
+async function onSave(data: TaskUpdate) {
+  if (!selectedTask.value) return;
 
-  if (index === -1) return;
-  taskList.value.splice(index, 1, updatedTask);
-  showEditModal.value = false;
+  if (await saveTask(selectedTask.value.id, data)) {
+    showEditModal.value = false;
+  }
 }
 
+async function onDelete() {
+  if (!taskToDelete.value) return;
+
+  if (await removeTask(taskToDelete.value.id)) {
+    taskToDelete.value = null;
+  }
+}
+
+onMounted(loadTasks);
 </script>
 
 <style scoped>
@@ -157,19 +235,46 @@ function updateTask(updatedTask: Task) {
   opacity: .9;
 }
 
-.coming-soon-card {
-  background: var(--color-bg-surface);
+.btn-create:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.summary-skeleton {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 1100px) {
+  .summary-skeleton {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.table-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
   border-radius: 12px;
+  background: var(--color-bg-surface);
   box-shadow: var(--shadow-card);
-  padding: 32px;
 }
 
-.coming-soon-card h2 {
-  margin-top: 0;
+.error-message {
+  margin: 0 0 12px;
 }
 
-.coming-soon-card p {
-  color: var(--color-text-secondary);
+.btn-retry {
+  padding: 8px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {
