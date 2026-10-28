@@ -5,7 +5,37 @@
       <p>Visualiza las tareas organizadas por fecha límite.</p>
     </div>
 
-    <div class="calendar-card">
+    <Alert
+      v-if="loadError"
+      class="calendar-alert"
+      title="No se pudieron cargar las tareas"
+      data-test="calendar-error"
+    >
+      <p class="error-message">{{ loadError }}</p>
+
+      <button
+        class="btn-retry"
+        type="button"
+        @click="loadTasks"
+      >
+        Reintentar
+      </button>
+    </Alert>
+
+    <div
+      class="calendar-card"
+      :class="{ 'calendar-card--loading': isLoading }"
+      :aria-busy="isLoading"
+    >
+      <p
+        v-if="isLoading"
+        class="calendar-loading"
+        data-test="calendar-loading"
+      >
+        <Spinner size="sm" />
+        Cargando tareas...
+      </p>
+
       <div class="calendar-toolbar">
         <div class="calendar-nav">
           <button
@@ -102,14 +132,14 @@
           >
             <span
               class="task-dot"
-              :class="priorityClass(task.priority)"
+              :class="priorityClass(task.prioridad)"
             ></span>
 
             <span
               class="task-title"
-              :title="task.title"
+              :title="task.titulo"
             >
-              {{ shortTitle(task.title) }}
+              {{ shortTitle(task.titulo) }}
             </span>
           </div>
         </div>
@@ -139,14 +169,14 @@
               >
                 <span
                   class="task-dot"
-                  :class="priorityClass(task.priority)"
+                  :class="priorityClass(task.prioridad)"
                 ></span>
 
                 <span
                   class="task-title"
-                  :title="task.title"
+                  :title="task.titulo"
                 >
-                  {{ shortTitle(task.title) }}
+                  {{ shortTitle(task.titulo) }}
                 </span>
               </div>
 
@@ -189,29 +219,29 @@
             <div class="day-card-title">
               <span
                 class="task-dot"
-                :class="priorityClass(task.priority)"
+                :class="priorityClass(task.prioridad)"
               ></span>
 
               <span>
-                {{ task.title }}
+                {{ task.titulo }}
               </span>
             </div>
 
             <p class="day-description">
-              {{ task.description }}
+              {{ task.descripcion }}
             </p>
 
             <div class="day-footer">
               <span>
-                Responsable:
-                <strong>{{ task.assignee }}</strong>
+                Estado:
+                <strong>{{ STATUS_LABELS[task.estado] }}</strong>
               </span>
 
               <span
                 class="priority-badge"
-                :class="priorityClass(task.priority)"
+                :class="priorityClass(task.prioridad)"
               >
-                {{ task.priority }}
+                {{ PRIORITY_LABELS[task.prioridad] }}
               </span>
             </div>
           </article>
@@ -230,20 +260,29 @@
   <TaskEditModal
     v-if="showEditModal && selectedTask"
     :task="selectedTask"
+    :saving="isSaving"
     @close="showEditModal = false"
-    @save="updateTask"
+    @save="onSave"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-vue-next';
-import { mockTasks } from '../data/mockTasks';
 import TaskEditModal from '../components/TaskEditModal.vue';
-import type { Task } from '../types';
+import { Alert, Spinner } from '@/app/components/ui';
+import { useTasks } from '../composables/useTasks';
+import {
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  type Task,
+  type TaskPriority,
+  type TaskUpdate,
+} from '../types';
+import { parseFechaLimite } from '../utils/dueDate';
 
 const weekDays = [
   'Lunes',
@@ -257,7 +296,14 @@ const weekDays = [
 
 const today = new Date();
 
-const tasks = ref<Task[]>([...mockTasks]);
+const {
+  tasks,
+  isLoading,
+  loadError,
+  isSaving,
+  loadTasks,
+  saveTask,
+} = useTasks();
 
 const showEditModal = ref(false);
 const selectedTask = ref<Task | null>(null);
@@ -542,39 +588,36 @@ function editTask(task: Task) {
   showEditModal.value = true;
 }
 
-function updateTask(
-  updatedTask: Task,
+async function onSave(
+  changes: TaskUpdate,
 ) {
-  const index =
-    tasks.value.findIndex(
-      (task) =>
-        task.id === updatedTask.id,
-    );
-
-  if (index === -1) {
+  if (!selectedTask.value) {
     return;
   }
 
-  tasks.value.splice(
-    index,
-    1,
-    updatedTask,
-  );
-
-  showEditModal.value = false;
+  if (
+    await saveTask(
+      selectedTask.value.id,
+      changes,
+    )
+  ) {
+    showEditModal.value = false;
+  }
 }
 
+// Las tareas sin fecha límite no se ubican en el calendario.
 function getTasksForDay(
   day: number,
 ) {
   return tasks.value.filter(
     (task) => {
       const date =
-        parseTaskDate(
-          task.dueDate,
+        parseFechaLimite(
+          task.fecha_limite,
         );
 
       return (
+        date !== null &&
         date.getDate() === day &&
         date.getMonth() ===
           currentDate.value.getMonth() &&
@@ -591,11 +634,12 @@ function getTasksForDate(
   return tasks.value.filter(
     (task) => {
       const date =
-        parseTaskDate(
-          task.dueDate,
+        parseFechaLimite(
+          task.fecha_limite,
         );
 
       return (
+        date !== null &&
         date.getDate() ===
           targetDate.getDate() &&
         date.getMonth() ===
@@ -607,24 +651,18 @@ function getTasksForDate(
   );
 }
 
-function parseTaskDate(
-  date: string,
-) {
-  return new Date(
-    `${date}T00:00:00`,
-  );
-}
-
 function priorityClass(
-  priority: string,
+  priority: TaskPriority,
 ) {
   return {
+    urgent:
+      priority === 'urgente',
     high:
-      priority === 'Alta',
+      priority === 'alta',
     medium:
-      priority === 'Media',
+      priority === 'media',
     low:
-      priority === 'Baja',
+      priority === 'baja',
   };
 }
 
@@ -640,6 +678,8 @@ function shortTitle(
     18,
   )}...`;
 }
+
+onMounted(loadTasks);
 </script>
 
 <style scoped>
@@ -676,6 +716,40 @@ function shortTitle(
   );
 
   font-size: .95rem;
+}
+
+.calendar-alert {
+  margin-bottom: 20px;
+}
+
+.error-message {
+  margin: 0 0 12px;
+}
+
+.btn-retry {
+  padding: 8px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.calendar-card--loading .calendar-grid,
+.calendar-card--loading .week-view,
+.calendar-card--loading .day-view {
+  opacity: .5;
+  pointer-events: none;
 }
 
 .calendar-card {
@@ -899,6 +973,12 @@ function shortTitle(
   flex-shrink: 0;
 
   border-radius: 50%;
+}
+
+.task-dot.urgent,
+.priority-badge.urgent {
+  background: var(--color-danger);
+  color: #fff;
 }
 
 .task-dot.high,
