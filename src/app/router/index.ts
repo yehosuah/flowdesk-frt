@@ -254,10 +254,6 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     redirect: { name: 'login' },
   },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: { name: 'login' },
-  },
 ];
 
 const router = createRouter({
