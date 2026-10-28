@@ -8,6 +8,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue()],
 
+    assetsInclude: ['**/*.PNG'],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
