@@ -166,40 +166,35 @@
               <button type="button" class="btn-retry" @click="loadPurchases(selectedClient.id)">Reintentar</button>
             </div>
 
-            <p v-else-if="purchases.length === 0" class="purchases-state">
-              Este cliente aún no tiene compras. Asígnalo a una venta desde el módulo de Ventas.
-            </p>
-
             <template v-else>
-              <dl class="purchases-summary">
-                <div class="purchases-summary__item">
-                  <dt>Compras</dt>
-                  <dd>{{ completedPurchases.length }}</dd>
-                </div>
-                <div class="purchases-summary__item">
-                  <dt>Total comprado</dt>
-                  <dd>{{ formatMoney(totalPurchased) }}</dd>
-                </div>
-              </dl>
-
-              <ul class="purchase-list">
-                <li
-                  v-for="sale in purchases"
-                  :key="sale.id"
-                  class="purchase-row"
-                  :class="{ 'purchase-row--voided': sale.estado === SALE_STATE_VOIDED }"
-                >
-                  <div class="purchase-row__main">
-                    <span class="purchase-row__date">{{ formatDate(sale.fecha) }}</span>
-                    <span class="purchase-row__items">{{ itemsLabel(sale) }}</span>
-                  </div>
-                  <span v-if="sale.estado === SALE_STATE_VOIDED" class="purchase-badge">Anulada</span>
-                  <span class="purchase-row__total">{{ formatMoney(sale.total) }}</span>
-                </li>
-              </ul>
+              <div class="history-table-container">
+                <table class="history-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Producto</th>
+                      <th class="col-number">Cantidad</th>
+                      <th class="col-number">Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in purchaseRows" :key="row.key">
+                      <td>{{ formatDate(row.fecha) }}</td>
+                      <td class="font-medium">{{ productName(row.productoId) }}</td>
+                      <td class="col-number">{{ row.cantidad }}</td>
+                      <td class="col-number">{{ formatMoney(row.precio) }}</td>
+                    </tr>
+                    <tr v-if="purchaseRows.length === 0">
+                      <td colspan="4" class="history-empty">
+                        Este cliente aún no tiene compras. Asígnalo a una venta desde el módulo de Ventas.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
               <p v-if="purchases.length >= PURCHASES_LIMIT" class="purchases-note">
-                Se muestran las últimas {{ PURCHASES_LIMIT }} ventas; el resumen corresponde a ellas.
+                Se muestran los productos de las últimas {{ PURCHASES_LIMIT }} ventas.
               </p>
             </template>
           </section>
@@ -221,7 +216,8 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { Search, Phone, Mail, Pencil, MapPin, Users } from 'lucide-vue-next';
 import { fetchClients, fetchClientPurchases, type Client } from '@/features/clients/api';
-import { SALE_STATE_COMPLETED, SALE_STATE_VOIDED, type Sale } from '@/features/sales/types';
+import { fetchInventoryProducts } from '@/features/inventory/api';
+import { SALE_STATE_COMPLETED, type Sale } from '@/features/sales/types';
 import { useCurrency } from '@/features/currency';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
@@ -302,16 +298,44 @@ const isLoadingPurchases = ref(false);
 const purchasesError = ref('');
 let purchasesSeq = 0;
 
-// Las ventas anuladas se muestran en el historial pero no cuentan como compras.
-const completedPurchases = computed(() =>
-  purchases.value.filter((sale) => sale.estado === SALE_STATE_COMPLETED),
+// Una fila por producto vendido. Las ventas anuladas no se listan: sus
+// productos regresaron al inventario y ya no cuentan como compra.
+const purchaseRows = computed(() =>
+  purchases.value
+    .filter((sale) => sale.estado === SALE_STATE_COMPLETED)
+    .flatMap((sale) =>
+      (sale.items ?? []).map((item) => ({
+        key: item.id,
+        fecha: sale.fecha,
+        productoId: item.producto_id,
+        cantidad: Number(item.cantidad),
+        precio: item.precio_unitario,
+      })),
+    ),
 );
 
-const totalPurchased = computed(() =>
-  completedPurchases.value.reduce((sum, sale) => sum + Number(sale.total), 0),
-);
+// Las ventas solo traen el id del producto; el nombre sale del inventario.
+const productNames = ref(new Map<string, string>());
+let productNamesLoaded = false;
+
+async function loadProductNames() {
+  if (productNamesLoaded) return;
+  productNamesLoaded = true;
+  try {
+    const products = await fetchInventoryProducts();
+    productNames.value = new Map(products.map((product) => [product.id, product.nombre]));
+  } catch {
+    // Sin el inventario la tabla sigue funcionando con el id corto del producto.
+    productNamesLoaded = false;
+  }
+}
+
+function productName(id: string): string {
+  return productNames.value.get(id) ?? `Producto ${id.slice(0, 8)}…`;
+}
 
 async function loadPurchases(clientId: string) {
+  loadProductNames();
   // Si el usuario cambia de cliente antes de que responda la petición anterior,
   // se descarta esa respuesta para no mostrar compras de otro cliente.
   const seq = ++purchasesSeq;
@@ -353,11 +377,6 @@ function formatDate(iso: string): string {
     `${String(date.getMonth() + 1).padStart(2, '0')}/` +
     `${date.getFullYear()}`
   );
-}
-
-function itemsLabel(sale: Sale): string {
-  const count = sale.items?.length ?? 0;
-  return count === 1 ? '1 producto' : `${count} productos`;
 }
 
 function openEditModal(cli: Client) {
@@ -794,81 +813,57 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.purchases-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 12px;
-}
-
-.purchases-summary__item {
-  padding: 14px 16px;
+/* Misma tabla que "Productos que Provee" en Proveedores */
+.history-table-container {
   border: 1px solid var(--color-bg-border);
   border-radius: 12px;
-  background: var(--color-bg-subtle);
+  overflow-x: auto;
 }
 
-.purchases-summary__item dt {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  margin-bottom: 4px;
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
 }
 
-.purchases-summary__item dd {
-  margin: 0;
-  font-size: 1.15rem;
+.history-table th {
+  background: var(--color-structure-base);
+  padding: 12px 16px;
+  color: var(--color-text-on-structure);
   font-weight: 700;
-  color: var(--color-heading);
+  white-space: nowrap;
 }
 
-.purchase-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--color-bg-border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.purchase-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.history-table td {
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-bg-border);
+  color: var(--color-text);
 }
 
-.purchase-row:last-child {
+.history-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.purchase-row__main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.history-table tbody tr:hover {
+  background: var(--color-bg-subtle);
 }
 
-.purchase-row__date {
-  font-weight: 600;
-  color: var(--color-heading);
+.history-table .col-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.purchase-row__items {
-  font-size: 0.8rem;
+.history-empty {
+  padding: 24px;
+  text-align: center;
   color: var(--color-text-muted);
 }
 
-.purchase-row__total {
-  font-weight: 700;
+.font-medium {
+  font-weight: 600;
   color: var(--color-heading);
-  font-variant-numeric: tabular-nums;
-}
-
-.purchase-row--voided .purchase-row__total {
-  color: var(--color-text-faint);
-  text-decoration: line-through;
 }
 
 .purchases-note {
@@ -877,14 +872,6 @@ onMounted(() => {
   color: var(--color-text-muted);
 }
 
-.purchase-badge {
-  padding: 2px 8px;
-  border-radius: 9999px;
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
 
 .loading-state,
 .empty-state {
@@ -1024,6 +1011,12 @@ onMounted(() => {
   .contact-row span {
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
   }
 
   .filter-dropdown,

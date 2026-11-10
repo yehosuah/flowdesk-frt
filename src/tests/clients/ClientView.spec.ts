@@ -15,12 +15,17 @@ import type { Sale } from "@/features/sales/types";
 const mocks = vi.hoisted(() => ({
   fetchClients: vi.fn(),
   fetchClientPurchases: vi.fn(),
+  fetchInventoryProducts: vi.fn(),
   getApiErrorMessage: vi.fn(),
 }));
 
 vi.mock("@/features/clients/api", () => ({
   fetchClients: mocks.fetchClients,
   fetchClientPurchases: mocks.fetchClientPurchases,
+}));
+
+vi.mock("@/features/inventory/api", () => ({
+  fetchInventoryProducts: mocks.fetchInventoryProducts,
 }));
 
 vi.mock("@/services/apiClient", () => ({
@@ -64,7 +69,7 @@ function makeSale(overrides: Partial<Sale> = {}): Sale {
     cliente_id: "c1",
     consumidor_final: false,
     cliente_nombre: "Ana López",
-    fecha: "2026-11-05T15:00:00Z",
+    fecha: "2026-11-05T15:00:00",
     subtotal: 100,
     descuento: 0,
     impuesto: 12,
@@ -77,11 +82,23 @@ function makeSale(overrides: Partial<Sale> = {}): Sale {
   };
 }
 
+const inventory = [
+  { id: "p1", nombre: "Mouse pad ergonómico", cantidad: 10, descripcion: "", precio: 50, stockMinimo: 1, is_active: true },
+  { id: "p2", nombre: "Adaptador USB-C a HDMI", cantidad: 5, descripcion: "", precio: 110, stockMinimo: 1, is_active: true },
+];
+
+function historyRows(wrapper: ReturnType<typeof createWrapper>) {
+  return wrapper
+    .findAll("[data-testid='client-purchases'] tbody tr")
+    .map((row) => row.findAll("td").map((cell) => cell.text()));
+}
+
 describe("ClientView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.fetchClients.mockResolvedValue([]);
     mocks.fetchClientPurchases.mockResolvedValue([]);
+    mocks.fetchInventoryProducts.mockResolvedValue(inventory);
     mocks.getApiErrorMessage.mockReturnValue(
       "Error al cargar clientes",
     );
@@ -130,17 +147,16 @@ describe("ClientView", () => {
     );
   });
 
-  describe("historial de compras", () => {
-    it("carga las compras del cliente seleccionado con su resumen", async () => {
+  describe("historial de compras (tabla)", () => {
+    it("muestra una fila por producto con fecha, producto, cantidad y precio", async () => {
       mocks.fetchClients.mockResolvedValue([makeClient()]);
       mocks.fetchClientPurchases.mockResolvedValue([
         makeSale({
           id: "s2",
-          fecha: "2026-11-06T15:00:00Z",
-          total: 56,
+          fecha: "2026-11-06T15:00:00",
           items: [
-            { id: "i2", producto_id: "p1", cantidad: 1, precio_unitario: 25, subtotal: 25 },
-            { id: "i3", producto_id: "p2", cantidad: 1, precio_unitario: 25, subtotal: 25 },
+            { id: "i2", producto_id: "p2", cantidad: 1, precio_unitario: 110, subtotal: 110 },
+            { id: "i3", producto_id: "p1", cantidad: 3, precio_unitario: 35, subtotal: 105 },
           ],
         }),
         makeSale(),
@@ -150,50 +166,83 @@ describe("ClientView", () => {
       await flushPromises();
 
       expect(mocks.fetchClientPurchases).toHaveBeenCalledWith("c1", 50);
+      const headers = wrapper.findAll("[data-testid='client-purchases'] th").map((th) => th.text());
+      expect(headers).toEqual(["Fecha", "Producto", "Cantidad", "Precio"]);
+      expect(historyRows(wrapper)).toEqual([
+        ["06/11/2026", "Adaptador USB-C a HDMI", "1", "Q 110.00"],
+        ["06/11/2026", "Mouse pad ergonómico", "3", "Q 35.00"],
+        ["05/11/2026", "Mouse pad ergonómico", "2", "Q 50.00"],
+      ]);
       expect(wrapper.find(".purchases-note").exists()).toBe(false);
-      const history = wrapper.find("[data-testid='client-purchases']");
-      expect(history.findAll(".purchase-row")).toHaveLength(2);
-      expect(history.find(".purchases-summary").text()).toContain("2");
-      expect(history.find(".purchases-summary").text()).toContain("168.00");
-      expect(history.text()).toContain("2 productos");
-      expect(history.text()).toContain("1 producto");
     });
 
-    it("las ventas anuladas se listan pero no suman al total comprado", async () => {
+    it("no lista los productos de ventas anuladas", async () => {
       mocks.fetchClients.mockResolvedValue([makeClient()]);
       mocks.fetchClientPurchases.mockResolvedValue([
-        makeSale({ id: "s2", estado: "anulada", total: 500 }),
+        makeSale({
+          id: "s2",
+          estado: "anulada",
+          items: [{ id: "i9", producto_id: "p2", cantidad: 5, precio_unitario: 110, subtotal: 550 }],
+        }),
         makeSale(),
       ]);
 
       const wrapper = createWrapper();
       await flushPromises();
 
-      const history = wrapper.find("[data-testid='client-purchases']");
-      expect(history.find(".purchase-row--voided .purchase-badge").text()).toBe("Anulada");
-      expect(history.find(".purchases-summary").text()).toContain("112.00");
-      expect(history.find(".purchases-summary").text()).not.toContain("612.00");
+      expect(historyRows(wrapper)).toEqual([
+        ["05/11/2026", "Mouse pad ergonómico", "2", "Q 50.00"],
+      ]);
     });
 
-    it("avisa cuando el historial llega al límite y el resumen es parcial", async () => {
+    it("muestra el mensaje dentro de la tabla cuando el cliente aún no tiene compras", async () => {
+      mocks.fetchClients.mockResolvedValue([makeClient()]);
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(historyRows(wrapper)).toEqual([
+        ["Este cliente aún no tiene compras. Asígnalo a una venta desde el módulo de Ventas."],
+      ]);
+    });
+
+    it("carga los nombres del inventario una sola vez aunque cambie de cliente", async () => {
+      const a = makeClient({ id: "a", nombre: "Cliente A" });
+      const b = makeClient({ id: "b", nombre: "Cliente B" });
+      mocks.fetchClients.mockResolvedValue([a, b]);
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.findAll(".client-item")[1].trigger("click");
+      await flushPromises();
+
+      expect(mocks.fetchClientPurchases).toHaveBeenCalledTimes(2);
+      expect(mocks.fetchInventoryProducts).toHaveBeenCalledTimes(1);
+    });
+
+    it("si no se puede cargar el inventario, muestra el id corto del producto", async () => {
+      mocks.fetchClients.mockResolvedValue([makeClient()]);
+      mocks.fetchClientPurchases.mockResolvedValue([
+        makeSale({ items: [{ id: "i1", producto_id: "abcdef12-0000", cantidad: 1, precio_unitario: 10, subtotal: 10 }] }),
+      ]);
+      mocks.fetchInventoryProducts.mockRejectedValue(new Error("Sin conexión"));
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(historyRows(wrapper)[0][1]).toBe("Producto abcdef12…");
+    });
+
+    it("avisa cuando el historial llega al límite de ventas", async () => {
       mocks.fetchClients.mockResolvedValue([makeClient()]);
       mocks.fetchClientPurchases.mockResolvedValue(
-        Array.from({ length: 50 }, (_, i) => makeSale({ id: `s${i}` })),
+        Array.from({ length: 50 }, (_, i) => makeSale({ id: `s${i}`, items: [] })),
       );
 
       const wrapper = createWrapper();
       await flushPromises();
 
       expect(wrapper.find(".purchases-note").text()).toContain("últimas 50 ventas");
-    });
-
-    it("indica cómo asignar compras cuando el cliente aún no tiene", async () => {
-      mocks.fetchClients.mockResolvedValue([makeClient()]);
-
-      const wrapper = createWrapper();
-      await flushPromises();
-
-      expect(wrapper.text()).toContain("Este cliente aún no tiene compras.");
     });
 
     it("muestra el error y permite reintentar", async () => {
@@ -207,12 +256,13 @@ describe("ClientView", () => {
       await flushPromises();
 
       expect(wrapper.find(".purchases-error").text()).toContain("No se pudo cargar el historial");
+      expect(wrapper.find("[data-testid='client-purchases'] table").exists()).toBe(false);
 
       await wrapper.find(".btn-retry").trigger("click");
       await flushPromises();
 
       expect(mocks.fetchClientPurchases).toHaveBeenCalledTimes(2);
-      expect(wrapper.findAll(".purchase-row")).toHaveLength(1);
+      expect(historyRows(wrapper)).toHaveLength(1);
     });
 
     it("al cambiar de cliente ignora la respuesta tardía del anterior", async () => {
@@ -224,7 +274,9 @@ describe("ClientView", () => {
       mocks.fetchClientPurchases.mockImplementation((id: string) =>
         id === "a"
           ? new Promise<Sale[]>((resolve) => { resolveA = resolve; })
-          : Promise.resolve([makeSale({ id: "venta-b", cliente_id: "b", total: 30 })]),
+          : Promise.resolve([
+            makeSale({ id: "venta-b", cliente_id: "b", items: [{ id: "ib", producto_id: "p2", cantidad: 4, precio_unitario: 110, subtotal: 440 }] }),
+          ]),
       );
 
       const wrapper = createWrapper();
@@ -233,13 +285,13 @@ describe("ClientView", () => {
       await wrapper.findAll(".client-item")[1].trigger("click");
       await flushPromises();
 
-      resolveA([makeSale({ id: "venta-a", total: 999 })]);
+      resolveA([makeSale({ id: "venta-a", items: [{ id: "ia", producto_id: "p1", cantidad: 99, precio_unitario: 50, subtotal: 4950 }] })]);
       await flushPromises();
 
       expect(wrapper.find(".detail-name").text()).toBe("Cliente B");
-      expect(wrapper.findAll(".purchase-row")).toHaveLength(1);
-      expect(wrapper.text()).toContain("30.00");
-      expect(wrapper.text()).not.toContain("999.00");
+      expect(historyRows(wrapper)).toEqual([
+        ["05/11/2026", "Adaptador USB-C a HDMI", "4", "Q 110.00"],
+      ]);
     });
   });
 });

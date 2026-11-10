@@ -8,6 +8,10 @@ vi.mock("@/features/clients/api", () => ({
   fetchClientPurchases: vi.fn(() => Promise.resolve([])),
 }));
 
+vi.mock("@/features/inventory/api", () => ({
+  fetchInventoryProducts: vi.fn(() => Promise.resolve([])),
+}));
+
 vi.mock("@/services/apiClient", () => ({
   getApiErrorMessage: vi.fn(() => "Error"),
 }));

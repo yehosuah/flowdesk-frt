@@ -23,6 +23,10 @@ vi.mock('@/features/clients/api', () => ({
   toggleClientStatus: vi.fn(),
 }));
 
+vi.mock('@/features/inventory/api', () => ({
+  fetchInventoryProducts: vi.fn(() => Promise.resolve([])),
+}));
+
 vi.mock('@/services/apiClient', () => ({
   getApiErrorMessage: vi.fn((err: unknown) => (err instanceof Error ? err.message : 'Error')),
 }));
