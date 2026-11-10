@@ -17,6 +17,7 @@ import {
 
 vi.mock('@/features/clients/api', () => ({
   fetchClients: vi.fn(),
+  fetchClientPurchases: vi.fn(() => Promise.resolve([])),
   createClient: vi.fn(),
   updateClient: vi.fn(),
   toggleClientStatus: vi.fn(),
@@ -45,30 +46,17 @@ describe('Flujo comercial completo: Clientes', () => {
     vi.clearAllMocks();
   });
 
-  it('creación: registra un cliente nuevo y lo deja seleccionado en el detalle', async () => {
+  it('registro: el directorio no crea clientes; se registran desde Ventas', async () => {
     const existing = makeClient({ id: '1', nombre: 'Cliente Existente' });
-    const created = makeClient({ id: '2', nombre: 'Cliente Nuevo' });
-
-    vi.mocked(fetchClients)
-      .mockResolvedValueOnce([existing])
-      .mockResolvedValueOnce([existing, created]);
-    vi.mocked(createClient).mockResolvedValue(created);
+    vi.mocked(fetchClients).mockResolvedValue([existing]);
 
     const wrapper = mount(ClientView);
     await flushPromises();
 
     expect(wrapper.find('.detail-name').text()).toBe('Cliente Existente');
-
-    await wrapper.find('.btn-add').trigger('click');
-    await wrapper.find('input[placeholder="Ej. Juan Pérez"]').setValue('Cliente Nuevo');
-    await wrapper.find('form').trigger('submit');
-    await flushPromises();
-
-    expect(createClient).toHaveBeenCalledWith(
-      expect.objectContaining({ nombre: 'Cliente Nuevo' }),
-    );
-    expect(wrapper.find('.modal-overlay').exists()).toBe(false);
-    expect(wrapper.find('.detail-name').text()).toBe('Cliente Nuevo');
+    expect(wrapper.find('.btn-add').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Se registran desde Ventas');
+    expect(createClient).not.toHaveBeenCalled();
   });
 
   it('edición: actualiza los datos y se reflejan en la lista y el detalle', async () => {

@@ -5,6 +5,7 @@ import ClientView from "@/features/clients/views/ClientView.vue";
 
 vi.mock("@/features/clients/api", () => ({
   fetchClients: vi.fn(() => Promise.resolve([])),
+  fetchClientPurchases: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("@/services/apiClient", () => ({
@@ -22,7 +23,7 @@ describe("ClientView", () => {
     await nextTick();
 
     expect(wrapper.text()).toContain("Clientes");
-    expect(wrapper.text()).toContain("Nuevo Cliente");
+    expect(wrapper.text()).toContain("Se registran desde Ventas");
   });
 
   it("muestra mensaje cuando no hay clientes", async () => {
@@ -34,12 +35,12 @@ describe("ClientView", () => {
     expect(wrapper.text()).toContain("No hay clientes encontrados.");
   });
 
-  it("abre el modal para crear cliente", async () => {
+  it("no ofrece crear clientes manualmente; se registran desde Ventas", async () => {
     const wrapper = mount(ClientView);
+    await nextTick();
 
-    await wrapper.find(".btn-add").trigger("click");
-
-    expect(wrapper.text()).toContain("Modal Cliente");
+    expect(wrapper.find(".btn-add").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Modal Cliente");
   });
 
 });
