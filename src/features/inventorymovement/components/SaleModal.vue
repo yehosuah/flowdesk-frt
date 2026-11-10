@@ -21,6 +21,68 @@
         </p>
 
         <form @submit.prevent="submit" class="form-grid" novalidate>
+          <div class="form-group full-width client-field">
+            <label class="form-label" for="sale-client-search">Cliente</label>
+
+            <div v-if="selectedClient || newClientName" class="client-chip" data-testid="sale-client">
+              <span class="client-chip__name">{{ selectedClient?.nombre ?? newClientName }}</span>
+              <span v-if="!selectedClient" class="client-chip__tag">Nuevo</span>
+              <button
+                type="button"
+                class="client-chip__clear"
+                aria-label="Quitar cliente y vender a Consumidor Final"
+                :disabled="isSubmitting"
+                @click="clearClient"
+              >
+                ✕
+              </button>
+            </div>
+
+            <template v-else>
+              <input
+                id="sale-client-search"
+                v-model="clientQuery"
+                type="text"
+                class="form-input"
+                :class="{ 'input-error': errors.cliente }"
+                maxlength="100"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="sale-client-results"
+                :aria-expanded="showClientResults"
+                placeholder="Consumidor Final"
+                @input="onClientSearch"
+              />
+
+              <ul v-if="showClientResults" id="sale-client-results" class="client-results" role="listbox">
+                <li v-for="client in visibleClientResults" :key="client.id" role="option" :aria-selected="false">
+                  <button type="button" class="client-results__item" @click="pickClient(client)">
+                    <span class="client-results__name">{{ client.nombre }}</span>
+                    <span v-if="client.correo || client.telefono" class="client-results__meta">
+                      {{ client.correo || client.telefono }}
+                    </span>
+                  </button>
+                </li>
+                <li v-if="canCreateClient && !hasExactMatch" role="option" :aria-selected="false">
+                  <button type="button" class="client-results__item client-results__item--new" @click="registerNewClient">
+                    Registrar «{{ trimmedQuery }}» como cliente nuevo
+                  </button>
+                </li>
+                <li v-if="clientResults.length === 0 && !canCreateClient" class="client-results__empty">
+                  No se encontró ningún cliente con ese dato.
+                </li>
+              </ul>
+
+              <span v-if="isSearchingClients" class="field-hint">Buscando clientes...</span>
+              <span v-else-if="clientSearchError" class="error-msg">{{ clientSearchError }}</span>
+              <span v-else-if="errors.cliente" class="error-msg">{{ errors.cliente }}</span>
+              <span v-else class="field-hint">
+                Busca por nombre, correo o teléfono. Si lo dejas vacío, la venta se registra a Consumidor Final.
+              </span>
+            </template>
+          </div>
+
           <div class="form-group full-width">
             <label class="form-label">Producto *</label>
             <select
@@ -140,11 +202,13 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted, onUnmounted } from 'vue';
 import { createSale, fetchTaxConfiguration } from '@/features/sales/api';
+import { createClient, fetchClients, type Client } from '@/features/clients/api';
 import type { InventoryProduct } from '@/features/inventory/types';
 import { getApiErrorMessage } from '@/services/apiClient';
 import { useAccessibleModal } from '@/composables/useAccessibleModal';
+import { useAuth } from '@/composables/useAuth';
 import TaxBreakdown from '@/app/components/TaxBreakdown.vue';
 
 const props = defineProps<{
@@ -212,21 +276,149 @@ onMounted(async () => {
 });
 
 const errors = reactive({
+  cliente: '',
   producto_id: '',
   cantidad: '',
   tasa_iva: '',
 });
+
+// ── Cliente de la venta ──
+// Sin cliente la venta va a Consumidor Final (el backend lo marca así cuando
+// no recibe cliente_id). Crear clientes exige rol manager en el backend, así
+// que solo admin y manager ven la opción de registrar uno nuevo.
+const { can } = useAuth();
+const canCreateClient = can('clients.edit');
+
+const clientQuery = ref('');
+const clientResults = ref<Client[]>([]);
+const searchedTerm = ref('');
+const isSearchingClients = ref(false);
+const clientSearchError = ref('');
+const selectedClient = ref<Client | null>(null);
+// Nombre de un cliente que se registrará al confirmar la venta, no antes:
+// así cancelar el modal no deja clientes creados de más.
+const newClientName = ref('');
+
+const MIN_SEARCH_LENGTH = 2;
+const MAX_RESULTS = 6;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+let searchSeq = 0;
+
+// El backend responde estos errores de clientes en inglés y sin código traducible.
+const CLIENT_MESSAGES: Record<string, string> = {
+  'Client name already exists':
+    'Ya existe un cliente activo con ese nombre. Búscalo y elígelo de la lista.',
+  'Client is inactive':
+    'El cliente fue desactivado. Elige otro o vende a Consumidor Final.',
+  'Client not found':
+    'El cliente ya no existe. Elige otro o vende a Consumidor Final.',
+};
+
+function describeError(err: unknown): string {
+  return (err instanceof Error && CLIENT_MESSAGES[err.message]) || getApiErrorMessage(err);
+}
+
+const trimmedQuery = computed(() => clientQuery.value.trim());
+
+// Se muestran pocos resultados, pero la coincidencia exacta se revisa sobre
+// todos para no ofrecer registrar un nombre que ya existe.
+const visibleClientResults = computed(() => clientResults.value.slice(0, MAX_RESULTS));
+
+const hasExactMatch = computed(() =>
+  clientResults.value.some(
+    (client) => client.nombre.trim().toLowerCase() === trimmedQuery.value.toLowerCase(),
+  ),
+);
+
+const showClientResults = computed(
+  () =>
+    trimmedQuery.value.length >= MIN_SEARCH_LENGTH &&
+    searchedTerm.value === trimmedQuery.value &&
+    !isSearchingClients.value &&
+    !clientSearchError.value,
+);
+
+function onClientSearch() {
+  clearTimeout(searchTimer);
+  clientSearchError.value = '';
+  errors.cliente = '';
+  const term = trimmedQuery.value;
+
+  if (term.length < MIN_SEARCH_LENGTH) {
+    searchSeq++;
+    clientResults.value = [];
+    searchedTerm.value = '';
+    isSearchingClients.value = false;
+    return;
+  }
+
+  searchTimer = setTimeout(() => searchClients(term), 300);
+}
+
+async function searchClients(term: string) {
+  // Descarta respuestas de búsquedas anteriores que lleguen tarde.
+  const seq = ++searchSeq;
+  isSearchingClients.value = true;
+
+  try {
+    const results = await fetchClients(term, true);
+    if (seq !== searchSeq) return;
+    clientResults.value = results;
+    searchedTerm.value = term;
+  } catch (err) {
+    if (seq !== searchSeq) return;
+    clientResults.value = [];
+    clientSearchError.value = getApiErrorMessage(err);
+  } finally {
+    if (seq === searchSeq) isSearchingClients.value = false;
+  }
+}
+
+function resetClientSearch() {
+  clearTimeout(searchTimer);
+  searchSeq++;
+  clientQuery.value = '';
+  clientResults.value = [];
+  searchedTerm.value = '';
+  isSearchingClients.value = false;
+}
+
+function pickClient(client: Client) {
+  selectedClient.value = client;
+  newClientName.value = '';
+  resetClientSearch();
+}
+
+function registerNewClient() {
+  selectedClient.value = null;
+  newClientName.value = trimmedQuery.value;
+  resetClientSearch();
+}
+
+function clearClient() {
+  selectedClient.value = null;
+  newClientName.value = '';
+}
+
+onUnmounted(() => clearTimeout(searchTimer));
 
 function isBlank(value: number | string | null): boolean {
   return String(value).trim() === '';
 }
 
 function validateForm(): boolean {
+  errors.cliente = '';
   errors.producto_id = '';
   errors.cantidad = '';
   errors.tasa_iva = '';
 
   let isValid = true;
+
+  // Texto escrito sin elegir un cliente: no se asume Consumidor Final en silencio.
+  if (!selectedClient.value && !newClientName.value && trimmedQuery.value) {
+    errors.cliente = 'Elige un cliente de la lista o borra el texto para vender a Consumidor Final.';
+    isValid = false;
+  }
 
   if (!form.producto_id) {
     errors.producto_id = 'Selecciona un producto.';
@@ -261,16 +453,32 @@ async function submit() {
 
   isSubmitting.value = true;
 
+  // El cliente nuevo se registra antes que la venta porque la venta necesita su id.
+  // Si después falla la venta, el cliente ya queda seleccionado y no se vuelve a
+  // crear al reintentar.
+  if (!selectedClient.value && newClientName.value) {
+    try {
+      selectedClient.value = await createClient({ nombre: newClientName.value });
+      newClientName.value = '';
+    } catch (err) {
+      error.value = `No se pudo registrar el cliente. ${describeError(err)}`;
+      isSubmitting.value = false;
+      return;
+    }
+  }
+
   try {
     await createSale({
       items: [{ producto_id: form.producto_id, cantidad: Number(form.cantidad) }],
       es_exenta: form.es_exenta,
+      ...(selectedClient.value ? { cliente_id: selectedClient.value.id } : {}),
     });
 
     emit('created');
     emit('close');
   } catch (err) {
-    error.value = getApiErrorMessage(err);
+    // Fuera de los errores de clientes, el mensaje es el mismo de siempre.
+    error.value = describeError(err);
   } finally {
     isSubmitting.value = false;
   }
@@ -550,6 +758,109 @@ async function submit() {
   font-size: 0.75rem;
   color: var(--color-text-muted);
   margin-top: 4px;
+}
+
+.client-field {
+  position: relative;
+}
+
+.client-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 8px 6px 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  background: var(--color-bg-subtle);
+}
+
+.client-chip__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--color-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-chip__tag {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.client-chip__clear {
+  background: none;
+  border: none;
+  color: var(--color-text-faint);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.client-chip__clear:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-heading);
+}
+
+.client-results {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--color-bg-border);
+  border-radius: 8px;
+  background: var(--color-bg-surface);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.client-results__item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: var(--color-heading);
+  cursor: pointer;
+}
+
+.client-results__item:hover,
+.client-results__item:focus-visible {
+  background: var(--color-bg-hover);
+  outline: none;
+}
+
+.client-results__item--new {
+  color: var(--color-warning-text);
+  font-weight: 600;
+}
+
+.client-results__name {
+  font-weight: 600;
+}
+
+.client-results__meta {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.client-results__empty {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 
 .form-input.input-error {
