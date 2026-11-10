@@ -3,12 +3,10 @@
     <header class="page-header">
       <div class="header-content">
         <h1 class="page-title">Clientes</h1>
-        <p class="page-subtitle">Gestiona el directorio de tus clientes</p>
+        <p class="page-subtitle">
+          Directorio de clientes. Se registran desde Ventas al asignar un cliente a una venta.
+        </p>
       </div>
-
-      <button class="btn-add" @click="openCreateModal">
-        <span class="btn-icon">+</span> Nuevo Cliente
-      </button>
     </header>
 
     <div v-if="globalError" class="error-alert">
@@ -128,7 +126,7 @@
             <div class="detail-actions">
               <button
                 class="btn-icon-action"
-                title="Editar informaciÃ³n"
+                title="Editar información"
                 @click="openEditModal(selectedClient)"
               >
                 <Pencil :size="18" />
@@ -138,7 +136,7 @@
           </div>
 
           <section class="detail-section">
-            <h3 class="section-title">InformaciÃ³n de Contacto</h3>
+            <h3 class="section-title">Información de Contacto</h3>
 
             <div class="contact-card">
               <div class="contact-row">
@@ -157,6 +155,54 @@
               </div>
             </div>
           </section>
+
+          <section class="detail-section" data-testid="client-purchases">
+            <h3 class="section-title">Historial de compras</h3>
+
+            <p v-if="isLoadingPurchases" class="purchases-state">Cargando compras...</p>
+
+            <div v-else-if="purchasesError" class="purchases-error">
+              <span>{{ purchasesError }}</span>
+              <button type="button" class="btn-retry" @click="loadPurchases(selectedClient.id)">Reintentar</button>
+            </div>
+
+            <p v-else-if="purchases.length === 0" class="purchases-state">
+              Este cliente aún no tiene compras. Asígnalo a una venta desde el módulo de Ventas.
+            </p>
+
+            <template v-else>
+              <dl class="purchases-summary">
+                <div class="purchases-summary__item">
+                  <dt>Compras</dt>
+                  <dd>{{ completedPurchases.length }}</dd>
+                </div>
+                <div class="purchases-summary__item">
+                  <dt>Total comprado</dt>
+                  <dd>{{ formatMoney(totalPurchased) }}</dd>
+                </div>
+              </dl>
+
+              <ul class="purchase-list">
+                <li
+                  v-for="sale in purchases"
+                  :key="sale.id"
+                  class="purchase-row"
+                  :class="{ 'purchase-row--voided': sale.estado === SALE_STATE_VOIDED }"
+                >
+                  <div class="purchase-row__main">
+                    <span class="purchase-row__date">{{ formatDate(sale.fecha) }}</span>
+                    <span class="purchase-row__items">{{ itemsLabel(sale) }}</span>
+                  </div>
+                  <span v-if="sale.estado === SALE_STATE_VOIDED" class="purchase-badge">Anulada</span>
+                  <span class="purchase-row__total">{{ formatMoney(sale.total) }}</span>
+                </li>
+              </ul>
+
+              <p v-if="purchases.length >= PURCHASES_LIMIT" class="purchases-note">
+                Se muestran las últimas {{ PURCHASES_LIMIT }} ventas; el resumen corresponde a ellas.
+              </p>
+            </template>
+          </section>
         </div>
       </main>
     </div>
@@ -172,9 +218,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Search, Phone, Mail, Pencil, MapPin, Users } from 'lucide-vue-next';
-import { fetchClients, type Client } from '@/features/clients/api';
+import { fetchClients, fetchClientPurchases, type Client } from '@/features/clients/api';
+import { SALE_STATE_COMPLETED, SALE_STATE_VOIDED, type Sale } from '@/features/sales/types';
+import { useCurrency } from '@/features/currency';
 import { getApiErrorMessage } from '@/services/apiClient';
 import ClientModal from '@/features/clients/components/ClientModal.vue';
 import { Skeleton, EmptyState, Alert } from '@/app/components/ui';
@@ -244,9 +292,72 @@ function selectClient(cli: Client) {
   selectedClient.value = cli;
 }
 
-function openCreateModal() {
-  clientToEdit.value = null;
-  showModal.value = true;
+// ── Historial de compras del cliente seleccionado ──
+const { formatCurrency: formatMoney } = useCurrency();
+// Máximo que devuelve el backend por página; si se alcanza, el resumen solo
+// cubre esas compras y se avisa en pantalla.
+const PURCHASES_LIMIT = 50;
+const purchases = ref<Sale[]>([]);
+const isLoadingPurchases = ref(false);
+const purchasesError = ref('');
+let purchasesSeq = 0;
+
+// Las ventas anuladas se muestran en el historial pero no cuentan como compras.
+const completedPurchases = computed(() =>
+  purchases.value.filter((sale) => sale.estado === SALE_STATE_COMPLETED),
+);
+
+const totalPurchased = computed(() =>
+  completedPurchases.value.reduce((sum, sale) => sum + Number(sale.total), 0),
+);
+
+async function loadPurchases(clientId: string) {
+  // Si el usuario cambia de cliente antes de que responda la petición anterior,
+  // se descarta esa respuesta para no mostrar compras de otro cliente.
+  const seq = ++purchasesSeq;
+  isLoadingPurchases.value = true;
+  purchasesError.value = '';
+
+  try {
+    const result = await fetchClientPurchases(clientId, PURCHASES_LIMIT);
+    if (seq !== purchasesSeq) return;
+    purchases.value = result;
+  } catch (err) {
+    if (seq !== purchasesSeq) return;
+    purchases.value = [];
+    purchasesError.value = getApiErrorMessage(err);
+  } finally {
+    if (seq === purchasesSeq) isLoadingPurchases.value = false;
+  }
+}
+
+watch(
+  () => selectedClient.value?.id,
+  (clientId) => {
+    if (clientId) {
+      loadPurchases(clientId);
+    } else {
+      purchasesSeq++;
+      purchases.value = [];
+      purchasesError.value = '';
+      isLoadingPurchases.value = false;
+    }
+  },
+);
+
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return (
+    `${String(date.getDate()).padStart(2, '0')}/` +
+    `${String(date.getMonth() + 1).padStart(2, '0')}/` +
+    `${date.getFullYear()}`
+  );
+}
+
+function itemsLabel(sale: Sale): string {
+  const count = sale.items?.length ?? 0;
+  return count === 1 ? '1 producto' : `${count} productos`;
 }
 
 function openEditModal(cli: Client) {
@@ -255,7 +366,7 @@ function openEditModal(cli: Client) {
 }
 
 function onModalSaved(saved: Client) {
-  // Selecciona el cliente reciÃ©n creado/editado para que quede visible
+  // Selecciona el cliente recién creado/editado para que quede visible
   // de inmediato en el panel de detalle (antes se quedaba en el que
   // estuviera seleccionado previamente, o en ninguno).
   selectedClient.value = saved;
@@ -265,11 +376,11 @@ function onModalSaved(saved: Client) {
 
 function onStatusChanged(updated: Client) {
   // Actualiza en memoria (panel de detalle + fila en la lista) sin volver a
-  // pedir la lista todavÃ­a: si el cliente activado/desactivado deja de
-  // cumplir el filtro actual (p. ej. "Activos"), un fetchData() aquÃ­ lo
-  // saca de la lista y salta la selecciÃ³n a otro cliente mientras el modal
+  // pedir la lista todavía: si el cliente activado/desactivado deja de
+  // cumplir el filtro actual (p. ej. "Activos"), un fetchData() aquí lo
+  // saca de la lista y salta la selección a otro cliente mientras el modal
   // sigue abierto, lo cual es confuso. La lista se reconcilia con el
-  // filtro reciÃ©n al cerrar el modal, en onModalClose().
+  // filtro recién al cerrar el modal, en onModalClose().
   clientToEdit.value = updated;
   selectedClient.value = updated;
 
@@ -314,27 +425,6 @@ onMounted(() => {
   color: var(--color-text-muted);
   margin: 0;
   font-size: 1rem;
-}
-
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: var(--color-structure-base, #3b82f6);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-  transition: all 0.2s;
-}
-
-.btn-add:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
 
 .card {
@@ -671,6 +761,131 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.purchases-state {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed var(--color-bg-border);
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.purchases-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  font-size: 0.9rem;
+}
+
+.btn-retry {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.purchases-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.purchases-summary__item {
+  padding: 14px 16px;
+  border: 1px solid var(--color-bg-border);
+  border-radius: 12px;
+  background: var(--color-bg-subtle);
+}
+
+.purchases-summary__item dt {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.purchases-summary__item dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.purchase-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-bg-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.purchase-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.purchase-row:last-child {
+  border-bottom: none;
+}
+
+.purchase-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.purchase-row__date {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.purchase-row__items {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.purchase-row__total {
+  font-weight: 700;
+  color: var(--color-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase-row--voided .purchase-row__total {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.purchases-note {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.purchase-badge {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .loading-state,
 .empty-state {
   padding: 48px 20px;
@@ -728,12 +943,6 @@ onMounted(() => {
   .page-subtitle {
     font-size: 0.88rem;
     line-height: 1.4;
-  }
-
-  .btn-add {
-    width: 100%;
-    justify-content: center;
-    box-sizing: border-box;
   }
 
   .split-layout {

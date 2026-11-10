@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/apiClient';
+import type { Sale } from '@/features/sales/types';
 
 export interface Client {
   id: string;
@@ -42,6 +43,14 @@ export function fetchClients(search?: string, active_only?: boolean): Promise<Cl
 
 export function getClient(id: string): Promise<Client> {
   return apiClient.request<Client>(`/api/v1/commercial/clients/${id}`, {
+    method: 'GET',
+    auth: true,
+  });
+}
+
+/** GET /commercial/clients/{id}/purchases — ventas asociadas al cliente, de la más reciente a la más antigua. */
+export function fetchClientPurchases(id: string, limit = 50): Promise<Sale[]> {
+  return apiClient.request<Sale[]>(`/api/v1/commercial/clients/${id}/purchases?limit=${limit}`, {
     method: 'GET',
     auth: true,
   });

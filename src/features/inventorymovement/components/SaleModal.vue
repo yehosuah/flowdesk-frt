@@ -66,7 +66,8 @@
                 </li>
                 <li v-if="canCreateClient && !hasExactMatch" role="option" :aria-selected="false">
                   <button type="button" class="client-results__item client-results__item--new" @click="registerNewClient">
-                    Registrar «{{ trimmedQuery }}» como cliente nuevo
+                    <span class="client-results__new-icon" aria-hidden="true">+</span>
+                    <span>Registrar «{{ trimmedQuery }}» como cliente nuevo</span>
                   </button>
                 </li>
                 <li v-if="clientResults.length === 0 && !canCreateClient" class="client-results__empty">
@@ -786,12 +787,12 @@ async function submit() {
 }
 
 .client-chip__tag {
-  padding: 2px 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--color-bg-border);
   border-radius: 9999px;
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
+  color: var(--color-text-muted);
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .client-chip__clear {
@@ -843,9 +844,26 @@ async function submit() {
   outline: none;
 }
 
+/* Opción secundaria: separada de los resultados y en gris, sin competir con ellos */
 .client-results__item--new {
-  color: var(--color-warning-text);
-  font-weight: 600;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  border-top: 1px solid var(--color-bg-border);
+  border-radius: 0 0 6px 6px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.client-results__item--new:hover,
+.client-results__item--new:focus-visible {
+  color: var(--color-heading);
+}
+
+.client-results__new-icon {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .client-results__name {
